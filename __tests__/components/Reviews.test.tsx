@@ -17,9 +17,8 @@ describe("Reviews", () => {
 
   it("shows stats", () => {
     render(<Reviews />);
-    expect(screen.getByText("9+")).toBeInTheDocument();
-    expect(screen.getByText("15 000+")).toBeInTheDocument();
-    expect(screen.getByText("50+")).toBeInTheDocument();
-    expect(screen.getByText("44")).toBeInTheDocument();
+    expect(screen.getByText("30+")).toBeInTheDocument();
+    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("24/7")).toBeInTheDocument();
   });
 });

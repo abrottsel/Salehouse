@@ -1,4 +1,33 @@
-export const villages = [
+export interface Village {
+  id: number;
+  name: string;
+  slug: string;
+  direction: string;
+  distance: number;
+  readiness: number;
+  description: string;
+  features: string[];
+  priceFrom: number;
+  plotsCount: number;
+  plotsAvailable: number;
+  areaFrom: number;
+  areaTo: number;
+  photos: string[];
+  coords: [number, number];
+  plots?: Plot[];
+}
+
+export interface Plot {
+  id: number;
+  number: string;
+  area: number;
+  price: number;
+  status: "available" | "reserved" | "sold";
+}
+
+const Z = "https://zemexx.ru/upload/iblock";
+
+export const villages: Village[] = [
   {
     id: 1,
     name: "Фаворит",
@@ -13,6 +42,21 @@ export const villages = [
     plotsAvailable: 12,
     areaFrom: 6,
     areaTo: 12,
+    photos: [
+      `${Z}/14e/DJI_0316.jpg`,
+      `${Z}/7ab/DJI_0314.jpg`,
+      `${Z}/668/DJI_0318.jpg`,
+      `${Z}/748/DJI_0319.jpg`,
+      `${Z}/dfc/DJI_0325.jpg`,
+    ],
+    coords: [55.3250, 37.8650],
+    plots: [
+      { id: 101, number: "12", area: 6, price: 490000, status: "available" },
+      { id: 102, number: "15", area: 8, price: 490000, status: "available" },
+      { id: 103, number: "23", area: 10, price: 485000, status: "reserved" },
+      { id: 104, number: "31", area: 12, price: 480000, status: "available" },
+      { id: 105, number: "44", area: 6, price: 495000, status: "sold" },
+    ],
   },
   {
     id: 2,
@@ -28,6 +72,21 @@ export const villages = [
     plotsAvailable: 8,
     areaFrom: 6,
     areaTo: 10,
+    photos: [
+      `${Z}/573/DJI_0350.jpg`,
+      `${Z}/d75/DJI_0343.jpg`,
+      `${Z}/e06/DJI_0344.jpg`,
+      `${Z}/563/DJI_0347.jpg`,
+      `${Z}/0df/DJI_0351.jpg`,
+      `${Z}/59f/Lesnoy-Ostrov_sayt_4.jpg`,
+      `${Z}/d33/Zimniy-Lesnoy-Ostrov.jpg`,
+    ],
+    coords: [55.2780, 37.8200],
+    plots: [
+      { id: 201, number: "5", area: 6, price: 625000, status: "available" },
+      { id: 202, number: "18", area: 8, price: 620000, status: "available" },
+      { id: 203, number: "27", area: 10, price: 615000, status: "reserved" },
+    ],
   },
   {
     id: 3,
@@ -43,6 +102,22 @@ export const villages = [
     plotsAvailable: 10,
     areaFrom: 6,
     areaTo: 12,
+    photos: [
+      `${Z}/cc1/DJI_0931.jpg`,
+      `${Z}/fac/DJI_0932.jpg`,
+      `${Z}/6fb/DJI_0929.jpg`,
+      `${Z}/55c/DJI_0806-kopiya.jpg`,
+      `${Z}/322/DJI_0802-kopiya.jpg`,
+      `${Z}/6e1/Novoe-Sonino_2.jpg`,
+      `${Z}/86a/Zimnee-Novoe-Sonino.jpg`,
+    ],
+    coords: [55.2600, 37.7900],
+    plots: [
+      { id: 301, number: "3", area: 6, price: 360000, status: "available" },
+      { id: 302, number: "11", area: 8, price: 355000, status: "available" },
+      { id: 303, number: "19", area: 10, price: 350000, status: "available" },
+      { id: 304, number: "25", area: 12, price: 345000, status: "reserved" },
+    ],
   },
   {
     id: 4,
@@ -58,6 +133,21 @@ export const villages = [
     plotsAvailable: 5,
     areaFrom: 8,
     areaTo: 15,
+    photos: [
+      `${Z}/0eb/DJI_0809.JPG`,
+      `${Z}/1b3/DJI_0822.JPG`,
+      `${Z}/a56/DJI_0805.JPG`,
+      `${Z}/c65/DJI_20.jpg`,
+      `${Z}/cac/DJI_0077_1_.jpg`,
+      `${Z}/f20/DJI_0220.jpg`,
+      `${Z}/a38/PriLesnoy-na-sayt.jpg`,
+    ],
+    coords: [55.9800, 37.5600],
+    plots: [
+      { id: 401, number: "2", area: 8, price: 1360000, status: "available" },
+      { id: 402, number: "7", area: 10, price: 1350000, status: "available" },
+      { id: 403, number: "14", area: 15, price: 1340000, status: "reserved" },
+    ],
   },
   {
     id: 5,
@@ -73,6 +163,23 @@ export const villages = [
     plotsAvailable: 15,
     areaFrom: 6,
     areaTo: 12,
+    photos: [
+      `${Z}/ef6/DJI_0216.JPG`,
+      `${Z}/901/DJI_0137.jpg`,
+      `${Z}/17a/DJI_0219.JPG`,
+      `${Z}/d37/DJI_0214.JPG`,
+      `${Z}/3b0/DJI_0223.JPG`,
+      `${Z}/265/DJI_0231.JPG`,
+      `${Z}/fa5/Zimnyaya-Dachnaya-praktika-2.jpg`,
+    ],
+    coords: [55.2200, 37.8100],
+    plots: [
+      { id: 501, number: "8", area: 6, price: 405000, status: "available" },
+      { id: 502, number: "22", area: 8, price: 400000, status: "available" },
+      { id: 503, number: "35", area: 10, price: 395000, status: "available" },
+      { id: 504, number: "47", area: 12, price: 390000, status: "reserved" },
+      { id: 505, number: "60", area: 6, price: 410000, status: "sold" },
+    ],
   },
   {
     id: 6,
@@ -88,6 +195,21 @@ export const villages = [
     plotsAvailable: 32,
     areaFrom: 6,
     areaTo: 10,
+    photos: [
+      `${Z}/126/DJI_0817-kopiya.jpg`,
+      `${Z}/244/DJI_0816-kopiya.jpg`,
+      `${Z}/15d/DJI_0818-kopiya.jpg`,
+      `${Z}/bdf/DJI_0819-kopiya.jpg`,
+      `${Z}/23c/DJI_0822-kopiya.jpg`,
+      `${Z}/76f/DJI_0966.JPG`,
+      `${Z}/433/Zimniy-SHishkino-Lend.jpg`,
+    ],
+    coords: [55.2300, 37.7800],
+    plots: [
+      { id: 601, number: "4", area: 6, price: 470000, status: "available" },
+      { id: 602, number: "16", area: 8, price: 465000, status: "available" },
+      { id: 603, number: "28", area: 10, price: 460000, status: "available" },
+    ],
   },
   {
     id: 7,
@@ -103,6 +225,22 @@ export const villages = [
     plotsAvailable: 30,
     areaFrom: 6,
     areaTo: 12,
+    photos: [
+      `${Z}/051/DJI_0074.jpg`,
+      `${Z}/8b4/DJI_0852.jpg`,
+      `${Z}/021/DJI_0895.jpg`,
+      `${Z}/ae2/DJI_0254.jpg`,
+      `${Z}/867/DJI_0260.jpg`,
+      `${Z}/9f8/Triumfalnyy_8.jpg`,
+      `${Z}/90c/Triumfalnyy.jpg`,
+    ],
+    coords: [55.9700, 37.5400],
+    plots: [
+      { id: 701, number: "10", area: 6, price: 1050000, status: "available" },
+      { id: 702, number: "33", area: 8, price: 1040000, status: "available" },
+      { id: 703, number: "55", area: 10, price: 1035000, status: "reserved" },
+      { id: 704, number: "77", area: 12, price: 1030000, status: "available" },
+    ],
   },
   {
     id: 8,
@@ -118,6 +256,21 @@ export const villages = [
     plotsAvailable: 4,
     areaFrom: 10,
     areaTo: 20,
+    photos: [
+      `${Z}/bde/Riga-Les-kopiya.jpg`,
+      `${Z}/c03/DJI_0562.jpg`,
+      `${Z}/99c/DJI_0574.jpg`,
+      `${Z}/069/DJI_0648.JPG`,
+      `${Z}/2a1/DJI_0653.JPG`,
+      `${Z}/cd2/DJI_0430.JPG`,
+      `${Z}/b8d/Zimniy_RigaLes2.jpg`,
+    ],
+    coords: [55.8100, 36.9800],
+    plots: [
+      { id: 801, number: "1", area: 10, price: 1800000, status: "available" },
+      { id: 802, number: "3", area: 15, price: 1799000, status: "available" },
+      { id: 803, number: "6", area: 20, price: 1790000, status: "reserved" },
+    ],
   },
 ];
 
@@ -132,7 +285,7 @@ export const reviews = [
   {
     id: 2,
     name: "Дмитрий С.",
-    text: "Брал участок как инвестицию в Дачной Практике-2 полтора года назад. За это время стоимость выросла на 30%. Компания надёжная, все документы в порядке, сделка прошла быстро и прозрачно.",
+    text: "Брал участок как инвестицию в Дачной Практике-2 полтора года назад. За это время стоимость выросла на 30%. Все документы в порядке, сделка прошла быстро и прозрачно.",
     rating: 5,
     village: "Дачная Практика-2",
   },
@@ -153,7 +306,7 @@ export const reviews = [
   {
     id: 5,
     name: "Игорь М.",
-    text: "Покупал участок в Шишкино Лэнд. Понравилось, что рядом магазины и школа — не нужно далеко ездить. Менеджеры помогли с оформлением, всё прошло гладко. Рекомендую!",
+    text: "Покупал участок в Шишкино Лэнд. Понравилось, что рядом магазины и школа — не нужно далеко ездить. Помогли с оформлением, всё прошло гладко. Рекомендую!",
     rating: 4,
     village: "Шишкино Лэнд",
   },

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X, Phone, MapPin } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
+import Logo from "./Logo";
 
 const navLinks = [
   { href: "#advantages", label: "Преимущества" },
@@ -22,42 +23,38 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-xl font-bold text-gray-900">ЗемЭкс</span>
-              <span className="hidden sm:block text-xs text-gray-500">Земельный Экспресс</span>
-            </div>
+            <Logo />
           </a>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors"
+                className="text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-lg px-3 py-2 transition-colors"
               >
                 {link.label}
               </a>
             ))}
           </nav>
 
-          {/* Phone */}
+          {/* Phone & CTA */}
           <div className="hidden md:flex items-center gap-4">
             <a
-              href="tel:+74959891070"
+              href="tel:+79859052555"
               className="flex items-center gap-2 text-gray-900 font-semibold hover:text-green-600 transition-colors"
             >
-              <Phone className="w-4 h-4" />
-              +7 (495) 989-10-70
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <Phone className="w-4 h-4 text-green-600" />
+              </div>
+              +7 (985) 905-25-55
             </a>
             <a
               href="#contacts"
-              className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors text-sm"
+              className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors text-sm shadow-sm shadow-green-600/20"
             >
-              Обратный звонок
+              Записаться на просмотр
             </a>
           </div>
 
@@ -87,16 +84,18 @@ export default function Header() {
               ))}
             </nav>
             <div className="mt-3 px-3 flex flex-col gap-2">
-              <a href="tel:+74959891070" className="flex items-center gap-2 font-semibold">
-                <Phone className="w-4 h-4" />
-                +7 (495) 989-10-70
+              <a href="tel:+79859052555" className="flex items-center gap-2 font-semibold">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-green-600" />
+                </div>
+                +7 (985) 905-25-55
               </a>
               <a
                 href="#contacts"
-                className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium text-center"
+                className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium text-center shadow-sm shadow-green-600/20"
                 onClick={() => setIsOpen(false)}
               >
-                Обратный звонок
+                Записаться на просмотр
               </a>
             </div>
           </div>

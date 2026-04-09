@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, TreePine, Ruler, ArrowRight, SlidersHorizontal } from "lucide-react";
+import Image from "next/image";
+import { MapPin, Ruler, ArrowRight, SlidersHorizontal } from "lucide-react";
 import { villages } from "@/lib/data";
 
 const directions = ["Все", "Каширское шоссе", "Симферопольское шоссе", "Дмитровское шоссе", "Новорижское шоссе"];
@@ -46,13 +47,20 @@ export default function Catalog() {
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((village) => (
-            <div
+            <a
               key={village.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
+              href={`/village/${village.slug}`}
+              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group block"
             >
-              {/* Image placeholder */}
-              <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
-                <TreePine className="w-16 h-16 text-green-400" />
+              {/* Image */}
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src={village.photos[0]}
+                  alt={village.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
                 {village.readiness === 100 && (
                   <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     Готовый
@@ -108,16 +116,13 @@ export default function Catalog() {
                     </div>
                     <div className="text-xs text-gray-500">за сотку</div>
                   </div>
-                  <a
-                    href="#contacts"
-                    className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                  >
+                  <span className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium group-hover:bg-green-700 transition-colors">
                     Подробнее
                     <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </span>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 

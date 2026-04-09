@@ -10,12 +10,12 @@ describe("ContactForm", () => {
 
   it("displays phone number", () => {
     render(<ContactForm />);
-    expect(screen.getByText("+7 (495) 989-10-70")).toBeInTheDocument();
+    expect(screen.getByText("+7 (985) 905-25-55")).toBeInTheDocument();
   });
 
   it("displays email", () => {
     render(<ContactForm />);
-    expect(screen.getByText("office@zemexx.ru")).toBeInTheDocument();
+    expect(screen.getByText("a.brottsel@mail.ru")).toBeInTheDocument();
   });
 
   it("renders form fields", () => {
@@ -35,8 +35,8 @@ describe("ContactForm", () => {
     expect(screen.getByText("Что вас интересует?")).toBeInTheDocument();
   });
 
-  it("shows address", () => {
+  it("shows Telegram contact", () => {
     render(<ContactForm />);
-    expect(screen.getByText(/Москва, пр. Мира/)).toBeInTheDocument();
+    expect(screen.getByText("@Abrottsel")).toBeInTheDocument();
   });
 });

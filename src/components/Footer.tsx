@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail } from "lucide-react";
+import { Phone, Mail, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -7,21 +7,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <MapPin className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-bold">ЗемЭкс</span>
+            <div className="flex items-baseline gap-0 mb-4">
+              <span className="text-2xl font-extrabold text-white tracking-tight leading-none">Зем</span>
+              <span className="text-3xl font-black text-green-400 leading-none">+</span>
             </div>
             <p className="text-gray-400 text-sm mb-4">
-              Земельный Экспресс — продажа земельных участков в Подмосковье
-              с 2017 года.
+              ЗемПлюс — продажа земельных участков в Подмосковье.
+              Проверенные посёлки с готовыми коммуникациями.
             </p>
-            <div className="text-xs text-gray-500">
-              <div>ООО &laquo;ЗЕМЭКС&raquo;</div>
-              <div>ИНН: 9701087133</div>
-              <div>ОГРН: 1177746937565</div>
-            </div>
           </div>
 
           {/* Navigation */}
@@ -64,29 +57,34 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Контакты</h4>
             <div className="space-y-3 text-sm">
               <a
-                href="tel:+74959891070"
+                href="tel:+79859052555"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                +7 (495) 989-10-70
+                +7 (985) 905-25-55
               </a>
               <a
-                href="mailto:office@zemexx.ru"
+                href="mailto:a.brottsel@mail.ru"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                office@zemexx.ru
+                a.brottsel@mail.ru
               </a>
-              <div className="flex items-start gap-2 text-gray-400">
-                <MapPin className="w-4 h-4 mt-0.5" />
-                <span>Москва, пр. Мира, д. 102, стр. 27, офис 214</span>
-              </div>
+              <a
+                href="https://t.me/Abrottsel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                @Abrottsel
+              </a>
             </div>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} ООО &laquo;ЗЕМЭКС&raquo;. Все права защищены.
+          &copy; {new Date().getFullYear()} ЗемПлюс. Все права защищены.
         </div>
       </div>
     </footer>

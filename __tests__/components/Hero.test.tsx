@@ -22,12 +22,7 @@ describe("Hero", () => {
   it("shows trust badges", () => {
     render(<Hero />);
     expect(screen.getByText("Юридическая чистота")).toBeInTheDocument();
-    expect(screen.getByText(/50\+ посёлков/)).toBeInTheDocument();
+    expect(screen.getByText(/30\+ посёлков/)).toBeInTheDocument();
     expect(screen.getByText("Категория ИЖС")).toBeInTheDocument();
-  });
-
-  it("displays company stats", () => {
-    render(<Hero />);
-    expect(screen.getByText(/15 000\+ проданных участков/)).toBeInTheDocument();
   });
 });

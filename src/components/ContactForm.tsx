@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Mail, MapPin, Send, Clock, CheckCircle2 } from "lucide-react";
+import { Phone, Mail, Send, Clock, CheckCircle2, MessageCircle } from "lucide-react";
 
 type LeadType = "VIEWING" | "PRESENTATION" | "MORTGAGE" | "BOOKING" | "CALLBACK";
 
@@ -50,7 +50,7 @@ export default function ContactForm() {
       setIsSuccess(true);
       setForm({ name: "", phone: "", email: "", type: "VIEWING", message: "" });
     } catch {
-      setError("Не удалось отправить заявку. Позвоните нам: +7 (495) 989-10-70");
+      setError("Не удалось отправить заявку. Позвоните нам: +7 (985) 905-25-55");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +72,7 @@ export default function ContactForm() {
 
             <div className="space-y-4 mb-8">
               <a
-                href="tel:+74959891070"
+                href="tel:+79859052555"
                 className="flex items-center gap-4 p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors"
               >
                 <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
@@ -80,7 +80,7 @@ export default function ContactForm() {
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">
-                    +7 (495) 989-10-70
+                    +7 (985) 905-25-55
                   </div>
                   <div className="text-sm text-gray-500">
                     Ежедневно с 9:00 до 21:00
@@ -89,7 +89,7 @@ export default function ContactForm() {
               </a>
 
               <a
-                href="mailto:office@zemexx.ru"
+                href="mailto:a.brottsel@mail.ru"
                 className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center">
@@ -97,7 +97,7 @@ export default function ContactForm() {
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">
-                    office@zemexx.ru
+                    a.brottsel@mail.ru
                   </div>
                   <div className="text-sm text-gray-500">
                     Ответим в течение часа
@@ -105,17 +105,24 @@ export default function ContactForm() {
                 </div>
               </a>
 
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50">
-                <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-white" />
+              <a
+                href="https://t.me/Abrottsel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">
-                    Москва, пр. Мира, д. 102, стр. 27
+                    @Abrottsel
                   </div>
-                  <div className="text-sm text-gray-500">Офис 214</div>
+                  <div className="text-sm text-gray-500">
+                    Telegram — ответим быстро
+                  </div>
                 </div>
-              </div>
+              </a>
 
               <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50">
                 <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center">
@@ -130,26 +137,6 @@ export default function ContactForm() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Social */}
-            <div className="flex gap-3">
-              <a
-                href="https://t.me/zemexx25"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
-              >
-                Telegram
-              </a>
-              <a
-                href="https://vk.com/zem_exx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors"
-              >
-                ВКонтакте
-              </a>
             </div>
           </div>
 

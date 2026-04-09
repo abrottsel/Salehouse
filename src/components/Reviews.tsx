@@ -10,8 +10,7 @@ export default function Reviews() {
             Отзывы наших клиентов
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Более 15 000 семей уже стали владельцами земельных участков.
-            Вот что говорят наши клиенты.
+            Довольные клиенты — лучшая рекомендация. Вот что говорят владельцы участков.
           </p>
         </div>
 
@@ -52,10 +51,10 @@ export default function Reviews() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { value: "9+", label: "лет на рынке" },
-            { value: "15 000+", label: "проданных участков" },
-            { value: "50+", label: "реализованных проектов" },
-            { value: "44", label: "отраслевых награды" },
+            { value: "30+", label: "посёлков в каталоге" },
+            { value: "100%", label: "юридическая чистота" },
+            { value: "0 \u20BD", label: "скрытых платежей" },
+            { value: "24/7", label: "охрана посёлков" },
           ].map((stat, i) => (
             <div key={i} className="text-center p-6 rounded-2xl bg-green-50">
               <div className="text-3xl lg:text-4xl font-bold text-green-600 mb-1">
