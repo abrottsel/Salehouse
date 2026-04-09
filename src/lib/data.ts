@@ -25,7 +25,8 @@ export interface Plot {
   status: "available" | "reserved" | "sold";
 }
 
-const Z = "https://zemexx.ru/upload/iblock";
+const Z = "http://zemexx.ru/upload/iblock";
+const R = "http://zemexx.ru/upload/resize_cache/iblock";
 
 export const villages: Village[] = [
   {
@@ -43,11 +44,12 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 12,
     photos: [
-      `${Z}/14e/DJI_0316.jpg`,
-      `${Z}/7ab/DJI_0314.jpg`,
-      `${Z}/668/DJI_0318.jpg`,
-      `${Z}/748/DJI_0319.jpg`,
-      `${Z}/dfc/DJI_0325.jpg`,
+      `${Z}/14e/hu6cot1wpnrosuzgm4jgeh2d1evnky0w/DJI_0316.jpg`,
+      `${Z}/7ab/xmqdy3omq95m8o0wudnvytnxfyji3rrw/DJI_0314.jpg`,
+      `${Z}/668/sb4ut43b879ay2r3ykrtqqyo5095zpw1/DJI_0318.jpg`,
+      `${Z}/748/xfacugicd27uxzxx1fc0xe3lks1u43z6/DJI_0319.jpg`,
+      `${Z}/dfc/0e6yfzxmxv3f6kmo6ak9wqudomukd03y/DJI_0325.jpg`,
+      `${Z}/fab/n41nlwpttt4dja459hefzq020fo2xjm4/Favorit-na-sayt5.jpg`,
     ],
     coords: [55.3250, 37.8650],
     plots: [
@@ -73,13 +75,13 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 10,
     photos: [
-      `${Z}/573/DJI_0350.jpg`,
-      `${Z}/d75/DJI_0343.jpg`,
-      `${Z}/e06/DJI_0344.jpg`,
-      `${Z}/563/DJI_0347.jpg`,
-      `${Z}/0df/DJI_0351.jpg`,
-      `${Z}/59f/Lesnoy-Ostrov_sayt_4.jpg`,
-      `${Z}/d33/Zimniy-Lesnoy-Ostrov.jpg`,
+      `${Z}/573/sy6nl4j3q0rh0mbc8l3m7k4ztfn6e3pw/DJI_0350.jpg`,
+      `${R}/d33/qsp4bk8gq4r54j7p3nj1cnu85se27zzm/1920_1080_240cd750bba9870f18aada2478b24840a/Zimniy-Lesnoy-Ostrov.jpg`,
+      `${R}/9b7/fja2kdjdam4qd7jawl0qx6m0dctly404/1920_1080_240cd750bba9870f18aada2478b24840a/IMG_8275.JPG`,
+      `${R}/ba7/q9nu4p37hn1b75fhsgoe1n9v2n9obcpu/1920_1080_240cd750bba9870f18aada2478b24840a/IMG_9751-kopiya.jpg`,
+      `${R}/232/86x8rhk5ys7woid3sklxewuh9kzeaov2/1920_1080_240cd750bba9870f18aada2478b24840a/IMG_9758-kopiya.jpg`,
+      `${R}/d49/tlccwnfyu7ryapz8112ac9dh07z2crfw/1920_1080_240cd750bba9870f18aada2478b24840a/IMG_9770-kopiya.jpg`,
+      `${R}/b03/ym9vub30o5wq7b2i7uvp8b6z7fadp5g1/1920_1080_240cd750bba9870f18aada2478b24840a/IMG_9752-kopiya.jpg`,
     ],
     coords: [55.2780, 37.8200],
     plots: [
@@ -103,13 +105,12 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 12,
     photos: [
-      `${Z}/cc1/DJI_0931.jpg`,
-      `${Z}/fac/DJI_0932.jpg`,
-      `${Z}/6fb/DJI_0929.jpg`,
-      `${Z}/55c/DJI_0806-kopiya.jpg`,
-      `${Z}/322/DJI_0802-kopiya.jpg`,
-      `${Z}/6e1/Novoe-Sonino_2.jpg`,
-      `${Z}/86a/Zimnee-Novoe-Sonino.jpg`,
+      `${Z}/cc1/1jbid1yrl2w7ydlpkeyuy3cuv7vaehzf/DJI_0931.jpg`,
+      `${Z}/fac/9q5mqpclj71hg1tm2wqp7kpl0axis563/DJI_0932.jpg`,
+      `${R}/6fb/ydz437tffy7djcl3ju1f32rwumwayywx/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0929.jpg`,
+      `${R}/55c/5v9bcich8cxc3l0h824op2kx3h4qu1hi/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0806-kopiya.jpg`,
+      `${R}/2bc/62zrpgvlu865w0kkku20soi8eeryg1r3/1920_1080_240cd750bba9870f18aada2478b24840a/Bez-nazvaniya.png`,
+      `${R}/f1a/p7aulzynrunis7q20gjh9rf3ay4o9s9y/1920_1080_240cd750bba9870f18aada2478b24840a/Bez-nazvaniya-_1_.png`,
     ],
     coords: [55.2600, 37.7900],
     plots: [
@@ -134,13 +135,12 @@ export const villages: Village[] = [
     areaFrom: 8,
     areaTo: 15,
     photos: [
-      `${Z}/0eb/DJI_0809.JPG`,
-      `${Z}/1b3/DJI_0822.JPG`,
-      `${Z}/a56/DJI_0805.JPG`,
-      `${Z}/c65/DJI_20.jpg`,
-      `${Z}/cac/DJI_0077_1_.jpg`,
-      `${Z}/f20/DJI_0220.jpg`,
-      `${Z}/a38/PriLesnoy-na-sayt.jpg`,
+      `${Z}/cab/eff0vp026mejxs4fu8yh9ziq2g0f2flt/prilesnoy.png`,
+      `${Z}/700/0ajolc6ml8qao1fq97djle97kbvcekbj/PriLesnoy2.jpg`,
+      `${Z}/c2a/2nxtf4bewbdxa8mdpk54xegu1diu15ju/photo_2026_04_01_17_45_46-_2_5.jpg`,
+      `${R}/6d3/12kv81skr4q140ycxrx9fc1z337r6bi8/1920_1080_240cd750bba9870f18aada2478b24840a/dd1d7f5afb5b6bf871bcde57eb3ebe9f_c73c8b55_e501_4801_879b_77e5edc22c2b.png`,
+      `${R}/2b3/x5ub3q5mdcvymd5rn2lbz2s1b9hg533b/1920_1080_240cd750bba9870f18aada2478b24840a/a80bc80a62bd623afaf8b4a435827d84_0fe75e72_48ee_4182_8d13_a9d608c13f0d.png`,
+      `${R}/1f7/zaypidk7hl8c86l2qj9hbzzp6xodxsrr/1920_1080_240cd750bba9870f18aada2478b24840a/50f761404de1668d65d8e94b874907ed_02e4e3dc_b9d3_4e6f_b713_98e02c9e38f7.png`,
     ],
     coords: [55.9800, 37.5600],
     plots: [
@@ -165,12 +165,13 @@ export const villages: Village[] = [
     areaTo: 12,
     photos: [
       `${Z}/ef6/DJI_0216.JPG`,
-      `${Z}/901/DJI_0137.jpg`,
-      `${Z}/17a/DJI_0219.JPG`,
-      `${Z}/d37/DJI_0214.JPG`,
-      `${Z}/3b0/DJI_0223.JPG`,
-      `${Z}/265/DJI_0231.JPG`,
-      `${Z}/fa5/Zimnyaya-Dachnaya-praktika-2.jpg`,
+      `${Z}/ef6/344ztapfhvhoygmkm4d6saa7udlffrkl/DJI_0216.JPG`,
+      `${R}/901/v2n5xcdq77s37px7e96evvq58z7elnpc/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0137.jpg`,
+      `${Z}/17a/mphuykdx28a1sjplwi8a7qeb4wjjxspq/DJI_0219.JPG`,
+      `${R}/d37/btuvc7u2x3znp556q75xzlc6xpg9eldw/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0214.JPG`,
+      `${R}/3b0/5ldsuff6wzdw5wqglrxeldorpemhjns2/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0223.JPG`,
+      `${Z}/265/tjp3c85dhhz6j1kcsz4vzq1443stpgfe/DJI_0231.JPG`,
+      `${R}/b2d/3h083xyzhe42hg6s20z98bf0zimdkz7m/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0139.jpg`,
     ],
     coords: [55.2200, 37.8100],
     plots: [
@@ -196,13 +197,13 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 10,
     photos: [
-      `${Z}/126/DJI_0817-kopiya.jpg`,
-      `${Z}/244/DJI_0816-kopiya.jpg`,
-      `${Z}/15d/DJI_0818-kopiya.jpg`,
-      `${Z}/bdf/DJI_0819-kopiya.jpg`,
-      `${Z}/23c/DJI_0822-kopiya.jpg`,
-      `${Z}/76f/DJI_0966.JPG`,
-      `${Z}/433/Zimniy-SHishkino-Lend.jpg`,
+      `${R}/126/h9si3zg5q10onqnz9lkz4ssw5ggsdep3/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0817-kopiya.jpg`,
+      `${R}/244/gbhpth8seea3v1d9bb7ao7suwi2z8jvj/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0816-kopiya.jpg`,
+      `${R}/15d/xxfjcx0ydznpd5iv72mflvj7u1tbzj8g/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0818-kopiya.jpg`,
+      `${R}/bdf/zvqzoclb6j1p0c1lxrtggwbm3rgza2g5/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0819-kopiya.jpg`,
+      `${R}/23c/6oxd6go00oypdm3lrjxnbsg2o9tr0j3v/1920_1080_240cd750bba9870f18aada2478b24840a/DJI_0822-kopiya.jpg`,
+      `${Z}/76f/yam1rg9wujpofejgkltw4rjcfhhzini8/DJI_0966.JPG`,
+      `${R}/433/tcj2knh4kp47y13tdklfpk1i2arhw7r3/1920_1080_240cd750bba9870f18aada2478b24840a/Zimniy-SHishkino-Lend.jpg`,
     ],
     coords: [55.2300, 37.7800],
     plots: [
@@ -226,13 +227,13 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 12,
     photos: [
-      `${Z}/051/DJI_0074.jpg`,
-      `${Z}/8b4/DJI_0852.jpg`,
-      `${Z}/021/DJI_0895.jpg`,
-      `${Z}/ae2/DJI_0254.jpg`,
-      `${Z}/867/DJI_0260.jpg`,
-      `${Z}/9f8/Triumfalnyy_8.jpg`,
-      `${Z}/90c/Triumfalnyy.jpg`,
+      `${Z}/57b/45dvtf2zr0i5b44kzzfdwvl1rqtii23s/Triumfalnyy.png`,
+      `${R}/039/l5822ecr9dxwhtmfriwf0901wcom9wgg/1920_1080_240cd750bba9870f18aada2478b24840a/Obvodka_novoe_felisovo_kopiya.jpg`,
+      `${R}/8cf/k7zdqjffkt72o28oi5ask55to5l4e23a/1920_1080_240cd750bba9870f18aada2478b24840a/2cbae0fc10181836bda454356d7d3b2f_e5a5152e_7029_4459_890c_d2daa2cb5faf.png`,
+      `${R}/d27/oaywiotjo5kekxa5d06pulh7eri3tyme/1920_1080_240cd750bba9870f18aada2478b24840a/a59307424b6034492e8615b0a776df44_70436936_aa37_41ef_b54d_521dc1ca06ea.png`,
+      `${R}/388/nyw7p6knp29gq9p7d02pj36ioml95f4g/1920_1080_240cd750bba9870f18aada2478b24840a/995075a100c922b98672fd48a5957b87_7c961efb_7e1b_44b5_9c3b_9ef063c7decc.png`,
+      `${R}/007/kllwknd6q8ngk8zboxnx23u5nm15ib8y/1920_1080_240cd750bba9870f18aada2478b24840a/aa271f511f457e45ba6caa481c882722_626a60ec_a78b_4737_a543_3975331a6859.png`,
+      `${R}/fd3/qbzm03b85ixce3s0hlz2e51x6ll0rk1d/1920_1080_240cd750bba9870f18aada2478b24840a/df645fc8ee9073f764bb36dc9ed2ce40_37bd1a99_4fbc_44e0_ae9a_9227e81ca1fa.png`,
     ],
     coords: [55.9700, 37.5400],
     plots: [
@@ -257,13 +258,13 @@ export const villages: Village[] = [
     areaFrom: 10,
     areaTo: 20,
     photos: [
-      `${Z}/bde/Riga-Les-kopiya.jpg`,
-      `${Z}/c03/DJI_0562.jpg`,
-      `${Z}/99c/DJI_0574.jpg`,
-      `${Z}/069/DJI_0648.JPG`,
-      `${Z}/2a1/DJI_0653.JPG`,
-      `${Z}/cd2/DJI_0430.JPG`,
-      `${Z}/b8d/Zimniy_RigaLes2.jpg`,
+      `${R}/bde/lfjbvf3q4mpzth033037ajfqgxlkxuy1/1920_1080_240cd750bba9870f18aada2478b24840a/Riga-Les-kopiya.jpg`,
+      `${R}/b8d/5nld7mm6whm5qgi448lrb2dq9uifxcdf/1920_1080_240cd750bba9870f18aada2478b24840a/Zimniy_RigaLes2.jpg`,
+      `${R}/ea1/0mj7rl4u2zaobg13gcgstfqkdxmt5wao/1920_1080_240cd750bba9870f18aada2478b24840a/9eea33d0b2041762178264c914e47b91_b4760c8e_559c_4aca_923b_9ccf95054824.png`,
+      `${R}/70b/wfd7p7sw9euwgv9z7ddzyj5n39siq0cj/1920_1080_240cd750bba9870f18aada2478b24840a/46296911583a728a4613cd4d4986d165_d42a8dba_9a1c_4e55_ae3e_db0e1f84a713.png`,
+      `${R}/e34/nn1y15d1eizannx5uyj8k1zzu6anhyxg/1920_1080_240cd750bba9870f18aada2478b24840a/9b99ec47d5574c1a106f8638e7481114_8f0dab59_22f4_40f8_8d1e_01ace6dab987.png`,
+      `${R}/042/tmdsu2k25p6bazjl4xw12m9fsh2hpstu/1920_1080_240cd750bba9870f18aada2478b24840a/0024b3933e853df33c878087f076c21e_b630423b_ebf3_4244_bc51_174f7e4f3635.png`,
+      `${R}/582/x6aplfvgaikefuzkbesgg1sty2lm8idk/1920_1080_240cd750bba9870f18aada2478b24840a/b8b89f2612a3d9b25350a23d781c777f_535c409e_8f7c_41c1_a5cd_ed477b0c22cb.png`,
     ],
     coords: [55.8100, 36.9800],
     plots: [

@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "zemexx.ru",
       },
+      {
+        protocol: "http",
+        hostname: "zemexx.ru",
+      },
     ],
   },
 };
