@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Village {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  direction   String
+  distance    Int
+  readiness   Int
+  description String?  @db.Text
+  features    String[]
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  plots       Plot[]
+  reviews     Review[]
+}
+
+model Plot {
+  id            Int        @id @default(autoincrement())
+  villageId     Int
+  village       Village    @relation(fields: [villageId], references: [id])
+  number        String
+  area          Float
+  price         Int
+  pricePerSotka Int
+  status        PlotStatus @default(AVAILABLE)
+  category      String     @default("ИЖС")
+  features      String[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Lead {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String?
+  type      LeadType
+  message   String?  @db.Text
+  villageId Int?
+  plotId    Int?
+  source    String?
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  name      String
+  text      String   @db.Text
+  rating    Int      @default(5)
+  villageId Int?
+  village   Village? @relation(fields: [villageId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+enum PlotStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum LeadType {
+  VIEWING
+  PRESENTATION
+  MORTGAGE
+  BOOKING
+  CALLBACK
+}

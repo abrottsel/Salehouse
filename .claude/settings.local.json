@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:zemexx.ru)",
+      "WebSearch",
+      "Bash(brew install:*)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(rm -rf node_modules/.cache)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
