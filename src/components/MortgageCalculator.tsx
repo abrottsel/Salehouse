@@ -50,7 +50,7 @@ export default function MortgageCalculator() {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="lg:grid lg:grid-cols-5">
             {/* Inputs */}
             <div className="lg:col-span-3 p-6 lg:p-8">
@@ -157,39 +157,42 @@ export default function MortgageCalculator() {
               </div>
             </div>
 
-            {/* Results */}
-            <div className="lg:col-span-2 bg-green-600 p-6 lg:p-8 text-white flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-6">
-                  <Calculator className="w-5 h-5" />
-                  <span className="font-medium">Результат расчёта</span>
-                </div>
+            {/* Results — v3 Stitch inspired: big number, premium green panel */}
+            <div className="lg:col-span-2 bg-green-600 p-8 lg:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+              {/* Decorative blur orb */}
+              <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="mb-6">
-                  <div className="text-green-200 text-sm mb-1">
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-8 text-green-100">
+                  <Calculator className="w-4 h-4" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em]">
                     Ежемесячный платёж
-                  </div>
-                  <div className="text-3xl lg:text-4xl font-bold">
-                    {formatPrice(result.monthlyPayment)}
-                  </div>
+                  </span>
                 </div>
 
-                <div className="space-y-3">
+                <div className="text-4xl lg:text-6xl font-black tracking-tight mb-2 leading-none">
+                  {formatPrice(result.monthlyPayment)}
+                </div>
+                <p className="text-green-100 text-xs mb-8">
+                  при ставке {rate}% на {years} лет
+                </p>
+
+                <div className="space-y-3 pt-6 border-t border-white/15">
                   <div className="flex justify-between text-sm">
-                    <span className="text-green-200">Сумма кредита</span>
-                    <span className="font-medium">
+                    <span className="text-green-100">Сумма кредита</span>
+                    <span className="font-semibold">
                       {formatPrice(result.loanAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-green-200">Общая выплата</span>
-                    <span className="font-medium">
+                    <span className="text-green-100">Общая выплата</span>
+                    <span className="font-semibold">
                       {formatPrice(result.totalPayment)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-green-200">Переплата</span>
-                    <span className="font-medium">
+                    <span className="text-green-100">Переплата</span>
+                    <span className="font-semibold">
                       {formatPrice(result.overpayment)}
                     </span>
                   </div>
@@ -198,11 +201,14 @@ export default function MortgageCalculator() {
 
               <a
                 href="#contacts"
-                className="mt-6 inline-flex items-center justify-center gap-2 bg-white text-green-700 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition-colors w-full"
+                className="relative z-10 mt-8 inline-flex items-center justify-center gap-2 bg-white text-green-700 px-6 py-4 rounded-xl font-bold hover:bg-green-50 transition-all shadow-xl hover:shadow-2xl w-full"
               >
                 Рассчитать ипотеку
                 <ArrowRight className="w-4 h-4" />
               </a>
+              <p className="relative z-10 mt-3 text-[10px] text-center text-green-100/70 uppercase tracking-widest">
+                Предварительный расчёт, не публичная оферта
+              </p>
             </div>
           </div>
         </div>

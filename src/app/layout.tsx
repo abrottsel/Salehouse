@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import AIChatWidget from "@/components/AIChatWidget";
+import { FavoritesProvider } from "@/components/FavoritesProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,7 +35,10 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-white text-gray-900 font-sans antialiased">
-        {children}
+        <FavoritesProvider>
+          {children}
+          <AIChatWidget />
+        </FavoritesProvider>
       </body>
     </html>
   );

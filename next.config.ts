@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "http",
+        hostname: "zemexx.ru",
+      },
+      {
+        protocol: "https",
+        hostname: "zemexx.ru",
+      },
     ],
   },
 };

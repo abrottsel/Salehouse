@@ -1,100 +1,535 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
-import { MapPin, Ruler, ArrowRight, SlidersHorizontal } from "lucide-react";
+import {
+  MapPin,
+  Ruler,
+  ArrowRight,
+  SlidersHorizontal,
+  ImageOff,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  Check,
+} from "lucide-react";
 import { villages } from "@/lib/data";
+import FavoriteHeart from "./FavoriteHeart";
+import RangeSlider from "./RangeSlider";
 
-const directions = ["Все", "Каширское шоссе", "Симферопольское шоссе", "Дмитровское шоссе", "Новорижское шоссе"];
+const directions = [
+  "Все",
+  "Каширское шоссе",
+  "Симферопольское шоссе",
+  "Дмитровское шоссе",
+  "Новорижское шоссе",
+];
+
+const INITIAL_VISIBLE = 12;
+
+/* ─── data-driven bounds, rounded to nice values ─── */
+const PRICE_STEP = 10000;
+const AREA_STEP = 0.5;
+
+const PRICE_MIN =
+  Math.floor(Math.min(...villages.map((v) => v.priceFrom)) / PRICE_STEP) *
+  PRICE_STEP;
+const PRICE_MAX =
+  Math.ceil(Math.max(...villages.map((v) => v.priceFrom)) / PRICE_STEP) *
+  PRICE_STEP;
+
+const AREA_MIN = Math.floor(Math.min(...villages.map((v) => v.areaFrom)));
+const AREA_MAX = Math.ceil(Math.max(...villages.map((v) => v.areaTo)));
+
+function formatPrice(n: number): string {
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2)} млн ₽`;
+  }
+  return `${Math.round(n / 1000)} тыс ₽`;
+}
+
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+/* ─────────────────────── filter chip (popover button) ─────────────────────── */
+
+interface FilterChipProps {
+  label: string;
+  value: string | null;
+  placeholder: string;
+  active: boolean;
+  children: (close: () => void) => React.ReactNode;
+}
+
+function FilterChip({
+  label,
+  value,
+  placeholder,
+  active,
+  children,
+}: FilterChipProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`group inline-flex items-center gap-2 h-10 pl-4 pr-3 rounded-full border text-sm font-medium transition-all ${
+          active
+            ? "bg-green-50 border-green-300 text-green-800 hover:bg-green-100"
+            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-sm"
+        } ${open ? "ring-2 ring-green-200" : ""}`}
+      >
+        <span className={`text-xs ${active ? "text-green-600" : "text-gray-400"}`}>
+          {label}:
+        </span>
+        <span className="font-semibold whitespace-nowrap">
+          {value ?? placeholder}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 transition-transform ${
+            open ? "rotate-180" : ""
+          } ${active ? "text-green-600" : "text-gray-400"}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-2 z-30 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+          {children(() => setOpen(false))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────── range filter w/ inputs ─────────────────────── */
+
+interface RangeFilterProps {
+  label: string;
+  suffix: string;
+  min: number;
+  max: number;
+  step: number;
+  value: [number, number];
+  onChange: (v: [number, number]) => void;
+  /** how to render a number in the input field */
+  format?: (n: number) => string;
+  /** how to parse a string back into a number */
+  parse?: (s: string) => number;
+}
+
+function RangeFilter({
+  label,
+  suffix,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  format = (n) => String(n),
+  parse = (s) => Number(s.replace(/\s/g, "").replace(",", ".")),
+}: RangeFilterProps) {
+  const [minDraft, setMinDraft] = useState<string>(format(value[0]));
+  const [maxDraft, setMaxDraft] = useState<string>(format(value[1]));
+
+  // Sync drafts when external value changes (e.g. slider, reset)
+  React.useEffect(() => {
+    setMinDraft(format(value[0]));
+    setMaxDraft(format(value[1]));
+  }, [value, format]);
+
+  const commitMin = () => {
+    const parsed = parse(minDraft);
+    if (!isFinite(parsed)) {
+      setMinDraft(format(value[0]));
+      return;
+    }
+    const clamped = Math.max(min, Math.min(parsed, value[1] - step));
+    onChange([clamped, value[1]]);
+    setMinDraft(format(clamped));
+  };
+
+  const commitMax = () => {
+    const parsed = parse(maxDraft);
+    if (!isFinite(parsed)) {
+      setMaxDraft(format(value[1]));
+      return;
+    }
+    const clamped = Math.min(max, Math.max(parsed, value[0] + step));
+    onChange([value[0], clamped]);
+    setMaxDraft(format(clamped));
+  };
+
+  return (
+    <div className="p-4 w-[340px]">
+      <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+        {label}
+      </div>
+
+      <RangeSlider
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={onChange}
+      />
+
+      <div className="flex items-center gap-2 mt-5">
+        <NumberField
+          aria-label="От"
+          prefix="от"
+          suffix={suffix}
+          value={minDraft}
+          onChange={setMinDraft}
+          onCommit={commitMin}
+        />
+        <div className="text-gray-300 shrink-0 text-xs">—</div>
+        <NumberField
+          aria-label="До"
+          prefix="до"
+          suffix={suffix}
+          value={maxDraft}
+          onChange={setMaxDraft}
+          onCommit={commitMax}
+        />
+      </div>
+    </div>
+  );
+}
+
+function NumberField({
+  prefix,
+  suffix,
+  value,
+  onChange,
+  onCommit,
+  ...rest
+}: {
+  prefix: string;
+  suffix: string;
+  value: string;
+  onChange: (v: string) => void;
+  onCommit: () => void;
+} & React.AriaAttributes) {
+  return (
+    <label
+      className="flex-1 min-w-0 flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 focus-within:border-green-500 focus-within:bg-white transition-colors cursor-text"
+      {...rest}
+    >
+      <span className="text-[10px] uppercase tracking-wider text-gray-400 shrink-0">
+        {prefix}
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        size={1}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onCommit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        className="flex-1 min-w-0 w-full bg-transparent outline-none text-sm font-semibold text-gray-900 text-right tabular-nums"
+      />
+      <span className="text-[10px] text-gray-400 shrink-0">{suffix}</span>
+    </label>
+  );
+}
 
 export default function Catalog() {
   const [activeDirection, setActiveDirection] = useState("Все");
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    PRICE_MIN,
+    PRICE_MAX,
+  ]);
+  const [areaRange, setAreaRange] = useState<[number, number]>([
+    AREA_MIN,
+    AREA_MAX,
+  ]);
+  const [expanded, setExpanded] = useState(false);
 
-  const filtered = activeDirection === "Все"
-    ? villages
-    : villages.filter((v) => v.direction === activeDirection);
+  const filtered = useMemo(() => {
+    return villages.filter((v) => {
+      if (activeDirection !== "Все" && v.direction !== activeDirection)
+        return false;
+      if (v.priceFrom < priceRange[0] || v.priceFrom > priceRange[1])
+        return false;
+      // overlap test for area range
+      if (v.areaTo < areaRange[0] || v.areaFrom > areaRange[1]) return false;
+      return true;
+    });
+  }, [activeDirection, priceRange, areaRange]);
+
+  const hasMore = filtered.length > INITIAL_VISIBLE;
+  const visible = expanded ? filtered : filtered.slice(0, INITIAL_VISIBLE);
+  const hiddenCount = filtered.length - INITIAL_VISIBLE;
+
+  const isPriceFiltered =
+    priceRange[0] !== PRICE_MIN || priceRange[1] !== PRICE_MAX;
+  const isAreaFiltered =
+    areaRange[0] !== AREA_MIN || areaRange[1] !== AREA_MAX;
+  const isAnyFilterActive =
+    activeDirection !== "Все" || isPriceFiltered || isAreaFiltered;
+
+  const handleDirectionChange = (dir: string) => {
+    setActiveDirection(dir);
+    setExpanded(false);
+  };
+
+  const handlePriceChange = (v: [number, number]) => {
+    setPriceRange(v);
+    setExpanded(false);
+  };
+
+  const handleAreaChange = (v: [number, number]) => {
+    setAreaRange(v);
+    setExpanded(false);
+  };
+
+  const resetFilters = () => {
+    setActiveDirection("Все");
+    setPriceRange([PRICE_MIN, PRICE_MAX]);
+    setAreaRange([AREA_MIN, AREA_MAX]);
+    setExpanded(false);
+  };
 
   return (
-    <section id="catalog" className="py-20 lg:py-28 bg-gray-50">
+    <section id="catalog" className="py-10 lg:py-14 bg-gray-50 scroll-mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-5">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             Наши посёлки
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base text-gray-600 max-w-2xl mx-auto">
             Выберите идеальный посёлок по направлению, расстоянию и бюджету.
             Все участки — категория ИЖС.
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {directions.map((dir) => (
+        {/* Filters: compact chip bar (Cian/Avito style) */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <FilterChip
+            label="Направление"
+            value={activeDirection !== "Все" ? activeDirection : null}
+            placeholder="Любое"
+            active={activeDirection !== "Все"}
+          >
+            {(close) => (
+              <div className="py-1 min-w-[220px]">
+                {directions.map((dir) => {
+                  const selected = activeDirection === dir;
+                  return (
+                    <button
+                      key={dir}
+                      onClick={() => {
+                        handleDirectionChange(dir);
+                        close();
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
+                        selected
+                          ? "bg-green-50 text-green-700 font-semibold"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span>{dir}</span>
+                      {selected && <Check className="w-4 h-4 text-green-600" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </FilterChip>
+
+          <FilterChip
+            label="Цена"
+            value={
+              isPriceFiltered
+                ? `${formatPrice(priceRange[0])} — ${formatPrice(priceRange[1])}`
+                : null
+            }
+            placeholder="Любая"
+            active={isPriceFiltered}
+          >
+            {() => (
+              <RangeFilter
+                label="Цена за сотку"
+                suffix="₽"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={PRICE_STEP}
+                value={priceRange}
+                onChange={handlePriceChange}
+                format={(n) => n.toLocaleString("ru-RU")}
+                parse={(s) => Number(s.replace(/\s/g, ""))}
+              />
+            )}
+          </FilterChip>
+
+          <FilterChip
+            label="Площадь"
+            value={
+              isAreaFiltered
+                ? `${areaRange[0]} — ${areaRange[1]} соток`
+                : null
+            }
+            placeholder="Любая"
+            active={isAreaFiltered}
+          >
+            {() => (
+              <RangeFilter
+                label="Площадь участка"
+                suffix="соток"
+                min={AREA_MIN}
+                max={AREA_MAX}
+                step={AREA_STEP}
+                value={areaRange}
+                onChange={handleAreaChange}
+              />
+            )}
+          </FilterChip>
+
+          {isAnyFilterActive && (
             <button
-              key={dir}
-              onClick={() => setActiveDirection(dir)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeDirection === dir
-                  ? "bg-green-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-green-50 border border-gray-200"
-              }`}
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1.5 px-3 h-10 rounded-full text-xs font-semibold text-gray-500 hover:text-green-700 hover:bg-green-50 transition-colors"
             >
-              {dir}
+              <RotateCcw className="w-3.5 h-3.5" />
+              Сбросить
             </button>
-          ))}
+          )}
+
+          <div className="basis-full md:basis-auto md:ml-2 flex justify-center">
+            <div className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-600/20 ring-1 ring-green-400/40">
+              <span className="text-base font-extrabold tabular-nums leading-none">
+                {filtered.length}
+              </span>
+              <span className="text-sm font-semibold leading-none">
+                {plural(filtered.length, "посёлок", "посёлка", "посёлков")}
+              </span>
+            </div>
+          </div>
         </div>
 
+        {/* Empty state */}
+        {filtered.length === 0 && (
+          <div className="max-w-md mx-auto text-center py-16">
+            <SlidersHorizontal className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600 font-semibold mb-1">
+              По вашим фильтрам ничего не нашлось
+            </p>
+            <p className="text-sm text-gray-500 mb-5">
+              Попробуйте расширить диапазон цены или площади.
+            </p>
+            <button
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Сбросить фильтры
+            </button>
+          </div>
+        )}
+
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((village) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {visible.map((village) => (
             <a
               key={village.id}
               href={`/village/${village.slug}`}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group block"
             >
-              {/* Image */}
-              <div className="relative h-48 overflow-hidden">
-                <Image
-                  src={village.photos[0]}
-                  alt={village.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                />
-                {village.readiness === 100 && (
-                  <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Готовый
-                  </span>
+              {/* Image — 5:4, photo-dominant */}
+              <div className="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-green-100 via-emerald-50 to-green-200">
+                {village.photos[0] ? (
+                  <Image
+                    src={village.photos[0]}
+                    alt={village.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-green-700/60 p-6 text-center">
+                    <ImageOff className="w-10 h-10 mb-3" />
+                    <span className="text-xs font-semibold uppercase tracking-widest">
+                      Фото скоро
+                    </span>
+                  </div>
                 )}
-                {village.readiness < 100 && (
-                  <span className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    Готовность {village.readiness}%
-                  </span>
-                )}
-                <span className="absolute top-3 right-3 bg-white/90 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">
-                  {village.plotsAvailable} уч. свободно
-                </span>
+                {/* Top gradient info bar (left side) + heart (right) */}
+                <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/70 via-black/30 to-transparent pb-10 pt-3 px-3">
+                  <div className="flex items-start justify-between gap-2 text-white">
+                    <div className="flex flex-col gap-1.5 items-start pt-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            village.readiness === 100
+                              ? "bg-green-400"
+                              : "bg-amber-400"
+                          } shadow-[0_0_0_3px_rgba(255,255,255,0.15)]`}
+                        />
+                        <span className="text-xs font-semibold tracking-wide">
+                          {village.readiness === 100
+                            ? "Готовый"
+                            : `Готовность ${village.readiness}%`}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-1 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                        <span className="text-sm font-bold leading-none">
+                          {village.plotsAvailable}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider opacity-90 leading-none">
+                          свободно
+                        </span>
+                      </div>
+                    </div>
+                    <div className="z-10">
+                      <FavoriteHeart kind="village" slug={village.slug} variant="light" />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">
+              <div className="px-4 pt-3 pb-4">
+                <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-green-600 transition-colors">
                   {village.name}
                 </h3>
-                <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
-                  <MapPin className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1 text-gray-500 text-xs mt-0.5 mb-2.5">
+                  <MapPin className="w-3 h-3" />
                   {village.direction}, {village.distance} км от МКАД
                 </div>
 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {village.description}
-                </p>
-
                 {/* Features */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
+                <div className="flex flex-wrap gap-1 mb-2.5">
                   {village.features.slice(0, 4).map((f) => (
                     <span
                       key={f}
-                      className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded"
+                      className="text-[11px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded"
                     >
                       {f}
                     </span>
@@ -102,23 +537,25 @@ export default function Catalog() {
                 </div>
 
                 {/* Area */}
-                <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
-                  <Ruler className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                  <Ruler className="w-3 h-3" />
                   от {village.areaFrom} до {village.areaTo} соток
                 </div>
 
                 {/* Price and CTA */}
-                <div className="flex items-end justify-between pt-4 border-t border-gray-100">
-                  <div>
-                    <div className="text-xs text-gray-500">от</div>
-                    <div className="text-xl font-bold text-green-600">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="leading-tight">
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider">
+                      от
+                    </div>
+                    <div className="text-lg font-extrabold text-green-600">
                       {village.priceFrom.toLocaleString("ru-RU")} &#8381;
                     </div>
-                    <div className="text-xs text-gray-500">за сотку</div>
+                    <div className="text-[10px] text-gray-400">за сотку</div>
                   </div>
-                  <span className="inline-flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium group-hover:bg-green-700 transition-colors">
+                  <span className="inline-flex items-center gap-1 bg-green-600 text-white px-3.5 py-2 rounded-lg text-xs font-semibold group-hover:bg-green-700 transition-colors">
                     Подробнее
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
               </div>
@@ -126,8 +563,38 @@ export default function Catalog() {
           ))}
         </div>
 
+        {/* Expand / collapse */}
+        {hasMore && (
+          <div className="flex flex-col items-center mt-10">
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="group inline-flex items-center gap-3 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-400 text-gray-900 hover:text-green-700 px-7 py-3.5 rounded-full font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
+                  Свернуть каталог
+                </>
+              ) : (
+                <>
+                  <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-green-600 text-white text-xs font-bold px-2">
+                    +{hiddenCount}
+                  </span>
+                  Показать все посёлки
+                  <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
+                </>
+              )}
+            </button>
+            {!expanded && (
+              <p className="mt-3 text-xs text-gray-500">
+                Показано {INITIAL_VISIBLE} из {filtered.length} посёлков
+              </p>
+            )}
+          </div>
+        )}
+
         {/* CTA Banner */}
-        <div className="mt-12 bg-green-600 rounded-2xl p-8 lg:p-12 text-center text-white">
+        <div className="mt-16 bg-green-600 rounded-2xl p-8 lg:p-12 text-center text-white">
           <h3 className="text-2xl font-bold mb-3">
             Не нашли подходящий посёлок?
           </h3>

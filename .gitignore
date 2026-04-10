@@ -36,6 +36,19 @@ yarn-error.log*
 # vercel
 .vercel
 
+# pm2 / runtime logs
+/logs
+*.log
+
+# heavy assets — uploaded to the server via rsync, not via git
+/public/villages/
+
+# WIP design notes / scratch
+/.stitch/
+
+# Source photos (~2 GB) — local working folder, never deploy
+/Проекты с фото/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -14,6 +14,8 @@ import {
   PhoneCall,
 } from "lucide-react";
 import Logo from "./Logo";
+import FavoritesCounter from "./FavoritesCounter";
+import SiteSearch from "./SiteSearch";
 
 const navLinks = [
   { href: "#advantages", label: "Преимущества", Icon: Star },
@@ -37,22 +39,26 @@ export default function Header() {
             <Logo />
           </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1.5 flex-1 justify-center">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="group flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-gray-800 rounded-lg border border-green-200 bg-green-50/60 hover:border-green-500 hover:bg-green-100 hover:text-green-800 hover:shadow-md hover:shadow-green-200/50 transition-all duration-200 whitespace-nowrap"
-              >
-                <link.Icon className="w-3.5 h-3.5 text-green-500 group-hover:text-green-600 transition-colors shrink-0" />
-                {link.label}
-              </a>
-            ))}
+          {/* Desktop Nav — pill container, v3 Stitch-inspired */}
+          <nav className="hidden lg:flex items-center flex-1 justify-center">
+            <div className="flex items-center bg-gray-100/80 rounded-full p-1 gap-0.5 border border-gray-200/80">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 rounded-full hover:bg-white hover:text-green-700 hover:shadow-sm transition-all duration-200 whitespace-nowrap"
+                >
+                  <link.Icon className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                  {link.label}
+                </a>
+              ))}
+            </div>
           </nav>
 
           {/* Phone + CTA */}
           <div className="hidden md:flex items-center gap-2 shrink-0 ml-4">
+            <SiteSearch />
+            <FavoritesCounter />
             <a
               href="tel:+79859052555"
               className="flex items-center gap-1.5 text-gray-800 font-bold hover:text-green-600 transition-colors"
@@ -72,6 +78,12 @@ export default function Header() {
 
           {/* Mobile toggle */}
           <div className="lg:hidden ml-auto flex items-center gap-2">
+            <div className="md:hidden">
+              <SiteSearch />
+            </div>
+            <div className="md:hidden">
+              <FavoritesCounter />
+            </div>
             <a href="tel:+79859052555" className="md:hidden w-9 h-9 bg-green-100 rounded-full flex items-center justify-center">
               <Phone className="w-4 h-4 text-green-600" />
             </a>

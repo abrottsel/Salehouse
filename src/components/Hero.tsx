@@ -52,29 +52,38 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Trust badges */}
+          {/* Trust badges — v3 Stitch inspired glass-morphism */}
           <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
-              <Shield className="w-8 h-8 text-green-300 flex-shrink-0" />
-              <div>
-                <div className="text-white font-medium text-sm">Юридическая чистота</div>
-                <div className="text-white/60 text-xs">Гарантия по договору</div>
+            {[
+              {
+                Icon: Shield,
+                title: "Юридическая чистота",
+                sub: "Гарантия по договору",
+              },
+              {
+                Icon: TreePine,
+                title: "30+ посёлков",
+                sub: "В разных направлениях",
+              },
+              {
+                Icon: Home,
+                title: "Категория ИЖС",
+                sub: "Для постоянного проживания",
+              },
+            ].map(({ Icon, title, sub }) => (
+              <div
+                key={title}
+                className="group flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-green-400/20 group-hover:border-green-300/40 transition-colors">
+                  <Icon className="w-5 h-5 text-green-300" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">{title}</div>
+                  <div className="text-white/60 text-xs">{sub}</div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
-              <TreePine className="w-8 h-8 text-green-300 flex-shrink-0" />
-              <div>
-                <div className="text-white font-medium text-sm">30+ посёлков</div>
-                <div className="text-white/60 text-xs">В разных направлениях</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
-              <Home className="w-8 h-8 text-green-300 flex-shrink-0" />
-              <div>
-                <div className="text-white font-medium text-sm">Категория ИЖС</div>
-                <div className="text-white/60 text-xs">Для постоянного проживания</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

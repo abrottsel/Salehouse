@@ -48,19 +48,24 @@ export default function Reviews() {
           ))}
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Stats — v3 Stitch-inspired: white cards with rounded-3xl and uppercase captions */}
+        <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {[
             { value: "30+", label: "посёлков в каталоге" },
             { value: "100%", label: "юридическая чистота" },
             { value: "0 \u20BD", label: "скрытых платежей" },
             { value: "24/7", label: "охрана посёлков" },
           ].map((stat, i) => (
-            <div key={i} className="text-center p-6 rounded-2xl bg-green-50">
-              <div className="text-3xl lg:text-4xl font-bold text-green-600 mb-1">
+            <div
+              key={i}
+              className="p-6 lg:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-green-200 transition-all"
+            >
+              <div className="text-4xl lg:text-5xl font-black text-green-600 mb-2 leading-none tracking-tight">
                 {stat.value}
               </div>
-              <div className="text-gray-600 text-sm">{stat.label}</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
