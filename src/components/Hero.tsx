@@ -5,7 +5,7 @@ import { ArrowRight, Shield, TreePine, Home } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section className="relative min-h-svh flex items-start pt-16 sm:items-center sm:pt-20 overflow-hidden">
       {/* Background Image */}
       <Image
         src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=1080&fit=crop"
@@ -18,16 +18,10 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 lg:py-24">
         <div className="max-w-3xl">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 px-4 py-2 rounded-full text-sm mb-8 border border-white/20">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Готовые посёлки с коммуникациями в Подмосковье
-          </div>
-
           {/* H1 */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-4 sm:mb-6">
             Ваш участок
             <br />
             <span className="bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
@@ -35,14 +29,14 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-8 sm:mb-10 max-w-2xl leading-relaxed">
             От 180 000 руб. за сотку. Готовые посёлки с газом, электричеством
             и асфальтированными дорогами. Юридическая чистота гарантирована.
             Рассрочка без переплат.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-12">
             <a
               href="#catalog"
               className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-colors shadow-lg"
@@ -59,7 +53,7 @@ export default function Hero() {
           </div>
 
           {/* Trust badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
               <Shield className="w-8 h-8 text-green-300 flex-shrink-0" />
               <div>
