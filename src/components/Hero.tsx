@@ -8,7 +8,7 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background Image */}
       <Image
-        src="http://zemexx.ru/upload/iblock/14e/hu6cot1wpnrosuzgm4jgeh2d1evnky0w/DJI_0316.jpg"
+        src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=1080&fit=crop"
         alt="Коттеджный посёлок в Подмосковье — вид с высоты"
         fill
         className="object-cover"

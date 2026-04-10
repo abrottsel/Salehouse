@@ -8,6 +8,7 @@ interface Props {
   plots: Plot[];
   villageName: string;
   priceFrom: number;
+  embedded?: boolean;
 }
 
 type SortKey = "number" | "area" | "price";
@@ -25,7 +26,7 @@ const statusColors: Record<string, string> = {
   sold: "bg-gray-100 text-gray-500",
 };
 
-export default function PlotsList({ plots, villageName, priceFrom }: Props) {
+export default function PlotsList({ plots, villageName, priceFrom, embedded }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("number");
   const [sortAsc, setSortAsc] = useState(true);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
@@ -50,14 +51,9 @@ export default function PlotsList({ plots, villageName, priceFrom }: Props) {
     return sortAsc ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
   });
 
-  return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Участки в {villageName}
-        </h2>
-
-        {/* Filters */}
+  const content = (
+    <>
+      {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-6">
           {(["all", "available", "reserved"] as FilterStatus[]).map((status) => (
             <button
@@ -154,6 +150,20 @@ export default function PlotsList({ plots, villageName, priceFrom }: Props) {
             </div>
           )}
         </div>
+      </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="py-12 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Участки в {villageName}
+        </h2>
+        {content}
       </div>
     </section>
   );

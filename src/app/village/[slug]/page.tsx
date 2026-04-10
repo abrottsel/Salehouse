@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { villages } from "@/lib/data";
 import VillageGallery from "@/components/VillageGallery";
-import PlotsList from "@/components/PlotsList";
+import PlotsSection from "@/components/PlotsSection";
 import VillageMap from "@/components/VillageMap";
 import { MapPin, ArrowLeft, Shield, Zap, Car } from "lucide-react";
 
@@ -123,7 +123,7 @@ export default async function VillagePage({ params }: Props) {
 
       {/* Plots */}
       {village.plots && village.plots.length > 0 && (
-        <PlotsList plots={village.plots} villageName={village.name} priceFrom={village.priceFrom} />
+        <PlotsSection plots={village.plots} villageName={village.name} priceFrom={village.priceFrom} />
       )}
 
       {/* Map */}

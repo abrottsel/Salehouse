@@ -7,9 +7,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company */}
           <div>
-            <div className="flex items-baseline gap-0 mb-4">
-              <span className="text-2xl font-extrabold text-white tracking-tight leading-none">Зем</span>
-              <span className="text-3xl font-black text-green-400 leading-none">+</span>
+            <div className="flex items-center gap-2 mb-4">
+              <svg viewBox="0 0 44 40" className="w-9 h-8" fill="none">
+                <path d="M22 2L2 18h6v20h28V18h6L22 2z" fill="#22c55e" />
+                <rect x="14" y="22" width="16" height="4" rx="2" fill="white" />
+                <rect x="20" y="16" width="4" height="16" rx="2" fill="white" />
+              </svg>
+              <span className="text-xl font-extrabold text-white tracking-tight">ЗемПлюс</span>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               ЗемПлюс — продажа земельных участков в Подмосковье.
