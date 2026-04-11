@@ -39,40 +39,43 @@ export default function Header() {
             <Logo />
           </a>
 
-          {/* Desktop Nav — pill container, v3 Stitch-inspired */}
-          <nav className="hidden lg:flex items-center flex-1 justify-center">
+          {/* Desktop Nav — pill container, icon-only on lg, text on xl+ */}
+          <nav className="hidden lg:flex items-center flex-1 justify-center min-w-0">
             <div className="flex items-center bg-gray-100/80 rounded-full p-1 gap-0.5 border border-gray-200/80">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 rounded-full hover:bg-white hover:text-green-700 hover:shadow-sm transition-all duration-200 whitespace-nowrap"
+                  title={link.label}
+                  className="group flex items-center gap-1 xl:gap-1.5 px-2 xl:px-2.5 py-1.5 text-xs font-semibold text-gray-700 rounded-full hover:bg-white hover:text-green-700 hover:shadow-sm transition-all duration-200 whitespace-nowrap"
                 >
                   <link.Icon className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                  {link.label}
+                  <span className="hidden xl:inline">{link.label}</span>
                 </a>
               ))}
             </div>
           </nav>
 
           {/* Phone + CTA */}
-          <div className="hidden md:flex items-center gap-2 shrink-0 ml-4">
+          <div className="hidden md:flex items-center gap-1.5 shrink-0 ml-2 lg:ml-4">
             <SiteSearch />
             <FavoritesCounter />
             <a
               href="tel:+79859052555"
               className="flex items-center gap-1.5 text-gray-800 font-bold hover:text-green-600 transition-colors"
+              aria-label="Позвонить +7 (985) 905-25-55"
             >
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <Phone className="w-4 h-4 text-green-600" />
               </div>
-              <span className="hidden xl:inline text-xs">+7 (985) 905-25-55</span>
+              <span className="hidden 2xl:inline text-xs">+7 (985) 905-25-55</span>
             </a>
             <a
               href="#contacts"
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs shadow-sm shadow-green-600/25 whitespace-nowrap"
             >
-              Записаться на просмотр
+              <span className="2xl:hidden">Записаться</span>
+              <span className="hidden 2xl:inline">Записаться на просмотр</span>
             </a>
           </div>
 

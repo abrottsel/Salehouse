@@ -2,17 +2,34 @@
 
 import Image from "next/image";
 import { ArrowRight, Shield, TreePine, Home } from "lucide-react";
+import { villages } from "@/lib/data";
+
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+// Dynamic stats — auto-update when villages data changes
+const VILLAGE_COUNT = villages.length;
+const PLOTS_AVAILABLE = villages.reduce((s, v) => s + (v.plotsAvailable || 0), 0);
+const PLOTS_AVAILABLE_FMT = PLOTS_AVAILABLE.toLocaleString("ru-RU");
+const VILLAGE_LABEL = plural(VILLAGE_COUNT, "посёлок", "посёлка", "посёлков");
 
 export default function Hero() {
   return (
     <section className="relative min-h-svh flex items-start pt-16 sm:items-center sm:pt-20 overflow-hidden">
       {/* Background Image */}
       <Image
-        src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=1080&fit=crop"
+        src="/hero-home.jpg"
         alt="Коттеджный посёлок в Подмосковье — вид с высоты"
         fill
         className="object-cover"
         priority
+        sizes="100vw"
+        quality={85}
       />
       {/* Dark overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
@@ -52,37 +69,46 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Trust badges — v3 Stitch inspired glass-morphism */}
+          {/* Trust badges — clickable, scroll to relevant section */}
           <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-4">
             {[
               {
                 Icon: Shield,
                 title: "Юридическая чистота",
                 sub: "Гарантия по договору",
+                href: "#steps",
+                ariaLabel: "Посмотреть шаги покупки и юридические гарантии",
               },
               {
                 Icon: TreePine,
-                title: "30+ посёлков",
-                sub: "В разных направлениях",
+                title: `${VILLAGE_COUNT} ${VILLAGE_LABEL}`,
+                sub: `${PLOTS_AVAILABLE_FMT}+ свободных участков`,
+                href: "#catalog",
+                ariaLabel: "Перейти к каталогу посёлков",
               },
               {
                 Icon: Home,
                 title: "Категория ИЖС",
                 sub: "Для постоянного проживания",
+                href: "#faq",
+                ariaLabel: "Подробнее про ИЖС и прописку",
               },
-            ].map(({ Icon, title, sub }) => (
-              <div
+            ].map(({ Icon, title, sub, href, ariaLabel }) => (
+              <a
                 key={title}
-                className="group flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                href={href}
+                aria-label={ariaLabel}
+                className="group flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/20 hover:bg-white/20 hover:border-green-300/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-green-400/20 group-hover:border-green-300/40 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-green-400/25 group-hover:border-green-300/50 transition-colors">
                   <Icon className="w-5 h-5 text-green-300" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-white font-semibold text-sm">{title}</div>
                   <div className="text-white/60 text-xs">{sub}</div>
                 </div>
-              </div>
+                <ArrowRight className="w-4 h-4 text-white/40 shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-green-300 transition-all duration-300" />
+              </a>
             ))}
           </div>
         </div>

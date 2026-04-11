@@ -12,6 +12,9 @@ import {
   ChevronUp,
   RotateCcw,
   Check,
+  TreePine,
+  LayoutGrid,
+  Wallet,
 } from "lucide-react";
 import { villages } from "@/lib/data";
 import FavoriteHeart from "./FavoriteHeart";
@@ -40,6 +43,15 @@ const PRICE_MAX =
 
 const AREA_MIN = Math.floor(Math.min(...villages.map((v) => v.areaFrom)));
 const AREA_MAX = Math.ceil(Math.max(...villages.map((v) => v.areaTo)));
+
+/* ─── headline stats — auto-computed from data ─── */
+const STAT_VILLAGES = villages.length;
+const STAT_PLOTS_AVAILABLE = villages.reduce(
+  (s, v) => s + (v.plotsAvailable || 0),
+  0
+);
+const STAT_PRICE_MIN_RUB = Math.min(...villages.map((v) => v.priceFrom));
+const STAT_DIRECTIONS = new Set(villages.map((v) => v.direction)).size;
 
 function formatPrice(n: number): string {
   if (n >= 1_000_000) {
@@ -117,9 +129,25 @@ function FilterChip({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-2 z-30 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-          {children(() => setOpen(false))}
-        </div>
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="sm:hidden fixed inset-0 bg-black/30 z-40"
+            onClick={() => setOpen(false)}
+          />
+          {/* Popover */}
+          <div
+            className={
+              // Mobile: fixed bottom sheet, full width
+              "sm:absolute sm:left-0 sm:top-full sm:mt-2 " +
+              "fixed sm:static inset-x-3 bottom-3 sm:inset-auto " +
+              "z-50 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 " +
+              "overflow-hidden animate-in fade-in slide-in-from-bottom-2 sm:slide-in-from-top-1 duration-150"
+            }
+          >
+            {children(() => setOpen(false))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -184,7 +212,7 @@ function RangeFilter({
   };
 
   return (
-    <div className="p-4 w-[340px]">
+    <div className="p-4 w-full sm:w-[340px]">
       <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
         {label}
       </div>
@@ -321,14 +349,62 @@ export default function Catalog() {
   return (
     <section id="catalog" className="py-10 lg:py-14 bg-gray-50 scroll-mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-5">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Наши посёлки
+        {/* Catalog hero — dynamic stats strip */}
+        <div className="text-center mb-6">
+          {/* Uppercase pill */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <TreePine className="w-3.5 h-3.5" />
+            Каталог посёлков
+          </div>
+
+          {/* Big selling headline */}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.1] mb-4">
+            Найдите свой
+            <br className="sm:hidden" />{" "}
+            <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+              идеальный участок
+            </span>
           </h2>
-          <p className="text-base text-gray-600 max-w-2xl mx-auto">
-            Выберите идеальный посёлок по направлению, расстоянию и бюджету.
-            Все участки — категория ИЖС.
-          </p>
+
+          {/* Stat chips row — pastel, matches project palette */}
+          <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 ring-1 ring-emerald-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
+                <TreePine className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+              </div>
+              <span className="text-sm font-extrabold text-emerald-900 tabular-nums">
+                {STAT_VILLAGES}
+              </span>
+              <span className="text-xs font-medium text-emerald-700/80">
+                {plural(STAT_VILLAGES, "посёлок", "посёлка", "посёлков")}
+              </span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 bg-sky-50 ring-1 ring-sky-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+              <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center shadow-sm">
+                <LayoutGrid className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+              </div>
+              <span className="text-sm font-extrabold text-sky-900 tabular-nums">
+                {STAT_PLOTS_AVAILABLE.toLocaleString("ru-RU")}+
+              </span>
+              <span className="text-xs font-medium text-sky-700/80">
+                участков
+              </span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 bg-amber-50 ring-1 ring-amber-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+              <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center shadow-sm">
+                <Wallet className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+              </div>
+              <span className="text-xs font-medium text-amber-700/80">от</span>
+              <span className="text-sm font-extrabold text-amber-900 tabular-nums">
+                {STAT_PRICE_MIN_RUB.toLocaleString("ru-RU")} ₽
+              </span>
+              <span className="text-xs font-medium text-amber-700/80">
+                /&nbsp;сотка
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Filters: compact chip bar (Cian/Avito style) */}
@@ -593,22 +669,43 @@ export default function Catalog() {
           </div>
         )}
 
-        {/* CTA Banner */}
-        <div className="mt-16 bg-green-600 rounded-2xl p-8 lg:p-12 text-center text-white">
-          <h3 className="text-2xl font-bold mb-3">
-            Не нашли подходящий посёлок?
-          </h3>
-          <p className="text-green-100 mb-6 max-w-lg mx-auto">
-            У нас более 30 посёлков в разных направлениях. Оставьте заявку,
-            и мы подберём участок под ваши требования.
-          </p>
-          <a
-            href="#contacts"
-            className="inline-flex items-center gap-2 bg-white text-green-700 px-8 py-3 rounded-xl font-semibold hover:bg-green-50 transition-colors"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            Получить подборку участков
-          </a>
+        {/* CTA Banner — compact, horizontal on desktop */}
+        <div className="relative mt-10 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 ring-1 ring-emerald-300/70 px-5 py-5 sm:px-7 sm:py-6">
+          {/* Decorative blobs */}
+          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-emerald-400/25 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-green-400/25 blur-3xl pointer-events-none" />
+
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
+            {/* Text */}
+            <div className="text-center md:text-left min-w-0">
+              <h3 className="text-lg sm:text-xl font-black text-emerald-950 tracking-tight">
+                Не нашли подходящий посёлок?
+              </h3>
+              <p className="text-xs sm:text-sm text-emerald-900/75 mt-0.5">
+                Оставьте заявку или рассчитайте ипотеку — подберём участок под
+                ваш бюджет.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-stretch gap-2 shrink-0">
+              <a
+                href="#contacts"
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:shadow-xl hover:shadow-emerald-600/35 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+              >
+                <SlidersHorizontal className="w-4 h-4 shrink-0" />
+                Заявка
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+              </a>
+              <a
+                href="#calculator"
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-800 ring-1 ring-emerald-300 hover:ring-emerald-400 px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+              >
+                <Wallet className="w-4 h-4 shrink-0" />
+                Ипотека
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>

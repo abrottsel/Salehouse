@@ -1,95 +1,174 @@
 import {
-  Shield,
-  TreePine,
+  ShieldCheck,
   Zap,
-  Car,
   Fence,
-  Eye,
-  Droplets,
-  Sun,
+  Car,
+  Wallet,
+  BadgePercent,
+  FileCheck2,
+  Landmark,
+  PiggyBank,
+  type LucideIcon,
 } from "lucide-react";
 
-const advantages = [
+/**
+ * Advantages — "Единая сетка 8 блоков"
+ * Структура: 1 BIG / 1-1 / 1-1 / 1-1 / 1 BIG на мобиле.
+ * На десктопе: простой 4x2 grid без асимметрии.
+ *
+ * Логика: убраны дубликаты с Hero-бейджами (31 посёлок и т.д.),
+ * вместо этого — практические преимущества посёлка. Юр. чистота
+ * и ИЖС остаются как большие акцентные блоки сверху и снизу,
+ * в середине — 6 сервисных benefit'ов парами.
+ */
+
+interface Item {
+  Icon: LucideIcon;
+  title: string;
+  description: string;
+  bg: string;
+  ring: string;
+  iconBg: string;
+}
+
+const items: Item[] = [
+  // 0. BIG — Юридическая чистота (top anchor)
   {
-    icon: Shield,
+    Icon: ShieldCheck,
     title: "Юридическая чистота",
-    description:
-      "Каждый участок проходит тщательную юридическую проверку. Гарантия чистоты сделки закреплена в договоре.",
+    description: "Аудит каждого участка. Гарантия чистой сделки закреплена в договоре.",
+    bg: "bg-emerald-50",
+    ring: "ring-emerald-200/70",
+    iconBg: "bg-emerald-500",
   },
+  // 1-2. Пара: Коммуникации + Асфальт
   {
-    icon: Car,
-    title: "Асфальтированные дороги",
-    description:
-      "Дороги с твёрдым покрытием внутри посёлков и удобные подъезды от основных шоссе.",
-  },
-  {
-    icon: Fence,
-    title: "Охраняемая территория",
-    description:
-      "Круглосуточная охрана, КПП, видеонаблюдение. Ваша семья в безопасности.",
-  },
-  {
-    icon: Zap,
+    Icon: Zap,
     title: "Все коммуникации",
-    description:
-      "Газ, электричество, водоснабжение — всё подведено к участку. Начинайте строить сразу.",
+    description: "Газ, свет, вода подведены к участку.",
+    bg: "bg-yellow-50",
+    ring: "ring-yellow-200/70",
+    iconBg: "bg-yellow-500",
   },
   {
-    icon: TreePine,
-    title: "Природа рядом",
-    description:
-      "Посёлки расположены у лесов и рек. Чистый воздух и красивые виды каждый день.",
+    Icon: Car,
+    title: "Асфальт до участка",
+    description: "Твёрдое покрытие и удобные подъезды.",
+    bg: "bg-slate-50",
+    ring: "ring-slate-200/70",
+    iconBg: "bg-slate-600",
+  },
+  // 3-4. Пара: Охрана + Цены
+  {
+    Icon: Fence,
+    title: "Охрана 24/7",
+    description: "КПП, видеонаблюдение и патруль.",
+    bg: "bg-rose-50",
+    ring: "ring-rose-200/70",
+    iconBg: "bg-rose-500",
   },
   {
-    icon: Eye,
+    Icon: Wallet,
     title: "Прозрачные цены",
-    description:
-      "Никаких скрытых платежей. Стоимость фиксируется в договоре и не меняется.",
+    description: "Всё в договоре. Без скрытых платежей.",
+    bg: "bg-teal-50",
+    ring: "ring-teal-200/70",
+    iconBg: "bg-teal-500",
+  },
+  // 5-6. Пара: Рассрочка + Ипотека
+  {
+    Icon: BadgePercent,
+    title: "Рассрочка 0%",
+    description: "До 12 месяцев без переплат.",
+    bg: "bg-violet-50",
+    ring: "ring-violet-200/70",
+    iconBg: "bg-violet-500",
   },
   {
-    icon: Droplets,
-    title: "Развитая инфраструктура",
-    description:
-      "Магазины, школы, медицинские учреждения — всё в доступности от наших посёлков.",
+    Icon: Landmark,
+    title: "Ипотека в 5 банках",
+    description: "ВТБ, Сбер, Альфа, ГПБ, Россельхоз.",
+    bg: "bg-sky-50",
+    ring: "ring-sky-200/70",
+    iconBg: "bg-sky-500",
   },
+  // 7. BIG — ИЖС (bottom anchor)
   {
-    icon: Sun,
-    title: "Рассрочка без переплат",
+    Icon: FileCheck2,
+    title: "Категория ИЖС",
     description:
-      "Гибкие условия оплаты: рассрочка до 12 месяцев, программа для молодых семей.",
+      "Постоянная прописка, материнский капитал, ипотека и все государственные программы для ИЖС.",
+    bg: "bg-amber-50",
+    ring: "ring-amber-200/70",
+    iconBg: "bg-amber-500",
   },
 ];
 
+function Card({ item, big }: { item: Item; big: boolean }) {
+  return (
+    <div
+      className={`flex flex-col gap-2 rounded-2xl ${item.bg} ring-1 ${
+        item.ring
+      } cursor-default h-full ${
+        big ? "col-span-2 md:col-span-1 p-5 md:p-4" : "p-4"
+      }`}
+    >
+      <div
+        className={`rounded-xl ${item.iconBg} flex items-center justify-center shadow-sm ${
+          big ? "w-12 h-12 md:w-10 md:h-10" : "w-10 h-10"
+        }`}
+      >
+        <item.Icon
+          className={`text-white ${big ? "w-6 h-6 md:w-5 md:h-5" : "w-5 h-5"}`}
+          strokeWidth={2.5}
+        />
+      </div>
+      <h3
+        className={`font-extrabold text-gray-900 leading-tight ${
+          big ? "text-base md:text-sm" : "text-sm"
+        }`}
+      >
+        {item.title}
+      </h3>
+      <p
+        className={`text-gray-600 leading-snug ${
+          big ? "text-xs md:text-[11px]" : "text-[11px]"
+        }`}
+      >
+        {item.description}
+      </p>
+    </div>
+  );
+}
+
 export default function Advantages() {
   return (
-    <section id="advantages" className="py-20 lg:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Почему выбирают нас
+    <section id="advantages" className="py-10 lg:py-14 bg-white scroll-mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Compact header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <PiggyBank className="w-3.5 h-3.5" />
+            Наши преимущества
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1.5">
+            Всё включено{" "}
+            <span className="text-green-600">для комфортной жизни</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            ЗемПлюс — это проверенные посёлки с готовыми коммуникациями и прозрачные сделки без скрытых платежей.
+          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+            Восемь причин, почему покупка участка у нас — это спокойствие и
+            экономия.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {advantages.map((item, index) => (
-            <div
-              key={index}
-              className="group p-6 rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-lg transition-all duration-300 bg-white"
-            >
-              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-100 transition-colors">
-                <item.icon className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {item.title}
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {item.description}
-              </p>
-            </div>
-          ))}
+        {/* Unified 8-card grid
+            Mobile (grid-cols-2): first & last span 2 cols (1-2-2-2-1 layout)
+            Desktop (md:grid-cols-4): plain 4x2 grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {items.map((item, i) => {
+            const isBig = i === 0 || i === items.length - 1;
+            return <Card key={item.title} item={item} big={isBig} />;
+          })}
         </div>
       </div>
     </section>

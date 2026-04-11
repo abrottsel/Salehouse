@@ -1,73 +1,165 @@
-import { ChevronDown, HelpCircle } from "lucide-react";
+"use client";
 
-const faqItems = [
+import { useState } from "react";
+import {
+  ChevronDown,
+  HelpCircle,
+  ShieldCheck,
+  FileCheck2,
+  Landmark,
+  Home as HomeIcon,
+  Zap,
+  Undo2,
+  ScrollText,
+  BadgePercent,
+  type LucideIcon,
+} from "lucide-react";
+
+interface FaqItem {
+  q: string;
+  a: string;
+  Icon: LucideIcon;
+  bg: string;
+  ring: string;
+  iconBg: string;
+}
+
+const faqItems: FaqItem[] = [
   {
-    q: "Как проверить юридическую чистоту участка?",
+    q: "Как проверить юридическую чистоту?",
     a: "Мы прикладываем к договору выписку из ЕГРН, межевой план и справки об обременениях. Штатный юрист компании отвечает за каждую сделку. Все документы передаются вам на руки до подписания договора.",
+    Icon: ShieldCheck,
+    bg: "bg-emerald-50",
+    ring: "ring-emerald-200/60",
+    iconBg: "bg-emerald-500",
   },
   {
-    q: "Что такое категория ИЖС и чем она отличается от СНТ?",
+    q: "Что такое ИЖС и чем отличается от СНТ?",
     a: "ИЖС (индивидуальное жилищное строительство) даёт право постоянной прописки, строительства капитального дома и подведения всех коммуникаций за счёт государственных программ. СНТ — садовое товарищество с ограничениями на постройку и прописку.",
+    Icon: FileCheck2,
+    bg: "bg-amber-50",
+    ring: "ring-amber-200/60",
+    iconBg: "bg-amber-500",
   },
   {
-    q: "Какая ипотека доступна на земельный участок?",
+    q: "Какая ипотека доступна на участок?",
     a: "Работаем с ВТБ, Сбером, Альфа-Банком, Газпромбанком и Россельхозбанком. Помогаем собрать документы и получить одобрение. Первоначальный взнос от 20%, срок до 30 лет.",
+    Icon: Landmark,
+    bg: "bg-sky-50",
+    ring: "ring-sky-200/60",
+    iconBg: "bg-sky-500",
   },
   {
-    q: "Можно ли прописаться в доме на участке?",
+    q: "Можно ли прописаться в доме?",
     a: "Да, в домах на участках категории ИЖС вы оформляете постоянную регистрацию так же, как в городской квартире. Мы поможем с оформлением техпаспорта и адреса.",
+    Icon: HomeIcon,
+    bg: "bg-violet-50",
+    ring: "ring-violet-200/60",
+    iconBg: "bg-violet-500",
   },
   {
     q: "Кто подводит коммуникации?",
     a: "В готовых посёлках газ, электричество и вода уже подведены к границам участка. Остаётся только подключиться — мы поможем с документами и сопроводим процесс до ввода в эксплуатацию.",
+    Icon: Zap,
+    bg: "bg-yellow-50",
+    ring: "ring-yellow-200/60",
+    iconBg: "bg-yellow-500",
   },
   {
-    q: "Что если я передумаю после бронирования?",
+    q: "Что если передумаю после брони?",
     a: "Бронирование возвратное в течение 7 дней. Если передумаете в этот срок — вернём сумму брони без вопросов и комиссий. После 7 дней возврат возможен по согласованию.",
+    Icon: Undo2,
+    bg: "bg-rose-50",
+    ring: "ring-rose-200/60",
+    iconBg: "bg-rose-500",
   },
   {
     q: "Как проходит сделка через Росреестр?",
     a: "Подписываем договор купли-продажи, подаём документы в МФЦ или напрямую в Росреестр. Регистрация занимает 5–7 рабочих дней, после чего вы получаете выписку ЕГРН с вашим именем как собственника.",
+    Icon: ScrollText,
+    bg: "bg-teal-50",
+    ring: "ring-teal-200/60",
+    iconBg: "bg-teal-500",
   },
   {
     q: "Есть ли рассрочка без переплат?",
     a: "Да, предоставляем беспроцентную рассрочку до 12 месяцев. Первый взнос от 30%, остальное равными платежами каждый месяц. Для молодых семей действует специальная программа с дополнительными условиями.",
+    Icon: BadgePercent,
+    bg: "bg-slate-50",
+    ring: "ring-slate-200/60",
+    iconBg: "bg-slate-600",
   },
 ];
 
 export default function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   return (
-    <section id="faq" className="py-20 lg:py-28 bg-white">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-widest mb-4">
-            <HelpCircle className="w-4 h-4" />
+    <section id="faq" className="py-10 lg:py-14 bg-white scroll-mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <HelpCircle className="w-3.5 h-3.5" />
             Частые вопросы
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Всё, что обычно спрашивают до покупки
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1.5">
+            Всё, что{" "}
+            <span className="text-green-600">обычно спрашивают</span>
           </h2>
-          <p className="text-gray-600">
-            Если вашего вопроса нет в списке — просто позвоните нам, ответим
-            развёрнуто и без воды.
+          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+            Если вашего вопроса нет — позвоните, ответим развёрнуто и без воды.
           </p>
         </div>
 
-        <div className="space-y-3">
-          {faqItems.map((item, i) => (
-            <details
-              key={i}
-              className="group bg-white border border-gray-200 rounded-2xl overflow-hidden open:border-green-300 open:shadow-md hover:border-green-200 transition-all duration-200"
-            >
-              <summary className="flex items-center justify-between gap-4 p-5 cursor-pointer list-none font-semibold text-gray-900">
-                <span className="flex-1">{item.q}</span>
-                <ChevronDown className="w-5 h-5 text-gray-400 group-open:text-green-600 group-open:rotate-180 transition-all flex-shrink-0" />
-              </summary>
-              <div className="px-5 pb-5 text-gray-600 leading-relaxed text-[15px] border-t border-gray-100 pt-4">
-                {item.a}
-              </div>
-            </details>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {faqItems.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setOpenIndex(isOpen ? null : i)}
+                className={`group text-left rounded-2xl p-4 ${item.bg} ring-1 ${item.ring} transition-all hover:shadow-sm`}
+                aria-expanded={isOpen}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`shrink-0 w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shadow-sm`}
+                  >
+                    <item.Icon
+                      className="w-5 h-5 text-white"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug">
+                        {item.q}
+                      </h3>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-500 shrink-0 mt-0.5 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                    <div
+                      className={`grid transition-all duration-300 ${
+                        isOpen
+                          ? "grid-rows-[1fr] opacity-100 mt-2"
+                          : "grid-rows-[0fr] opacity-0 mt-0"
+                      }`}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="text-[12px] text-gray-700 leading-relaxed pr-1">
+                          {item.a}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

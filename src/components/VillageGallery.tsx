@@ -52,7 +52,7 @@ export default function VillageGallery({ photos, name }: Props) {
               Фотогалерея посёлка
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {count} фото · автопереключение каждые 6 секунд
+              {count} фото
             </p>
           </div>
           <div className="hidden sm:block text-sm text-gray-400 font-medium">

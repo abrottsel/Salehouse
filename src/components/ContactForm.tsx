@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Phone, Mail, Send, Clock, CheckCircle2, MessageCircle } from "lucide-react";
+import PhoneInput from "./PhoneInput";
+import CallbackForm from "./CallbackForm";
 
 type LeadType = "VIEWING" | "PRESENTATION" | "MORTGAGE" | "BOOKING" | "CALLBACK";
 
@@ -42,7 +44,7 @@ export default function ContactForm() {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, phone: "+7" + form.phone }),
       });
 
       if (!res.ok) throw new Error("Ошибка отправки");
@@ -57,7 +59,7 @@ export default function ContactForm() {
   };
 
   return (
-    <section id="contacts" className="py-20 lg:py-28 bg-white">
+    <section id="contacts" className="py-10 lg:py-14 bg-white scroll-mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16">
           {/* Info */}
@@ -65,10 +67,15 @@ export default function ContactForm() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Свяжитесь с нами
             </h2>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-gray-600 mb-6">
               Оставьте заявку или позвоните — мы ответим на все вопросы
               и поможем подобрать идеальный участок.
             </p>
+
+            {/* Quick callback — минимум трения, только номер */}
+            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border border-green-200 shadow-sm">
+              <CallbackForm context="форма на странице «Контакты»" />
+            </div>
 
             <div className="space-y-4 mb-8">
               <a
@@ -210,15 +217,10 @@ export default function ContactForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Телефон *
                     </label>
-                    <input
-                      type="tel"
+                    <PhoneInput
                       required
                       value={form.phone}
-                      onChange={(e) =>
-                        setForm({ ...form, phone: e.target.value })
-                      }
-                      placeholder="+7 (___) ___-__-__"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none placeholder:text-gray-400"
+                      onChange={(digits) => setForm({ ...form, phone: digits })}
                     />
                   </div>
 
