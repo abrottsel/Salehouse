@@ -98,23 +98,35 @@ export async function POST(req: NextRequest) {
   const sha = payload.sha ?? "";
   const actor = payload.actor ?? "github-actions";
 
-  // Spawn deploy.sh detached so it outlives this request. stdout + stderr
-  // are redirected into the deploy log, which is tailed on the next request
-  // via GET /api/deploy.
+  // Launch deploy.sh as a transient systemd unit. This cuts every
+  // parent-child tie with the Next.js process — pm2 can reload /
+  // restart zemplus mid-deploy and the unit keeps running on its own.
+  // `--scope` runs it inline attached to our process briefly, so we
+  // prefer `--collect` + no `--scope` to get a fully backgrounded
+  // service. `--property=KillMode=process` prevents systemd from
+  // killing subprocesses of deploy.sh if we ever stop the unit early.
+  const unitName = `zemplus-deploy-${Date.now()}`;
+  const envArgs = [
+    `--setenv=DEPLOY_REF=${ref}`,
+    `--setenv=DEPLOY_SHA=${sha}`,
+    `--setenv=DEPLOY_ACTOR=${actor}`,
+    `--setenv=DEPLOY_LOG=${DEPLOY_LOG}`,
+  ];
   const child = spawn(
-    "/bin/bash",
-    [DEPLOY_SCRIPT],
+    "/usr/bin/systemd-run",
+    [
+      "--unit", unitName,
+      "--collect",
+      "--quiet",
+      "--property=KillMode=process",
+      ...envArgs,
+      "--",
+      "/bin/bash", DEPLOY_SCRIPT,
+    ],
     {
       detached: true,
       stdio: "ignore",
       cwd: path.dirname(DEPLOY_SCRIPT),
-      env: {
-        ...process.env,
-        DEPLOY_REF: ref,
-        DEPLOY_SHA: sha,
-        DEPLOY_ACTOR: actor,
-        DEPLOY_LOG,
-      },
     },
   );
   child.unref();

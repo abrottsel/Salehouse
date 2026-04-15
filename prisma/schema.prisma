@@ -1,76 +1,109 @@
+// ZemPlus Prisma schema — Moscow PostgreSQL 16
+//
+// Keep this minimal and aligned with what the /api/leads route + the
+// future /admin panel actually need. Village/Plot models will come in
+// a later phase when we migrate from hardcoded data.ts to the DB.
+
 generator client {
   provider = "prisma-client-js"
 }
 
+// Prisma 7: the connection URL lives in prisma.config.ts, NOT here.
+// schema.prisma only declares the provider; the actual DATABASE_URL
+// is injected at runtime via prisma.config.ts → process.env.DATABASE_URL.
 datasource db {
   provider = "postgresql"
 }
 
-model Village {
-  id          Int      @id @default(autoincrement())
-  name        String
-  slug        String   @unique
-  direction   String
-  distance    Int
-  readiness   Int
-  description String?  @db.Text
-  features    String[]
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  plots       Plot[]
-  reviews     Review[]
+// Lead type = what the user was trying to do when they filled the form.
+enum LeadType {
+  VIEWING              // записаться на просмотр
+  PRESENTATION         // запросить презентацию / подборку
+  MORTGAGE             // ипотечная заявка
+  BOOKING              // бронирование участка
+  CALLBACK             // перезвоните мне
+  HOUSE_CONSTRUCTION   // строительство дома (Track 3, будущее)
 }
 
-model Plot {
-  id            Int        @id @default(autoincrement())
-  villageId     Int
-  village       Village    @relation(fields: [villageId], references: [id])
-  number        String
-  area          Float
-  price         Int
-  pricePerSotka Int
-  status        PlotStatus @default(AVAILABLE)
-  category      String     @default("ИЖС")
-  features      String[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE              // форма на сайте
+  TELEGRAM_BOT         // через бота @zemplus
+  PHONE_CALL           // оператор вручную занёс
+  OTHER
 }
 
 model Lead {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String
-  email     String?
-  type      LeadType
-  message   String?  @db.Text
-  villageId Int?
-  plotId    Int?
-  source    String?
-  createdAt DateTime @default(now())
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Contact info
+  name        String
+  phone       String
+  email       String?
+  message     String?    @db.Text
+
+  // Classification
+  type        LeadType   @default(CALLBACK)
+  status      LeadStatus @default(NEW)
+  source      LeadSource @default(WEBSITE)
+
+  // Context captured at submission time
+  villageSlug String?    // e.g. "favorit", "minaevo-park"
+  plotNumber  String?    // if the user picked a specific plot
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  referer     String?
+  userAgent   String?    @db.Text
+  ipHash      String?    // sha256 of client IP for rate-limiting, not PII
+
+  // Delivery tracking — did we manage to forward to Telegram?
+  tgSent      Boolean    @default(false)
+  tgSentAt    DateTime?
+  tgError     String?    @db.Text
+
+  // Operator annotations
+  notes       String?    @db.Text
+  contactedAt DateTime?
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([type])
+  @@index([villageSlug])
 }
 
-model Review {
-  id        Int      @id @default(autoincrement())
-  name      String
-  text      String   @db.Text
-  rating    Int      @default(5)
-  villageId Int?
-  village   Village? @relation(fields: [villageId], references: [id])
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("admin")
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  sessions     Session[]
 }
 
-enum PlotStatus {
-  AVAILABLE
-  RESERVED
-  SOLD
-}
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  userAgent String?
+  ipHash    String?
 
-enum LeadType {
-  VIEWING
-  PRESENTATION
-  MORTGAGE
-  BOOKING
-  CALLBACK
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
