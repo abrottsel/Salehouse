@@ -1,41 +1,53 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
   Phone,
-  Star,
   TreePine,
-  Building2,
   Calculator,
-  MessageSquare,
   ListChecks,
   PhoneCall,
+  ShieldCheck,
+  Landmark,
+  HelpCircle,
 } from "lucide-react";
 import Logo from "./Logo";
 import FavoritesCounter from "./FavoritesCounter";
 import SiteSearch from "./SiteSearch";
 
-const navLinks = [
-  { href: "#advantages", label: "Преимущества", Icon: Star },
+const navLinksMain = [
   { href: "#catalog", label: "Посёлки", Icon: TreePine },
-  { href: "#infrastructure", label: "Инфраструктура", Icon: Building2 },
   { href: "#calculator", label: "Ипотека", Icon: Calculator },
-  { href: "#reviews", label: "Отзывы", Icon: MessageSquare },
-  { href: "#steps", label: "Как купить", Icon: ListChecks },
+  { href: "#steps-block", label: "Как купить", Icon: ListChecks },
   { href: "#contacts", label: "Контакты", Icon: PhoneCall },
+];
+
+const navLinksV2 = [
+  { href: "/v2#catalog", label: "Посёлки", Icon: TreePine },
+  { href: "/v2/about", label: "О нас", Icon: ShieldCheck },
+  { href: "/v2/mortgage", label: "Ипотека", Icon: Landmark },
+  { href: "/v2/how-to-buy", label: "Как купить", Icon: ListChecks },
+  { href: "/v2/faq", label: "Вопросы", Icon: HelpCircle },
 ];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname() || "";
+  const isV2 = pathname.startsWith("/v2");
+  const navLinks = isV2 ? navLinksV2 : navLinksMain;
+  const ctaHref = isV2 ? "#callback" : "#contacts";
+  const logoHref = isV2 ? "/v2" : "/";
+  const rowHeight = isV2 ? "h-12" : "h-16";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div className="mx-auto px-2 sm:px-4 lg:px-6 max-w-[1400px]">
-        <div className="flex items-center h-16">
+        <div className={`flex items-center ${rowHeight}`}>
           {/* Logo — прижат к левому краю */}
-          <a href="/" className="shrink-0 mr-4">
+          <a href={logoHref} className="shrink-0 mr-4">
             <Logo />
           </a>
 
@@ -71,7 +83,7 @@ export default function Header() {
               <span className="hidden 2xl:inline text-xs">+7 (985) 905-25-55</span>
             </a>
             <a
-              href="#contacts"
+              href={ctaHref}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs shadow-sm shadow-green-600/25 whitespace-nowrap"
             >
               <span className="2xl:hidden">Записаться</span>
@@ -128,7 +140,7 @@ export default function Header() {
               +7 (985) 905-25-55
             </a>
             <a
-              href="#contacts"
+              href={ctaHref}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-center text-sm shadow-sm"
               onClick={() => setIsOpen(false)}
             >

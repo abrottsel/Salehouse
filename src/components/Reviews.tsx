@@ -34,7 +34,7 @@ export default function Reviews() {
   return (
     <section
       id="reviews"
-      className="py-8 lg:py-12 bg-white scroll-mt-16 relative overflow-hidden"
+      className="py-6 lg:py-10 bg-white scroll-mt-16 relative overflow-hidden"
     >
       {/* Soft bg accent */}
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-emerald-100/40 blur-3xl pointer-events-none" />

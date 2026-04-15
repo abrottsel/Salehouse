@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Mail, Send, Clock, CheckCircle2, MessageCircle } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  Send,
+  Clock,
+  CheckCircle2,
+  MessageCircle,
+  MapPin,
+  Sparkles,
+} from "lucide-react";
 import PhoneInput from "./PhoneInput";
 import CallbackForm from "./CallbackForm";
 
@@ -21,6 +30,37 @@ const leadTypes: { value: LeadType; label: string }[] = [
   { value: "MORTGAGE", label: "Рассчитать ипотеку" },
   { value: "BOOKING", label: "Забронировать участок" },
   { value: "CALLBACK", label: "Обратный звонок" },
+];
+
+const contactCards = [
+  {
+    href: "tel:+79859052555",
+    Icon: Phone,
+    title: "+7 (985) 905-25-55",
+    sub: "Ежедневно 9:00–21:00",
+    gradient: "from-green-500 to-emerald-600",
+    bg: "bg-green-50 hover:bg-green-100",
+    ring: "ring-green-200/60",
+  },
+  {
+    href: "mailto:info@zem-plus.ru",
+    Icon: Mail,
+    title: "info@zem-plus.ru",
+    sub: "Написать на почту",
+    gradient: "from-emerald-500 to-teal-600",
+    bg: "bg-emerald-50 hover:bg-emerald-100",
+    ring: "ring-emerald-200/60",
+  },
+  {
+    href: "https://t.me/zemplus_bot",
+    Icon: MessageCircle,
+    title: "@zemplus",
+    sub: "Telegram — ответим быстро",
+    gradient: "from-sky-500 to-blue-600",
+    bg: "bg-sky-50 hover:bg-sky-100",
+    ring: "ring-sky-200/60",
+    external: true,
+  },
 ];
 
 export default function ContactForm() {
@@ -59,99 +99,88 @@ export default function ContactForm() {
   };
 
   return (
-    <section id="contacts" className="py-10 lg:py-14 bg-white scroll-mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-2 lg:gap-16">
-          {/* Info */}
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Свяжитесь с нами
-            </h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Оставьте заявку или позвоните — мы ответим на все вопросы
-              и поможем подобрать идеальный участок.
-            </p>
+    <section
+      id="contacts"
+      className="py-8 lg:py-12 bg-gradient-to-b from-stone-50 via-white to-emerald-50/30 scroll-mt-16 relative overflow-hidden"
+    >
+      {/* Decorative blurs */}
+      <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-emerald-200/20 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-green-200/15 blur-3xl pointer-events-none" />
 
-            {/* Quick callback — минимум трения, только номер */}
-            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border border-green-200 shadow-sm">
-              <CallbackForm context="форма на странице «Контакты»" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            Свяжитесь с нами
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight leading-[1.1] mb-2">
+            Готовы{" "}
+            <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+              обсудить
+            </span>{" "}
+            ваш участок?
+          </h2>
+          <p className="text-sm sm:text-base text-gray-500 max-w-xl mx-auto">
+            Оставьте заявку — мы поможем подобрать идеальный вариант
+          </p>
+        </div>
+
+        <div className="lg:grid lg:grid-cols-5 lg:gap-10">
+          {/* Left: contacts + quick callback */}
+          <div className="lg:col-span-2">
+            {/* Quick callback */}
+            <div className="mb-5 p-5 rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 ring-1 ring-emerald-200/60 shadow-sm relative overflow-hidden">
+              <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-emerald-300/20 blur-2xl pointer-events-none" />
+              <div className="relative">
+                <CallbackForm context="форма на странице «Контакты»" />
+              </div>
             </div>
 
-            <div className="space-y-4 mb-8">
-              <a
-                href="tel:+79859052555"
-                className="flex items-center gap-4 p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    +7 (985) 905-25-55
+            {/* Contact cards */}
+            <div className="space-y-2.5 mb-5">
+              {contactCards.map(({ href, Icon, title, sub, gradient, bg, ring, external }) => (
+                <a
+                  key={title}
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className={`flex items-center gap-3.5 p-3.5 rounded-xl ${bg} ring-1 ${ring} transition-all duration-200 hover:shadow-sm group`}
+                >
+                  <div
+                    className={`w-10 h-10 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform`}
+                  >
+                    <Icon className="w-4.5 h-4.5 text-white" />
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Ежедневно с 9:00 до 21:00
+                  <div className="min-w-0">
+                    <div className="font-bold text-gray-900 text-sm truncate">
+                      {title}
+                    </div>
+                    <div className="text-xs text-gray-500">{sub}</div>
                   </div>
-                </div>
-              </a>
+                </a>
+              ))}
+            </div>
 
-              <a
-                href="mailto:a.brottsel@mail.ru"
-                className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    a.brottsel@mail.ru
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Ответим в течение часа
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href="https://t.me/Abrottsel"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    @Abrottsel
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Telegram — ответим быстро
-                  </div>
-                </div>
-              </a>
-
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50">
-                <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    Режим работы
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Пн-Вс: 9:00 - 21:00
-                  </div>
-                </div>
+            {/* Work hours + address compact */}
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Пн–Вс 9:00–21:00</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Подмосковье</span>
               </div>
             </div>
           </div>
 
-          {/* Form */}
-          <div className="mt-12 lg:mt-0">
+          {/* Right: form */}
+          <div className="lg:col-span-3 mt-8 lg:mt-0">
             {isSuccess ? (
-              <div className="bg-green-50 rounded-2xl p-8 text-center">
-                <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl ring-1 ring-green-200/60 p-8 text-center shadow-sm">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-600/20">
+                  <CheckCircle2 className="w-8 h-8 text-white" />
+                </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
                   Заявка отправлена!
                 </h3>
@@ -160,7 +189,7 @@ export default function ContactForm() {
                 </p>
                 <button
                   onClick={() => setIsSuccess(false)}
-                  className="text-green-600 font-medium hover:underline"
+                  className="text-emerald-600 font-semibold hover:underline text-sm"
                 >
                   Отправить ещё одну заявку
                 </button>
@@ -168,38 +197,31 @@ export default function ContactForm() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="bg-gray-50 rounded-2xl p-6 lg:p-8"
+                className="bg-white rounded-2xl ring-1 ring-gray-200/80 shadow-sm p-5 lg:p-7"
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-emerald-600" />
                   Оставить заявку
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {/* Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Что вас интересует?
-                    </label>
-                    <select
-                      value={form.type}
-                      onChange={(e) =>
-                        setForm({ ...form, type: e.target.value as LeadType })
-                      }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                    >
-                      {leadTypes.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={form.type}
+                    onChange={(e) =>
+                      setForm({ ...form, type: e.target.value as LeadType })
+                    }
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white outline-none transition-colors"
+                  >
+                    {leadTypes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
 
-                  {/* Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Ваше имя *
-                    </label>
+                  {/* Name + Phone row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <input
                       type="text"
                       required
@@ -207,16 +229,9 @@ export default function ContactForm() {
                       onChange={(e) =>
                         setForm({ ...form, name: e.target.value })
                       }
-                      placeholder="Как к вам обращаться?"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none placeholder:text-gray-400"
+                      placeholder="Ваше имя *"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white outline-none placeholder:text-gray-400 transition-colors"
                     />
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Телефон *
-                    </label>
                     <PhoneInput
                       required
                       value={form.phone}
@@ -225,36 +240,26 @@ export default function ContactForm() {
                   </div>
 
                   {/* Email */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
-                      }
-                      placeholder="mail@example.com"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none placeholder:text-gray-400"
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
+                    placeholder="Email (необязательно)"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white outline-none placeholder:text-gray-400 transition-colors"
+                  />
 
                   {/* Message */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Сообщение
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={form.message}
-                      onChange={(e) =>
-                        setForm({ ...form, message: e.target.value })
-                      }
-                      placeholder="Расскажите о ваших пожеланиях..."
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none resize-none placeholder:text-gray-400"
-                    />
-                  </div>
+                  <textarea
+                    rows={3}
+                    value={form.message}
+                    onChange={(e) =>
+                      setForm({ ...form, message: e.target.value })
+                    }
+                    placeholder="Расскажите о ваших пожеланиях..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent focus:bg-white outline-none resize-none placeholder:text-gray-400 transition-colors"
+                  />
 
                   {error && (
                     <p className="text-red-600 text-sm">{error}</p>
@@ -263,7 +268,7 @@ export default function ContactForm() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm hover:from-green-500 hover:to-emerald-500 transition-all shadow-md shadow-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       "Отправка..."
@@ -275,7 +280,7 @@ export default function ContactForm() {
                     )}
                   </button>
 
-                  <p className="text-xs text-gray-400 text-center">
+                  <p className="text-[10px] text-gray-400 text-center leading-tight">
                     Нажимая кнопку, вы соглашаетесь с политикой обработки
                     персональных данных
                   </p>

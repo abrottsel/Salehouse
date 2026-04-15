@@ -68,20 +68,20 @@ export default function Footer() {
                 +7 (985) 905-25-55
               </a>
               <a
-                href="mailto:a.brottsel@mail.ru"
+                href="mailto:info@zem-plus.ru"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                a.brottsel@mail.ru
+                info@zem-plus.ru
               </a>
               <a
-                href="https://t.me/Abrottsel"
+                href="https://t.me/zemplus_bot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
-                @Abrottsel
+                @zemplus
               </a>
             </div>
           </div>

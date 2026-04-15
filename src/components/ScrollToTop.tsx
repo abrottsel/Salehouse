@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowUp } from "lucide-react";
 
 /**
  * Floating "back to top" button.
  * Appears when user has scrolled past the hero.
  * Positioned bottom-left so it doesn't collide with the chat widget (bottom-right).
+ * Hidden on /v2/* — the test route is intentionally compact.
  */
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname() || "";
+  const hidden = pathname.startsWith("/v2");
 
   useEffect(() => {
+    if (hidden) return;
     const onScroll = () => {
       // Show after ~600px (past hero area)
       setVisible(window.scrollY > 600);
@@ -19,7 +24,9 @@ export default function ScrollToTop() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [hidden]);
+
+  if (hidden) return null;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });

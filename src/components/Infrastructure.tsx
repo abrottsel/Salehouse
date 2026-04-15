@@ -121,7 +121,7 @@ export default function Infrastructure() {
   return (
     <section
       id="infrastructure"
-      className="py-8 lg:py-12 bg-white scroll-mt-16"
+      className="py-6 lg:py-10 bg-white scroll-mt-16"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Compact header */}

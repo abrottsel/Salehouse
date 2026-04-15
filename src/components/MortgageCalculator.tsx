@@ -3,11 +3,21 @@
 import { useState, useMemo } from "react";
 import {
   Calculator,
+  Landmark,
   TrendingDown,
   Check,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+
+const banks = [
+  { name: "ВТБ", rate: "6.5%", dot: "#002D5F" },
+  { name: "Сбер", rate: "7.0%", dot: "#1A9F29" },
+  { name: "Альфа", rate: "6.9%", dot: "#EF3124" },
+  { name: "ГПБ", rate: "6.8%", dot: "#0072C6" },
+  { name: "РСХБ", rate: "6.7%", dot: "#009540" },
+  { name: "Т-Банк", rate: "7.2%", dot: "#FFDD2D" },
+];
 
 export default function MortgageCalculator() {
   const [price, setPrice] = useState(2000000);
@@ -46,25 +56,41 @@ export default function MortgageCalculator() {
   return (
     <section
       id="calculator"
-      className="py-8 lg:py-12 bg-gradient-to-b from-white to-emerald-50/40 scroll-mt-16"
+      className="py-5 lg:py-8 bg-gradient-to-b from-white to-emerald-50/40 scroll-mt-16"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Compact selling header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
-            <Calculator className="w-3.5 h-3.5" />
-            Ипотека · от 6.5% годовых
+        {/* Unified header: Ипотека label + title + bank pills */}
+        <div className="text-center mb-5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+            <Landmark className="w-3.5 h-3.5" />
+            Ипотека
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight mb-2 leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight mb-3 leading-tight">
             Свой участок{" "}
             <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
               дешевле аренды квартиры
             </span>
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 max-w-xl mx-auto">
-            Двигайте ползунки — увидите реальный платёж в секунду.
-            Одобрение за 2 дня, помогаем с документами.
-          </p>
+          {/* Bank pills row */}
+          <div className="flex flex-wrap justify-center gap-1.5 mb-1">
+            {banks.map((b) => (
+              <div
+                key={b.name}
+                className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-white ring-1 ring-emerald-200 shadow-sm"
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: b.dot }}
+                />
+                <span className="text-[11px] font-black text-gray-900">
+                  {b.name}
+                </span>
+                <span className="text-[10px] text-emerald-700 font-bold tabular-nums">
+                  {b.rate}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Main card */}

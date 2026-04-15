@@ -13,8 +13,8 @@ export default function MortgageV2() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white pt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <main className="min-h-screen bg-white pt-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1">
           <a
             href="/v2"
             className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-800"

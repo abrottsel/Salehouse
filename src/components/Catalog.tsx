@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { villages } from "@/lib/data";
 import FavoriteHeart from "./FavoriteHeart";
+import CardPhotoSwiper from "./CardPhotoSwiper";
 import RangeSlider from "./RangeSlider";
 
 const directions = [
@@ -217,15 +218,7 @@ function RangeFilter({
         {label}
       </div>
 
-      <RangeSlider
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={onChange}
-      />
-
-      <div className="flex items-center gap-2 mt-5">
+      <div className="flex items-center gap-2 mb-4">
         <NumberField
           aria-label="От"
           prefix="от"
@@ -244,6 +237,14 @@ function RangeFilter({
           onCommit={commitMax}
         />
       </div>
+
+      <RangeSlider
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={onChange}
+      />
     </div>
   );
 }
@@ -539,16 +540,10 @@ export default function Catalog() {
               href={`/village/${village.slug}`}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group block"
             >
-              {/* Image — 5:4, photo-dominant */}
+              {/* Image — 5:4, photo-dominant with swiper */}
               <div className="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-green-100 via-emerald-50 to-green-200">
-                {village.photos[0] ? (
-                  <Image
-                    src={village.photos[0]}
-                    alt={village.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
+                {village.photos.length > 0 ? (
+                  <CardPhotoSwiper photos={village.photos} alt={village.name} />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-green-700/60 p-6 text-center">
                     <ImageOff className="w-10 h-10 mb-3" />

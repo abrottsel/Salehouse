@@ -143,7 +143,7 @@ export default function VillageHero({
                     Позвонить
                   </a>
                   <a
-                    href="https://t.me/Abrottsel"
+                    href="https://t.me/zemplus_bot"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white px-3 py-3 rounded-xl font-semibold text-sm border border-white/20 transition-colors"

@@ -1,15 +1,48 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, RotateCcw } from "lucide-react";
 import { villages } from "@/lib/data";
 import FavoriteHeart from "@/components/FavoriteHeart";
+import { FilterChip, RangeFilter } from "@/components/filters/RangeFilterChip";
 
-const AUTO_ADVANCE_MS = 6000;
+const AUTO_ADVANCE_MS = 5000;
 const SWIPE_THRESHOLD = 50;
 
 type Village = (typeof villages)[number];
+
+// Directions present in the dataset + "Все" first
+const DIRECTIONS = [
+  "Все",
+  ...Array.from(new Set(villages.map((v) => v.direction))),
+];
+
+// Short labels for the chip bar
+function shortDirection(full: string): string {
+  return full.replace(/\s?шоссе$/i, "");
+}
+
+// Price / area bounds, rounded to nice values
+const PRICE_STEP = 10000;
+const AREA_STEP = 0.5;
+const PRICE_MIN =
+  Math.floor(Math.min(...villages.map((v) => v.priceFrom)) / PRICE_STEP) *
+  PRICE_STEP;
+const PRICE_MAX =
+  Math.ceil(Math.max(...villages.map((v) => v.priceFrom)) / PRICE_STEP) *
+  PRICE_STEP;
+const AREA_MIN = Math.floor(Math.min(...villages.map((v) => v.areaFrom)));
+const AREA_MAX = Math.ceil(Math.max(...villages.map((v) => v.areaTo)));
+
+const formatRub = (n: number) => n.toLocaleString("ru-RU");
+const parseRub = (s: string) => Number(s.replace(/\s/g, "").replace(",", "."));
+const formatCompactPrice = (n: number) => {
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)} млн`;
+  }
+  return `${Math.round(n / 1000)}к`;
+};
 
 function VillageCard({
   village,
@@ -110,10 +143,59 @@ function VillageCard({
 export default function PoselokCarousel() {
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-  const touchDeltaX = useRef<number>(0);
+  const [activeDirection, setActiveDirection] = useState<string>("Все");
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    PRICE_MIN,
+    PRICE_MAX,
+  ]);
+  const [areaRange, setAreaRange] = useState<[number, number]>([
+    AREA_MIN,
+    AREA_MAX,
+  ]);
+  const pointerStartX = useRef<number | null>(null);
+  const pointerDeltaX = useRef<number>(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
-  const count = villages.length;
+  const filtered = useMemo(() => {
+    return villages.filter((v) => {
+      if (activeDirection !== "Все" && v.direction !== activeDirection)
+        return false;
+      if (v.priceFrom < priceRange[0] || v.priceFrom > priceRange[1])
+        return false;
+      // overlap test for area range
+      if (v.areaTo < areaRange[0] || v.areaFrom > areaRange[1]) return false;
+      return true;
+    });
+  }, [activeDirection, priceRange, areaRange]);
+
+  const count = filtered.length;
+
+  const isPriceFiltered =
+    priceRange[0] !== PRICE_MIN || priceRange[1] !== PRICE_MAX;
+  const isAreaFiltered =
+    areaRange[0] !== AREA_MIN || areaRange[1] !== AREA_MAX;
+  const isAnyFilterActive =
+    activeDirection !== "Все" || isPriceFiltered || isAreaFiltered;
+
+  const resetFilters = () => {
+    setActiveDirection("Все");
+    setPriceRange([PRICE_MIN, PRICE_MAX]);
+    setAreaRange([AREA_MIN, AREA_MAX]);
+  };
+
+  // Price chip value label
+  const priceLabel = isPriceFiltered
+    ? `${formatCompactPrice(priceRange[0])}–${formatCompactPrice(priceRange[1])} ₽`
+    : null;
+  // Area chip value label
+  const areaLabel = isAreaFiltered
+    ? `${areaRange[0]}–${areaRange[1]} сот`
+    : null;
+
+  // Reset index when filter changes or falls out of range
+  useEffect(() => {
+    setIndex(0);
+  }, [activeDirection, priceRange, areaRange]);
 
   const goTo = useCallback(
     (i: number) => {
@@ -135,32 +217,166 @@ export default function PoselokCarousel() {
     return () => clearInterval(id);
   }, [isPaused, count]);
 
-  // Touch handlers
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchDeltaX.current = 0;
+  // Keyboard arrow navigation — active when section is in viewport
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Don't hijack typing in inputs
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      )
+        return;
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const inView =
+        rect.top < window.innerHeight * 0.75 && rect.bottom > window.innerHeight * 0.25;
+      if (!inView) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prev();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        next();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [next, prev]);
+
+  // Pointer handlers — unified for touch + mouse drag
+  const onPointerDown = (e: React.PointerEvent) => {
+    // Only primary button / touch
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    pointerStartX.current = e.clientX;
+    pointerDeltaX.current = 0;
     setIsPaused(true);
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (pointerStartX.current === null) return;
+    pointerDeltaX.current = e.clientX - pointerStartX.current;
   };
 
-  const onTouchEnd = () => {
-    if (touchStartX.current === null) return;
-    const dx = touchDeltaX.current;
+  const onPointerEnd = (e: React.PointerEvent) => {
+    if (pointerStartX.current === null) return;
+    const dx = pointerDeltaX.current;
     if (dx > SWIPE_THRESHOLD) prev();
     else if (dx < -SWIPE_THRESHOLD) next();
-    touchStartX.current = null;
-    touchDeltaX.current = 0;
+    pointerStartX.current = null;
+    pointerDeltaX.current = 0;
     setIsPaused(false);
+    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
   };
 
-  if (count === 0) return null;
-
   return (
-    <section className="py-10 lg:py-14">
+    <section
+      ref={sectionRef}
+      className="py-3 lg:py-5"
+      aria-roledescription="carousel"
+      aria-label="Посёлки"
+    >
+      {/* Filter row — direction chips + price/area popover chips */}
+      <div className="max-w-6xl mx-auto mb-3 px-2 flex flex-wrap items-center justify-center gap-1.5">
+        {DIRECTIONS.map((dir) => {
+          const active = dir === activeDirection;
+          const dirCount =
+            dir === "Все"
+              ? villages.length
+              : villages.filter((v) => v.direction === dir).length;
+          return (
+            <button
+              key={dir}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setActiveDirection(dir)}
+              className={`inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-[11px] font-semibold tracking-tight transition-all duration-200 whitespace-nowrap ${
+                active
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-sm shadow-emerald-900/20 ring-1 ring-emerald-700/20"
+                  : "bg-white text-emerald-900/80 ring-1 ring-emerald-200/70 hover:bg-emerald-50 hover:ring-emerald-300"
+              }`}
+            >
+              {shortDirection(dir)}
+              <span
+                className={`inline-flex items-center justify-center min-w-[18px] h-[15px] px-1 rounded-full text-[9px] font-bold tabular-nums ${
+                  active
+                    ? "bg-white/25 text-white"
+                    : "bg-emerald-100 text-emerald-700"
+                }`}
+              >
+                {dirCount}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Price popover chip */}
+        <FilterChip
+          label="Цена"
+          value={priceLabel}
+          placeholder="Цена"
+          active={isPriceFiltered}
+          compact
+        >
+          {() => (
+            <RangeFilter
+              label="Цена за сотку, ₽"
+              suffix="₽"
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={PRICE_STEP}
+              value={priceRange}
+              onChange={setPriceRange}
+              format={formatRub}
+              parse={parseRub}
+            />
+          )}
+        </FilterChip>
+
+        {/* Area popover chip */}
+        <FilterChip
+          label="Соток"
+          value={areaLabel}
+          placeholder="Соток"
+          active={isAreaFiltered}
+          compact
+        >
+          {() => (
+            <RangeFilter
+              label="Площадь участка, сотки"
+              suffix="сот"
+              min={AREA_MIN}
+              max={AREA_MAX}
+              step={AREA_STEP}
+              value={areaRange}
+              onChange={setAreaRange}
+            />
+          )}
+        </FilterChip>
+
+        {/* Reset button — shown only when any filter active */}
+        {isAnyFilterActive && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            aria-label="Сбросить фильтры"
+            className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 ring-1 ring-gray-200 transition-all"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Сбросить
+          </button>
+        )}
+      </div>
+
+      {count === 0 ? (
+        <div className="max-w-6xl mx-auto py-10 text-center text-sm text-gray-500">
+          В этом направлении пока нет посёлков
+        </div>
+      ) : (
       <div
         className="relative max-w-6xl mx-auto rounded-3xl ring-1 ring-gray-200 shadow-xl overflow-hidden bg-white"
         onMouseEnter={() => setIsPaused(true)}
@@ -168,23 +384,24 @@ export default function PoselokCarousel() {
       >
         {/* Track viewport */}
         <div
-          className="relative overflow-hidden"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+          className="relative overflow-hidden touch-pan-y select-none cursor-grab active:cursor-grabbing"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerEnd}
+          onPointerCancel={onPointerEnd}
         >
           <div
             className="flex transition-transform duration-500 ease-out"
             style={{ transform: `translateX(-${index * 100}%)` }}
           >
-            {villages.map((village, i) => {
+            {filtered.map((village, i) => {
               // For desktop 3-up view: show prev + current + next peeking
               const prevIdx = (i - 1 + count) % count;
               const nextIdx = (i + 1) % count;
               return (
                 <div
                   key={village.id}
-                  className="shrink-0 w-full px-4 md:px-6 py-8"
+                  className="shrink-0 w-full px-4 md:px-6 py-4"
                   aria-hidden={i !== index}
                 >
                   {/* Mobile: single card */}
@@ -193,9 +410,9 @@ export default function PoselokCarousel() {
                   </div>
                   {/* Desktop: 3 up */}
                   <div className="hidden md:grid md:grid-cols-3 md:gap-5 md:items-center">
-                    <VillageCard village={villages[prevIdx]} />
+                    <VillageCard village={filtered[prevIdx]} />
                     <VillageCard village={village} elevated />
-                    <VillageCard village={villages[nextIdx]} />
+                    <VillageCard village={filtered[nextIdx]} />
                   </div>
                 </div>
               );
@@ -222,8 +439,8 @@ export default function PoselokCarousel() {
         </button>
 
         {/* Dot indicators */}
-        <div className="flex items-center justify-center gap-1.5 pb-5">
-          {villages.map((v, i) => {
+        <div className="flex items-center justify-center gap-1.5 pb-3">
+          {filtered.map((v, i) => {
             const active = i === index;
             return (
               <button
@@ -242,6 +459,7 @@ export default function PoselokCarousel() {
           })}
         </div>
       </div>
+      )}
     </section>
   );
 }

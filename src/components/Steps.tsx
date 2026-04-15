@@ -62,7 +62,7 @@ export default function Steps() {
   return (
     <section
       id="steps"
-      className="py-8 lg:py-12 bg-gradient-to-b from-stone-50 to-white scroll-mt-16"
+      className="py-6 lg:py-10 bg-gradient-to-b from-stone-50 to-white scroll-mt-16"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Compact header */}

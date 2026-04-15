@@ -1,0 +1,12 @@
+{
+  "name": "zemplus-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for ZemPlus real estate company",
+  "main": "zemplus-bot.js",
+  "scripts": {
+    "start": "node zemplus-bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}

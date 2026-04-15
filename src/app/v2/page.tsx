@@ -75,7 +75,7 @@ export default function HomeV2() {
   return (
     <>
       {/* Small v2-banner strip for test URL */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-amber-500 text-white text-[11px] font-bold uppercase tracking-widest text-center py-1 shadow-md">
+      <div className="fixed top-12 left-0 right-0 z-40 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest text-center py-0.5 shadow-md">
         <Sparkles className="inline w-3 h-3 mr-1 -mt-0.5" />
         v2 · тестовая версия ·{" "}
         <a href="/" className="underline hover:no-underline">
@@ -85,43 +85,39 @@ export default function HomeV2() {
 
       <Header />
 
-      <main className="min-h-screen bg-white pt-8">
+      <main className="min-h-screen bg-white pt-[72px]">
         {/* Compact hero */}
         <Hero />
 
         {/* Catalog — carousel instead of grid */}
         <section
           id="catalog"
-          className="py-8 lg:py-12 bg-gradient-to-b from-white to-stone-50 scroll-mt-16"
+          className="py-4 lg:py-6 bg-gradient-to-b from-white to-stone-50 scroll-mt-12"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <div className="text-center mb-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 Каталог посёлков
               </div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.1] mb-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-[1.1]">
                 Найдите свой{" "}
                 <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
                   идеальный участок
                 </span>
               </h2>
-              <p className="text-sm sm:text-base text-gray-500 max-w-xl mx-auto">
-                Свайпайте карусель или смотрите по очереди — 31 посёлок в
-                четырёх направлениях Подмосковья.
-              </p>
             </div>
 
             <PoselokCarousel />
 
             {/* Link to full catalog */}
-            <div className="text-center mt-5">
+            <div className="text-center mt-4">
               <a
                 href="/"
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-800"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-base sm:text-lg font-bold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 hover:bg-emerald-100 hover:ring-emerald-300 hover:text-emerald-800 transition-all"
               >
-                Смотреть все 31 посёлков сеткой
-                <ArrowRight className="w-4 h-4" />
+                Открыть полный каталог
+                <ArrowRight className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -131,7 +127,7 @@ export default function HomeV2() {
         <BanksRow />
 
         {/* Quick callback */}
-        <section className="py-8 lg:py-12 bg-white">
+        <section id="callback" className="py-5 lg:py-8 bg-white scroll-mt-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 ring-1 ring-emerald-300/70 p-6 sm:p-8">
               <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-emerald-400/25 blur-3xl pointer-events-none" />
@@ -158,9 +154,9 @@ export default function HomeV2() {
         </section>
 
         {/* Navigation cards to sub-pages */}
-        <section className="py-8 lg:py-12 bg-stone-50">
+        <section className="py-5 lg:py-8 bg-stone-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-5">
+            <div className="text-center mb-3">
               <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
                 Узнайте больше
               </h3>

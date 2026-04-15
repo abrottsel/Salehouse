@@ -1,15 +1,49 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────
-# ZemPlus deploy script — run on the server inside /var/www/zemplus
-# Usage:  ./deploy/deploy.sh
+# ZemPlus deploy script — runs on the server inside /var/www/zemplus
+#
+# Invoked by `src/app/api/deploy/route.ts` after a signed POST from
+# the GitHub Actions workflow, or manually by an operator via SSH.
+#
+# Flow:
+#   1. Download the main branch tarball from GitHub (public repo,
+#      no auth). Fall back to a deterministic commit SHA if passed
+#      via DEPLOY_SHA.
+#   2. Extract into a temp dir, rsync into APP_DIR preserving
+#      node_modules, .next, .env.local, public/villages, logs, backups.
+#   3. npm ci --omit=dev  (prod deps only).
+#   4. next build with a 1.5 GB heap cap so we don't OOM on the 4 GB box.
+#   5. pm2 reload zemplus  (zero-downtime reload).
+#   6. Health check http://localhost:3001/  — fail the deploy if != 200.
+#   7. Telegram notification (success or failure).
+#
+# All output goes to DEPLOY_LOG (default /var/www/zemplus/logs/deploy.log)
+# which the API route exposes via GET /api/deploy for CI polling.
 # ──────────────────────────────────────────────────────────────────
 set -uo pipefail
 
 APP_DIR="/var/www/zemplus"
 APP_NAME="zemplus"
+REPO_OWNER="abrottsel"
+REPO_NAME="Salehouse"
 START_TS=$(date +%s)
 
-# Load TG_BOT_TOKEN / TG_CHAT_ID from .env.local if present
+DEPLOY_LOG="${DEPLOY_LOG:-$APP_DIR/logs/deploy.log}"
+DEPLOY_REF="${DEPLOY_REF:-main}"
+DEPLOY_SHA="${DEPLOY_SHA:-}"
+DEPLOY_ACTOR="${DEPLOY_ACTOR:-manual}"
+
+mkdir -p "$(dirname "$DEPLOY_LOG")"
+# Reset the log for this run — GET /api/deploy returns the tail, so we
+# only want the current run's output.
+: > "$DEPLOY_LOG"
+exec >>"$DEPLOY_LOG" 2>&1
+
+log() {
+    echo "[$(date +'%H:%M:%S')] $*"
+}
+
+# Load .env.local so Telegram creds + any per-env knobs are in scope.
 if [ -f "$APP_DIR/.env.local" ]; then
     set -a
     # shellcheck disable=SC1091
@@ -18,11 +52,12 @@ if [ -f "$APP_DIR/.env.local" ]; then
 fi
 
 notify_tg() {
-    local status=$1
-    local text=$2
+    local text=$1
     local token=${TG_BOT_TOKEN:-}
     local chat=${TG_CHAT_ID:-}
-    [ -z "$token" ] || [ -z "$chat" ] && return 0
+    if [ -z "$token" ] || [ -z "$chat" ]; then
+        return 0
+    fi
     curl -s --max-time 5 \
         -X POST "https://api.telegram.org/bot${token}/sendMessage" \
         -d chat_id="$chat" \
@@ -33,25 +68,84 @@ notify_tg() {
 on_failure() {
     local step=$1
     local dur=$(( $(date +%s) - START_TS ))
-    notify_tg error "❌ <b>Deploy failed</b>
+    log "✗ FAILED at: $step ($dur s)"
+    notify_tg "❌ <b>Deploy failed</b>
 Шаг: ${step}
+Ref: <code>${DEPLOY_REF}</code>
+SHA: <code>${DEPLOY_SHA:0:7}</code>
+Кто: ${DEPLOY_ACTOR}
 Время: ${dur}с
-Хост: $(hostname)"
+Лог: <code>tail -50 ${DEPLOY_LOG}</code>"
     exit 1
 }
 
-cd "$APP_DIR" || on_failure "cd"
+log "▶ Deploy started — ref=$DEPLOY_REF sha=${DEPLOY_SHA:0:7} actor=$DEPLOY_ACTOR"
 
-echo "▶ Pulling latest code…"
-git pull --ff-only || on_failure "git pull"
+# ── 1. Download tarball ────────────────────────────────────────────
+TMP_DIR="$(mktemp -d -t zemplus-deploy-XXXXXX)"
+trap 'rm -rf "$TMP_DIR"' EXIT
 
-echo "▶ Installing prod dependencies…"
-npm ci --omit=dev --no-audit --no-fund || on_failure "npm ci"
+if [ -n "$DEPLOY_SHA" ]; then
+    TARBALL_URL="https://codeload.github.com/${REPO_OWNER}/${REPO_NAME}/tar.gz/${DEPLOY_SHA}"
+else
+    TARBALL_URL="https://codeload.github.com/${REPO_OWNER}/${REPO_NAME}/tar.gz/refs/heads/${DEPLOY_REF}"
+fi
 
-echo "▶ Building…"
-NODE_OPTIONS="--max-old-space-size=1536" npm run build || on_failure "npm run build"
+log "▶ Downloading $TARBALL_URL"
+curl -fsSL --max-time 120 "$TARBALL_URL" -o "$TMP_DIR/source.tar.gz" \
+    || on_failure "tarball download"
 
-echo "▶ Reloading PM2…"
+log "▶ Extracting tarball"
+tar -xzf "$TMP_DIR/source.tar.gz" -C "$TMP_DIR" \
+    || on_failure "tar extract"
+
+# GitHub tarballs extract into a single top-level directory named
+# "{repo}-{ref_or_sha}". We don't want to hard-code the name, so just
+# grab the first entry.
+SRC_DIR="$(find "$TMP_DIR" -maxdepth 1 -mindepth 1 -type d | head -n 1)"
+if [ -z "$SRC_DIR" ] || [ ! -d "$SRC_DIR" ]; then
+    on_failure "locate extracted source dir"
+fi
+log "▶ Source tree: $SRC_DIR"
+
+# ── 2. Rsync into APP_DIR ──────────────────────────────────────────
+log "▶ Syncing into $APP_DIR"
+rsync -a --delete \
+    --exclude='.env.local' \
+    --exclude='node_modules/' \
+    --exclude='.next/' \
+    --exclude='public/villages/' \
+    --exclude='logs/' \
+    --exclude='backups/' \
+    --exclude='.git/' \
+    "$SRC_DIR/" "$APP_DIR/" \
+    || on_failure "rsync"
+
+# Ensure deploy.sh stays executable after the sync.
+chmod +x "$APP_DIR/deploy/deploy.sh" 2>/dev/null || true
+
+cd "$APP_DIR" || on_failure "cd app dir"
+
+# ── 3. Prod deps ───────────────────────────────────────────────────
+log "▶ npm ci --omit=dev"
+npm ci --omit=dev --no-audit --no-fund \
+    || on_failure "npm ci"
+
+# Next 16 requires @tailwindcss/postcss at build time even though it's a
+# devDependency. Install build-time tooling separately without blowing away
+# the prod node_modules.
+log "▶ Ensuring build-time tailwindcss is present"
+npm install --no-save --no-audit --no-fund \
+    @tailwindcss/postcss tailwindcss postcss autoprefixer typescript @types/node @types/react @types/react-dom \
+    || on_failure "npm install build deps"
+
+# ── 4. Build ───────────────────────────────────────────────────────
+log "▶ next build"
+NODE_OPTIONS="--max-old-space-size=1536" npm run build \
+    || on_failure "next build"
+
+# ── 5. Reload PM2 ──────────────────────────────────────────────────
+log "▶ pm2 reload $APP_NAME"
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
     pm2 reload "$APP_NAME" --update-env || on_failure "pm2 reload"
 else
@@ -59,20 +153,26 @@ else
     pm2 save
 fi
 
-# Health check after reload
-sleep 2
+# ── 6. Health check ────────────────────────────────────────────────
+# Give Next.js a moment to bind — `pm2 reload` is zero-downtime, but
+# on a cold cache the new worker may take a few seconds to warm up.
+sleep 3
 HTTP=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3001/ || echo "000")
 if [ "$HTTP" != "200" ]; then
     on_failure "health check (HTTP $HTTP)"
 fi
 
+# ── 7. Done ────────────────────────────────────────────────────────
 DURATION=$(( $(date +%s) - START_TS ))
 MEM=$(free -h | awk '/^Mem:/ {print $3"/"$2}')
 DISK=$(df -h / | awk 'NR==2 {print $5" used"}')
 
-echo "✓ Deploy complete in ${DURATION}s."
+log "✓ Deploy complete in ${DURATION}s — HTTP $HTTP — mem $MEM — disk $DISK"
 pm2 status "$APP_NAME"
 
-notify_tg ok "✅ <b>Deploy готов</b>
+notify_tg "✅ <b>Deploy готов</b>
+Ref: <code>${DEPLOY_REF}</code>
+SHA: <code>${DEPLOY_SHA:0:7}</code>
+Кто: ${DEPLOY_ACTOR}
 HTTP <b>${HTTP}</b> · ${DURATION}с
 💾 ${MEM} · 🗄 ${DISK}"
