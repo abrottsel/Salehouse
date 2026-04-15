@@ -846,7 +846,13 @@ export default function InteractivePlotMap3({
   } = bundle.components;
 
   return (
-    <section className="relative w-full h-[calc(100vh-96px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]">
+    <section
+      data-testid="v3-map-root"
+      data-village-name={villageName}
+      data-plot-count={data.plots.length}
+      data-sold-count={data.statistics.sold}
+      className="relative w-full h-[calc(100vh-96px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]"
+    >
       {/* ───── Left sidebar ───── */}
       {/* overflow-y-auto on the whole aside: when the viewport is too
           short to fit the header + selected plot card + legend + price
@@ -1060,18 +1066,20 @@ export default function InteractivePlotMap3({
       {/* ───── Map column ───── */}
       <div className="absolute inset-0 lg:left-[288px] xl:left-[340px] 2xl:left-[380px]">
         <YMap location={location}>
-          {/* Base layers — mount BOTH and toggle visibility.
-              Unmounting a layer on every switch tore down the whole
-              features pipeline and left satellite mode with no plot
-              overlays. The canonical ymaps3 pattern is to keep both
-              default layers alive and drive `visible` from state. */}
-          <YMapDefaultSchemeLayer
-            theme="light"
-            visible={mapType === "map"}
-          />
-          <YMapDefaultSatelliteLayer
-            visible={mapType === "satellite"}
-          />
+          {/* Base layers.
+              Scheme is ALWAYS mounted so the vector pipeline stays
+              alive. The satellite layer is conditionally mounted on
+              top of it — ymaps3 renders mounted layers in DOM order,
+              so the satellite raster overlays the scheme vector when
+              present. When the user toggles back to scheme, the
+              satellite layer unmounts and the scheme underneath is
+              immediately visible again without any re-init.
+              The earlier attempt with visible={mapType === 'map'}
+              on the scheme layer left it in a broken state after a
+              round-trip scheme → satellite → scheme, which is why we
+              now keep scheme unconditionally mounted. */}
+          <YMapDefaultSchemeLayer theme="light" />
+          {mapType === "satellite" && <YMapDefaultSatelliteLayer />}
           <YMapDefaultFeaturesLayer />
 
           {/* Village boundary — same green outline as the legacy 2.1
