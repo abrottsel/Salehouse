@@ -848,7 +848,11 @@ export default function InteractivePlotMap3({
   return (
     <section className="relative w-full h-[calc(100vh-96px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]">
       {/* ───── Left sidebar ───── */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[360px] 2xl:w-[420px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col">
+      {/* overflow-y-auto on the whole aside: when the viewport is too
+          short to fit the header + selected plot card + legend + price
+          filters, everything scrolls together instead of the header
+          pushing the filter list off-screen. */}
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[360px] 2xl:w-[420px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col overflow-y-auto">
         {/* Header — title + stats + prominent call button right below */}
         <div className="px-4 xl:px-5 pt-4 xl:pt-5 pb-3 xl:pb-4 border-b border-gray-100">
           <div className="text-[9px] xl:text-[10px] uppercase font-bold text-emerald-700 tracking-wider">
@@ -1005,7 +1009,7 @@ export default function InteractivePlotMap3({
 
         {/* Price tier filters */}
         {data.priceTiers.length > 0 && (
-          <div className="flex-1 overflow-y-auto px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4">
+          <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-4 xl:pb-5">
             <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-2">
               Цена за сотку
             </h3>
@@ -1056,15 +1060,18 @@ export default function InteractivePlotMap3({
       {/* ───── Map column ───── */}
       <div className="absolute inset-0 lg:left-[288px] xl:left-[340px] 2xl:left-[380px]">
         <YMap location={location}>
-          {/* Base layer — scheme OR satellite, mutually exclusive.
-              YMapDefaultSatelliteLayer ships with ymaps3 core, so no
-              extra ymaps3.import() is needed — it's just another named
-              export from the main imperative module. */}
-          {mapType === "satellite" ? (
-            <YMapDefaultSatelliteLayer />
-          ) : (
-            <YMapDefaultSchemeLayer theme="light" />
-          )}
+          {/* Base layers — mount BOTH and toggle visibility.
+              Unmounting a layer on every switch tore down the whole
+              features pipeline and left satellite mode with no plot
+              overlays. The canonical ymaps3 pattern is to keep both
+              default layers alive and drive `visible` from state. */}
+          <YMapDefaultSchemeLayer
+            theme="light"
+            visible={mapType === "map"}
+          />
+          <YMapDefaultSatelliteLayer
+            visible={mapType === "satellite"}
+          />
           <YMapDefaultFeaturesLayer />
 
           {/* Village boundary — same green outline as the legacy 2.1
