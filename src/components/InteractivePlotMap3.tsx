@@ -60,6 +60,7 @@ import {
 } from "lucide-react";
 import { loadYmaps3 } from "@/lib/ymaps3";
 import FavoriteHeart from "./FavoriteHeart";
+import VillagePlotBottomSheet from "./VillagePlotBottomSheet";
 
 // ─────────────────────────────────────────────────────────────────
 // Types
@@ -862,7 +863,7 @@ export default function InteractivePlotMap3({
       data-village-name={villageName}
       data-plot-count={data.plots.length}
       data-sold-count={data.statistics.sold}
-      className="relative w-full h-[calc(100vh-96px)] min-h-[560px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]"
+      className="relative w-full h-[calc(100vh-96px)] min-h-[560px] max-w-[1920px] mx-auto bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]"
     >
       {/* ───── Left sidebar ───── */}
       {/* overflow-y-auto so all sections fit on short viewports. Pack
@@ -892,90 +893,13 @@ export default function InteractivePlotMap3({
           </a>
         </div>
 
-        {/* Selected plot card — packed tight */}
-        <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
-          {selectedPlot ? (
-            <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
-                    Участок
-                  </div>
-                  <div className="text-lg xl:text-xl font-black text-gray-900 leading-none mt-0.5">
-                    № {selectedPlot.number}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span
-                    className={`inline-flex items-center px-1.5 h-4 rounded-full text-[9px] font-black ${
-                      isPlotAvailable(selectedPlot.statusName)
-                        ? "bg-green-100 text-green-800"
-                        : isPlotReserved(selectedPlot.statusName)
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {selectedPlot.statusName}
-                  </span>
-                  <FavoriteHeart
-                    kind="plot"
-                    plot={{
-                      villageSlug,
-                      villageName,
-                      plotNumber: selectedPlot.number,
-                      area: selectedPlot.area,
-                      pricePerHundred: selectedPlot.pricePerHundred,
-                      totalCost: selectedPlot.totalCost,
-                      status: selectedPlot.statusName,
-                    }}
-                    variant="light"
-                    className="!w-6 !h-6"
-                  />
-                </div>
-              </div>
-              <div className="mt-1.5 space-y-0.5 text-[11px]">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Площадь</span>
-                  <span className="font-bold text-gray-900 tabular-nums">
-                    {selectedPlot.area} сот
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">За сотку</span>
-                  <span className="font-bold text-gray-900 tabular-nums">
-                    {formatRub(selectedPlot.pricePerHundred)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline pt-1 border-t border-emerald-200/60 mt-1">
-                  <span className="text-gray-500">Итого</span>
-                  <span className="font-black text-green-700 text-[13px] tabular-nums">
-                    {formatRub(selectedPlot.totalCost)}
-                  </span>
-                </div>
-              </div>
-              {!isSoldSelected && (
-                <div className="mt-2 grid grid-cols-2 gap-1.5">
-                  <a
-                    href="#contact-form"
-                    className="flex items-center justify-center h-8 rounded-md bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-bold text-[10px] shadow transition-all"
-                  >
-                    Забронировать
-                  </a>
-                  <a
-                    href="#contact-form"
-                    className="flex items-center justify-center h-8 rounded-md bg-white ring-1 ring-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold text-[10px] transition-colors"
-                  >
-                    Записаться
-                  </a>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-[11px] text-gray-400 text-center py-2">
-              Кликните на участок на карте
-            </div>
-          )}
-        </div>
+        {/* Phase B: the selected-plot card moved out of the sidebar
+            into the VillagePlotBottomSheet component (Yandex-Maps-
+            style slide-up panel on the map itself). The sidebar now
+            carries only the passive info — stats, phone, legend,
+            and price-tier filters. This gives the filter list room
+            to breathe on short viewports and keeps the active
+            selection UI right next to the plot on the map. */}
 
         {/* Status legend */}
         <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
@@ -1560,69 +1484,17 @@ export default function InteractivePlotMap3({
           </div>
         )}
 
-        {/* Mobile: selected plot sheet (lg hidden) — full-width card
-            with price, area, status, FavoriteHeart and the Записаться
-            CTA so the mobile experience is first-class. */}
-        {selectedPlot && (
-          <div className="lg:hidden absolute bottom-3 left-3 right-3 z-20 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 px-3 py-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
-                    Участок № {selectedPlot.number}
-                  </div>
-                  <span
-                    className={`inline-flex items-center px-1.5 h-4 rounded-full text-[8px] font-black ${
-                      isPlotAvailable(selectedPlot.statusName)
-                        ? "bg-green-100 text-green-800"
-                        : isPlotReserved(selectedPlot.statusName)
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {selectedPlot.statusName}
-                  </span>
-                </div>
-                <div className="text-sm font-black text-gray-900 truncate mt-0.5">
-                  {selectedPlot.area} сот · {formatRub(selectedPlot.totalCost)}
-                </div>
-                <div className="text-[10px] text-gray-500 truncate">
-                  {formatRub(selectedPlot.pricePerHundred)} / сот
-                </div>
-              </div>
-              <FavoriteHeart
-                kind="plot"
-                plot={{
-                  villageSlug,
-                  villageName,
-                  plotNumber: selectedPlot.number,
-                  area: selectedPlot.area,
-                  pricePerHundred: selectedPlot.pricePerHundred,
-                  totalCost: selectedPlot.totalCost,
-                  status: selectedPlot.statusName,
-                }}
-                variant="light"
-                className="!w-8 !h-8 shrink-0"
-              />
-            </div>
-            {!isSoldSelected && (
-              <div className="mt-2 grid grid-cols-2 gap-1.5">
-                <a
-                  href="#contact-form"
-                  className="flex items-center justify-center gap-1 h-9 rounded-lg bg-gradient-to-r from-green-700 to-emerald-700 text-white text-[11px] font-bold shadow-md shadow-green-800/25"
-                >
-                  Забронировать
-                </a>
-                <a
-                  href="#contact-form"
-                  className="flex items-center justify-center gap-1 h-9 rounded-lg bg-white ring-1 ring-emerald-200 text-emerald-700 text-[11px] font-bold hover:bg-emerald-50 transition-colors"
-                >
-                  Записаться
-                </a>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Phase B: unified Yandex-Maps-style plot bottom sheet. Shows
+            on all viewports when a plot is selected, carrying the
+            header, stats, CTAs and the hidden-fees breakdown. Replaces
+            the old mobile-only sheet and the desktop sidebar card. */}
+        <VillagePlotBottomSheet
+          plot={selectedPlot}
+          villageSlug={villageSlug}
+          villageName={villageName}
+          isSold={isSoldSelected}
+          onClose={() => setSelectedPlot(null)}
+        />
       </div>
 
       {/* Global CSS keyframes for the pulse animation on the selected
