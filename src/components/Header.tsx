@@ -37,8 +37,26 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname() || "";
   const isV2 = pathname.startsWith("/v2");
-  const navLinks = isV2 ? navLinksV2 : navLinksMain;
-  const ctaHref = isV2 ? "#callback" : "#contacts";
+  const isHome = pathname === "/";
+  // Inner pages (e.g. /village/[slug]) don't contain the catalog /
+  // calculator / steps-block anchors, so nav links that target those
+  // hash fragments need a leading "/" to jump back to the home page.
+  // The #contacts anchor works in place on village pages because the
+  // contact form is rendered there too — keep it hash-only.
+  const rewriteHref = (href: string) => {
+    if (!href.startsWith("#")) return href;
+    if (isV2) return href;
+    if (isHome) return href;
+    if (href === "#contacts") return href;
+    return `/${href}`;
+  };
+  const rawNavLinks = isV2 ? navLinksV2 : navLinksMain;
+  const navLinks = rawNavLinks.map((l) => ({ ...l, href: rewriteHref(l.href) }));
+  const ctaHref = isV2
+    ? "#callback"
+    : isHome
+      ? "#contacts"
+      : "#contacts"; // stays in-page on village pages (form is present)
   const logoHref = isV2 ? "/v2" : "/";
   const rowHeight = isV2 ? "h-12" : "h-16";
 
