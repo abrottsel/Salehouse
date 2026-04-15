@@ -303,9 +303,7 @@ export default function InteractivePlotMap3({
 
   // ─── Map state ─────────────────────────────────────────────
   const [location, setLocation] = useState<LocationState | null>(null);
-  // Satellite layer temporarily disabled — see top-right controls
-  // comment for the rendering bug we're working around.
-  const [mapType] = useState<"map" | "satellite">("map");
+  const [mapType, setMapType] = useState<"map" | "satellite">("map");
   const [zoom, setZoom] = useState(17);
 
   // ─── Plot selection & filter ───────────────────────────────
@@ -1048,18 +1046,14 @@ export default function InteractivePlotMap3({
           {/* Base layers.
               Scheme is ALWAYS mounted so the vector pipeline stays
               alive. The satellite layer is conditionally mounted on
-              top of it — ymaps3 renders mounted layers in DOM order,
-              so the satellite raster overlays the scheme vector when
-              present. When the user toggles back to scheme, the
-              satellite layer unmounts and the scheme underneath is
-              immediately visible again without any re-init.
-              The earlier attempt with visible={mapType === 'map'}
-              on the scheme layer left it in a broken state after a
-              round-trip scheme → satellite → scheme, which is why we
-              now keep scheme unconditionally mounted. */}
+              top of it. Features get an explicit zIndex of 2000 so
+              they render above both base layers — without this
+              override the satellite raster (default zIndex ~ 1000)
+              ends up on top of features (default zIndex ~ 1500) and
+              the plot overlays disappear on satellite mode. */}
           <YMapDefaultSchemeLayer theme="light" />
           {mapType === "satellite" && <YMapDefaultSatelliteLayer />}
-          <YMapDefaultFeaturesLayer />
+          <YMapDefaultFeaturesLayer zIndex={2000} />
 
           {/* Village boundary — same green outline as the legacy 2.1
               component. No fill, just a thick emerald stroke so you
@@ -1430,13 +1424,28 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Top-right stack: zoom controls only.
-            Map-type toggle temporarily hidden — rendering plot
-            features on top of the satellite layer is broken in a
-            way I haven't been able to fix without making the
-            scheme-→-satellite round-trip regress. Will re-enable
-            once I properly investigate. */}
+        {/* Top-right stack: compact map-type pill + zoom controls. */}
         <div className="absolute top-3 right-3 z-30 flex flex-col gap-1.5 items-end">
+          <button
+            type="button"
+            onClick={() =>
+              setMapType((m) => (m === "map" ? "satellite" : "map"))
+            }
+            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg bg-white text-gray-900 hover:bg-gray-50 text-[11px] font-bold shadow-lg ring-1 ring-black/5 transition-all active:scale-95"
+            aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
+          >
+            {mapType === "map" ? (
+              <>
+                <Layers className="w-3.5 h-3.5 text-emerald-700" strokeWidth={2.4} />
+                Спутник
+              </>
+            ) : (
+              <>
+                <MapIcon className="w-3.5 h-3.5 text-emerald-700" strokeWidth={2.4} />
+                Схема
+              </>
+            )}
+          </button>
           <div className="flex flex-col bg-white rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden">
             <button
               type="button"
