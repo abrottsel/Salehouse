@@ -102,17 +102,39 @@ export async function GET(
 
     const raw = (await res.json()) as RawResponse;
 
-    const plots: NormalizedPlot[] = (raw.plots ?? []).map((p) => ({
-      number: p.number ?? "",
-      area: p.area ?? 0,
-      pricePerHundred: p.price_per_hundred ?? 0,
-      totalCost: p.total_cost ?? 0,
-      statusName: p.status_name ?? "",
-      coords: p.coords ?? [],
-      center: p.center ?? [0, 0],
-      kadastr: p.kadastr ?? "",
-      priceTier: p.price_tier ?? 0,
-    }));
+    // Upstream's `price_tier` field is a raw group number from zemexx's CMS
+    // (we've observed values like 1, 3, 6 for a 5-tier village), not an
+    // index into `price_tiers`. Remap it by scanning the plot's
+    // pricePerHundred against the sorted priceTiers array so the UI can
+    // safely use `TIER_COLORS[priceTier]` without falling through to the
+    // default color for most plots.
+    const sortedTiers = [...(raw.price_tiers ?? [])].sort((a, b) => a - b);
+    const resolveTier = (pricePerHundred: number): number => {
+      if (sortedTiers.length === 0) return 0;
+      // Index of the largest tier threshold that's <= price. A plot priced
+      // exactly at a threshold lands on that threshold.
+      let idx = 0;
+      for (let i = 0; i < sortedTiers.length; i++) {
+        if (sortedTiers[i] <= pricePerHundred) idx = i;
+        else break;
+      }
+      return idx;
+    };
+
+    const plots: NormalizedPlot[] = (raw.plots ?? []).map((p) => {
+      const pricePerHundred = p.price_per_hundred ?? 0;
+      return {
+        number: p.number ?? "",
+        area: p.area ?? 0,
+        pricePerHundred,
+        totalCost: p.total_cost ?? 0,
+        statusName: p.status_name ?? "",
+        coords: p.coords ?? [],
+        center: p.center ?? [0, 0],
+        kadastr: p.kadastr ?? "",
+        priceTier: resolveTier(pricePerHundred),
+      };
+    });
 
     // Compute statistics from plot statuses (upstream `statistics` block is often missing)
     const stats = { free: 0, sold: 0, reserved: 0, other: 0 };

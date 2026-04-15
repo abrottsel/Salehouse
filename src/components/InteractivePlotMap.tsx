@@ -181,6 +181,7 @@ export default function InteractivePlotMap({
   const [error, setError] = useState<string | null>(null);
   const [selectedPlot, setSelectedPlot] = useState<NormalizedPlot | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapBlocked, setMapBlocked] = useState(false);
   const [enabledTiers, setEnabledTiers] = useState<Set<number>>(new Set());
   const [mapType, setMapType] = useState<MapType>("map");
   const [currentZoom, setCurrentZoom] = useState(17);
@@ -245,6 +246,7 @@ export default function InteractivePlotMap({
     );
     if (existing) {
       existing.addEventListener("load", () => setMapReady(true));
+      existing.addEventListener("error", () => setMapBlocked(true));
       return;
     }
     const script = document.createElement("script");
@@ -252,10 +254,24 @@ export default function InteractivePlotMap({
       "https://api-maps.yandex.ru/2.1/?lang=ru_RU&load=package.full";
     script.async = true;
     script.dataset.ymapsLoader = "true";
+    // Safari Private Browsing blocks *.yandex.ru as "trackers" and the
+    // script never loads. Detect both onerror and a 12-second silence as
+    // the map being blocked, and surface a clear fallback message.
+    const blockTimeout = window.setTimeout(() => {
+      if (!window.ymaps) setMapBlocked(true);
+    }, 12000);
     script.onload = () => {
+      window.clearTimeout(blockTimeout);
       window.ymaps?.ready(() => setMapReady(true));
     };
+    script.onerror = () => {
+      window.clearTimeout(blockTimeout);
+      setMapBlocked(true);
+    };
     document.head.appendChild(script);
+    return () => {
+      window.clearTimeout(blockTimeout);
+    };
   }, []);
 
   // Filter plots based on enabled tiers
@@ -304,20 +320,26 @@ export default function InteractivePlotMap({
         }
       );
 
+      // Use "stretchy" presets so the marker renders as a pin + text
+      // label. At far-out zoom levels the small preset icons were just a
+      // couple of pixels and invisible next to the dashed line — the
+      // labeled version stays readable at every zoom.
       const startMark = new ymaps.Placemark(
         from,
-        { hintContent: place.label },
+        { iconContent: place.label || "Дом" },
         {
-          preset: "islands#blueHomeCircleIcon",
-          iconColor: "#3b82f6",
+          preset: "islands#blueStretchyIcon",
+          iconColor: "#2563eb",
+          zIndex: 900,
         }
       );
       const endMark = new ymaps.Placemark(
         to,
-        { hintContent: villageName },
+        { iconContent: villageName },
         {
-          preset: "islands#greenDotIcon",
-          iconColor: "#22c55e",
+          preset: "islands#greenStretchyIcon",
+          iconColor: "#16a34a",
+          zIndex: 900,
         }
       );
 
@@ -353,7 +375,9 @@ export default function InteractivePlotMap({
     [data, villageName]
   );
 
-  // Clear route
+  // Clear route (also re-fits the village bounds so the user always
+  // ends back at the plot-picking view; otherwise clearing the panel
+  // mid-route leaves the map zoomed way out with just a blue line).
   const clearRoute = useCallback(() => {
     const map = mapInstanceRef.current;
     if (multiRouteRef.current && map) {
@@ -369,7 +393,29 @@ export default function InteractivePlotMap({
     }
     setActiveRouteId(null);
     setRouteInfo(null);
-  }, []);
+    // Re-fit to village bounds
+    if (map && data?.villageCoords?.length) {
+      try {
+        const bounds = data.villageCoords.reduce(
+          (acc, [lat, lon]) => {
+            acc.minLat = Math.min(acc.minLat, lat);
+            acc.maxLat = Math.max(acc.maxLat, lat);
+            acc.minLon = Math.min(acc.minLon, lon);
+            acc.maxLon = Math.max(acc.maxLon, lon);
+            return acc;
+          },
+          { minLat: Infinity, maxLat: -Infinity, minLon: Infinity, maxLon: -Infinity },
+        );
+        map.setBounds(
+          [
+            [bounds.minLat, bounds.minLon],
+            [bounds.maxLat, bounds.maxLon],
+          ],
+          { checkZoomRange: true, zoomMargin: 30 },
+        );
+      } catch {}
+    }
+  }, [data]);
 
   // Helper — persist a new place and activate route
   const persistPlace = useCallback(
@@ -1136,10 +1182,63 @@ export default function InteractivePlotMap({
           >
             <div ref={mapRef} className="w-full h-full" />
 
+            {/* Safari Private / Brave-strict fallback — Yandex Maps script
+                domains (*.yandex.ru) get blocked as "trackers" and the
+                whole map silently fails to initialize. Show a clear
+                explanation + CTA so the user knows why the map is empty
+                and what to do about it. */}
+            {mapBlocked && !mapReady && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-gradient-to-br from-slate-50 to-stone-100 px-6">
+                <div className="max-w-md text-center space-y-4">
+                  <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                    <MapPin className="w-7 h-7 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-gray-900 mb-1.5">
+                      Карта участков недоступна
+                    </h3>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Браузер заблокировал загрузку Яндекс&nbsp;Карт — скорее всего вы
+                      в приватном режиме Safari или в браузере с жёстким блокировщиком.
+                      Откройте эту страницу в обычном окне Chrome/Safari, и карта загрузится.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl bg-gradient-to-r from-green-700 to-emerald-700 text-white text-xs font-bold shadow-md hover:from-green-600 hover:to-emerald-600 transition-all"
+                    >
+                      Попробовать ещё раз
+                    </button>
+                    <a
+                      href="tel:+79859052555"
+                      className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl bg-white text-green-800 ring-1 ring-green-200 text-xs font-bold hover:bg-green-50 transition-all"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      +7 (985) 905-25-55 — уточнить участки
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Top toolbar — «Мои места» + dropdown panel */}
             <div className="absolute top-3 left-3 z-30">
               <button
-                onClick={() => setShowPlacesPanel((v) => !v)}
+                onClick={() => {
+                  // Tapping the button when the panel is already open or a
+                  // route is drawn should bring the user back to the village
+                  // view — otherwise they end up stranded mid-route with no
+                  // obvious way back.
+                  if (showPlacesPanel || activeRouteId) {
+                    clearRoute();
+                    setShowPlacesPanel(false);
+                    setAddingPlace(false);
+                  } else {
+                    setShowPlacesPanel(true);
+                  }
+                }}
                 className={`inline-flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold shadow-xl ring-1 ring-black/5 transition-all ${
                   showPlacesPanel || activeRouteId
                     ? "bg-gradient-to-r from-green-700 to-emerald-700 text-white"
