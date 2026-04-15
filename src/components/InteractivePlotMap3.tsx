@@ -303,7 +303,9 @@ export default function InteractivePlotMap3({
 
   // ─── Map state ─────────────────────────────────────────────
   const [location, setLocation] = useState<LocationState | null>(null);
-  const [mapType, setMapType] = useState<"map" | "satellite">("map");
+  // Satellite layer temporarily disabled — see top-right controls
+  // comment for the rendering bug we're working around.
+  const [mapType] = useState<"map" | "satellite">("map");
   const [zoom, setZoom] = useState(17);
 
   // ─── Plot selection & filter ───────────────────────────────
@@ -862,86 +864,52 @@ export default function InteractivePlotMap3({
       data-village-name={villageName}
       data-plot-count={data.plots.length}
       data-sold-count={data.statistics.sold}
-      className="relative w-full h-[calc(100vh-96px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]"
+      className="relative w-full h-[calc(100vh-96px)] min-h-[560px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]"
     >
       {/* ───── Left sidebar ───── */}
-      {/* overflow-y-auto on the whole aside: when the viewport is too
-          short to fit the header + selected plot card + legend + price
-          filters, everything scrolls together instead of the header
-          pushing the filter list off-screen. */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[360px] 2xl:w-[420px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col overflow-y-auto">
-        {/* Header — title + stats + prominent call button right below */}
-        <div className="px-4 xl:px-5 pt-4 xl:pt-5 pb-3 xl:pb-4 border-b border-gray-100">
-          <div className="text-[9px] xl:text-[10px] uppercase font-bold text-emerald-700 tracking-wider">
-            Карта участков · v3
-          </div>
-          <div className="text-xl xl:text-2xl 2xl:text-3xl font-black text-gray-900 leading-tight">
+      {/* overflow-y-auto so all sections fit on short viewports. Pack
+          everything tighter so on a 13\" MBA (950 px useful height)
+          the price filter lands above the fold without scrolling. */}
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[272px] xl:w-[320px] 2xl:w-[360px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col overflow-y-auto">
+        {/* Header — village title + compact inline stats + phone pill */}
+        <div className="px-3 xl:px-4 pt-3 pb-2 border-b border-gray-100">
+          <div className="text-lg xl:text-xl font-black text-gray-900 leading-tight">
             {villageName}
           </div>
-          <div className="mt-2 xl:mt-3 grid grid-cols-4 gap-2">
-            <div>
-              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-gray-500 tracking-wider">
-                Всего
-              </div>
-              <div className="text-base xl:text-lg 2xl:text-xl font-black text-gray-900 leading-none mt-0.5">
-                {data.plots.length}
-              </div>
-            </div>
-            <div>
-              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-green-600 tracking-wider">
-                Свободно
-              </div>
-              <div className="text-base xl:text-lg 2xl:text-xl font-black text-green-600 leading-none mt-0.5">
-                {data.statistics.free}
-              </div>
-            </div>
-            <div>
-              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-blue-600 tracking-wider">
-                Бронь
-              </div>
-              <div className="text-base xl:text-lg 2xl:text-xl font-black text-blue-600 leading-none mt-0.5">
-                {data.statistics.reserved}
-              </div>
-            </div>
-            <div>
-              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-gray-500 tracking-wider">
-                Продано
-              </div>
-              <div className="text-base xl:text-lg 2xl:text-xl font-black text-gray-500 leading-none mt-0.5">
-                {data.statistics.sold}
-              </div>
-            </div>
+          <div className="mt-1 text-[10px] xl:text-[11px] text-gray-600 leading-snug tabular-nums">
+            <span className="font-bold text-gray-900">{data.plots.length}</span> всего
+            <span className="mx-1 text-gray-300">·</span>
+            <span className="font-bold text-green-600">{data.statistics.free}</span> свободно
+            <span className="mx-1 text-gray-300">·</span>
+            <span className="font-bold text-blue-600">{data.statistics.reserved}</span> бронь
+            <span className="mx-1 text-gray-300">·</span>
+            <span className="font-bold text-gray-500">{data.statistics.sold}</span> продано
           </div>
-
-          {/* Phone call — right under the stats, prominent.
-              User feedback: "трубку позвонить можно чуть выше" —
-              moved out of the sticky footer so it's immediately visible
-              without needing to scroll past the price filters. */}
           <a
             href="tel:+79859052555"
-            className="mt-3 xl:mt-4 flex items-center justify-center gap-1.5 w-full h-9 xl:h-10 2xl:h-11 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] xl:text-[13px] 2xl:text-sm hover:from-green-100 hover:to-emerald-100 transition-all"
+            className="mt-2 flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] hover:from-green-100 hover:to-emerald-100 transition-all"
           >
-            <Phone className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
+            <Phone className="w-3.5 h-3.5" />
             +7 (985) 905-25-55
           </a>
         </div>
 
-        {/* Selected plot card */}
-        <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4 border-b border-gray-100">
+        {/* Selected plot card — packed tight */}
+        <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
           {selectedPlot ? (
-            <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-3 xl:p-4">
+            <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="text-[9px] xl:text-[10px] uppercase font-bold text-emerald-700 tracking-wider">
+                  <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
                     Участок
                   </div>
-                  <div className="text-xl xl:text-2xl 2xl:text-3xl font-black text-gray-900 leading-none mt-0.5">
+                  <div className="text-lg xl:text-xl font-black text-gray-900 leading-none mt-0.5">
                     № {selectedPlot.number}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <span
-                    className={`inline-flex items-center px-2 h-5 xl:h-6 rounded-full text-[9px] xl:text-[10px] font-black ${
+                    className={`inline-flex items-center px-1.5 h-4 rounded-full text-[9px] font-black ${
                       isPlotAvailable(selectedPlot.statusName)
                         ? "bg-green-100 text-green-800"
                         : isPlotReserved(selectedPlot.statusName)
@@ -963,11 +931,11 @@ export default function InteractivePlotMap3({
                       status: selectedPlot.statusName,
                     }}
                     variant="light"
-                    className="!w-7 !h-7"
+                    className="!w-6 !h-6"
                   />
                 </div>
               </div>
-              <div className="mt-2 xl:mt-3 space-y-0.5 xl:space-y-1 text-[11px] xl:text-[13px]">
+              <div className="mt-1.5 space-y-0.5 text-[11px]">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Площадь</span>
                   <span className="font-bold text-gray-900 tabular-nums">
@@ -980,41 +948,40 @@ export default function InteractivePlotMap3({
                     {formatRub(selectedPlot.pricePerHundred)}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline pt-1 xl:pt-2 border-t border-emerald-200/60 mt-1 xl:mt-2">
+                <div className="flex justify-between items-baseline pt-1 border-t border-emerald-200/60 mt-1">
                   <span className="text-gray-500">Итого</span>
-                  <span className="font-black text-green-700 text-sm xl:text-base 2xl:text-lg tabular-nums">
+                  <span className="font-black text-green-700 text-[13px] tabular-nums">
                     {formatRub(selectedPlot.totalCost)}
                   </span>
                 </div>
               </div>
               {!isSoldSelected && (
-                <div className="mt-2.5 xl:mt-3 grid grid-cols-1 gap-1.5">
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
                   <a
                     href="#contact-form"
-                    className="block w-full bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white py-2 xl:py-2.5 2xl:py-3 rounded-lg font-bold text-[11px] xl:text-[13px] 2xl:text-sm text-center shadow-md shadow-green-800/25 transition-all"
+                    className="flex items-center justify-center h-8 rounded-md bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-bold text-[10px] shadow transition-all"
                   >
                     Забронировать
                   </a>
                   <a
                     href="#contact-form"
-                    className="block w-full bg-white ring-1 ring-emerald-200 text-emerald-700 hover:bg-emerald-50 py-2 xl:py-2.5 2xl:py-3 rounded-lg font-bold text-[11px] xl:text-[13px] 2xl:text-sm text-center transition-colors"
+                    className="flex items-center justify-center h-8 rounded-md bg-white ring-1 ring-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold text-[10px] transition-colors"
                   >
-                    Записаться на просмотр
+                    Записаться
                   </a>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-[11px] xl:text-[13px] text-gray-400 text-center py-3">
+            <div className="text-[11px] text-gray-400 text-center py-2">
               Кликните на участок на карте
             </div>
           )}
         </div>
 
-        {/* Status legend — compact, tight vertical padding so the
-            price-filter section below stays above the fold. */}
-        <div className="px-4 xl:px-5 pt-2 xl:pt-3 pb-2 xl:pb-3 border-b border-gray-100">
-          <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
+        {/* Status legend */}
+        <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
+          <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1">
             Статус
           </h3>
           <div className="grid grid-cols-2 gap-x-2 gap-y-1">
@@ -1027,11 +994,11 @@ export default function InteractivePlotMap3({
 
         {/* Price tier filters */}
         {data.priceTiers.length > 0 && (
-          <div className="px-4 xl:px-5 pt-2 xl:pt-3 pb-3 xl:pb-4">
-            <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
+          <div className="px-3 xl:px-4 pt-2 pb-3">
+            <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1">
               Цена за сотку
             </h3>
-            <div className="space-y-1 xl:space-y-1.5">
+            <div className="space-y-1">
               {TIER_COLORS.slice(0, data.priceTiers.length).map((tier, i) => {
                 const min = data.priceTiers[i];
                 const max =
@@ -1076,7 +1043,7 @@ export default function InteractivePlotMap3({
       </aside>
 
       {/* ───── Map column ───── */}
-      <div className="absolute inset-0 lg:left-[288px] xl:left-[340px] 2xl:left-[380px]">
+      <div className="absolute inset-0 lg:left-[272px] xl:left-[320px] 2xl:left-[360px]">
         <YMap location={location}>
           {/* Base layers.
               Scheme is ALWAYS mounted so the vector pipeline stays
@@ -1264,25 +1231,22 @@ export default function InteractivePlotMap3({
           />
         </YMap>
 
-        {/* Top-left "Мои места" button + panel.
-            Styled as a prominent green pill so the button is always
-            visible against both scheme and satellite backdrops.
-            Larger than the map-type button so users notice it. */}
+        {/* Top-left "Мои места" button + panel — compact pill. */}
         <div className="absolute top-3 left-3 z-30">
           <button
             type="button"
             onClick={handlePlacesButtonClick}
-            className={`inline-flex items-center gap-2 px-4 h-10 xl:h-11 rounded-xl text-xs xl:text-sm font-black tracking-wider shadow-xl ring-1 ring-black/5 transition-all active:scale-95 ${
+            className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-[11px] font-bold shadow-lg ring-1 ring-black/5 transition-all active:scale-95 ${
               showPlacesPanel || activeRouteId
                 ? "bg-gradient-to-r from-green-800 to-emerald-800 text-white"
                 : "bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-600 hover:to-emerald-600"
             }`}
           >
-            <MapPin className="w-4 h-4 xl:w-[18px] xl:h-[18px]" strokeWidth={2.4} />
-            МОИ МЕСТА
+            <MapPin className="w-3.5 h-3.5" strokeWidth={2.4} />
+            Мои места
             {places.length > 0 && (
               <span
-                className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black ${
+                className={`inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black ${
                   showPlacesPanel || activeRouteId
                     ? "bg-white text-green-800"
                     : "bg-green-600 text-white"
@@ -1466,49 +1430,30 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Top-right stack: map-type pill + zoom controls.
-            The map-type button now shows an icon + text label for
-            the TARGET state — on scheme it reads "🔲 СПУТНИК" and on
-            satellite it reads "🗺 СХЕМА", so the user never has to
-            guess what a bare icon means. One tap flips the state. */}
-        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2 items-end">
-          <button
-            type="button"
-            onClick={() =>
-              setMapType((m) => (m === "map" ? "satellite" : "map"))
-            }
-            className="inline-flex items-center gap-1.5 h-10 xl:h-11 px-3.5 rounded-xl bg-white/95 backdrop-blur-md text-gray-900 hover:bg-white text-xs xl:text-sm font-black tracking-wider shadow-xl ring-1 ring-black/5 transition-all active:scale-95"
-            aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
-          >
-            {mapType === "map" ? (
-              <>
-                <Layers className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-700" strokeWidth={2.4} />
-                СПУТНИК
-              </>
-            ) : (
-              <>
-                <MapIcon className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-700" strokeWidth={2.4} />
-                СХЕМА
-              </>
-            )}
-          </button>
-          <div className="flex flex-col bg-white rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
+        {/* Top-right stack: zoom controls only.
+            Map-type toggle temporarily hidden — rendering plot
+            features on top of the satellite layer is broken in a
+            way I haven't been able to fix without making the
+            scheme-→-satellite round-trip regress. Will re-enable
+            once I properly investigate. */}
+        <div className="absolute top-3 right-3 z-30 flex flex-col gap-1.5 items-end">
+          <div className="flex flex-col bg-white rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-10 h-10 xl:w-11 xl:h-11 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
               aria-label="Приблизить"
             >
-              <Plus className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.5} />
+              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
             <div className="h-px bg-gray-100 mx-1.5" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-10 h-10 xl:w-11 xl:h-11 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
               aria-label="Отдалить"
             >
-              <Minus className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.5} />
+              <Minus className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
