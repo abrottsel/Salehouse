@@ -1011,12 +1011,13 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Status legend */}
-        <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4 border-b border-gray-100">
-          <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-2">
+        {/* Status legend — compact, tight vertical padding so the
+            price-filter section below stays above the fold. */}
+        <div className="px-4 xl:px-5 pt-2 xl:pt-3 pb-2 xl:pb-3 border-b border-gray-100">
+          <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
             Статус
           </h3>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 xl:gap-y-2">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1">
             <LegendDot color="#22c55e" label="Свободен" />
             <LegendDot color="#3b82f6" label="Забронирован" />
             <LegendDot color="#9ca3af" label="Продан" muted />
@@ -1026,11 +1027,11 @@ export default function InteractivePlotMap3({
 
         {/* Price tier filters */}
         {data.priceTiers.length > 0 && (
-          <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-4 xl:pb-5">
-            <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-2">
+          <div className="px-4 xl:px-5 pt-2 xl:pt-3 pb-3 xl:pb-4">
+            <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
               Цена за сотку
             </h3>
-            <div className="space-y-1.5 xl:space-y-2">
+            <div className="space-y-1 xl:space-y-1.5">
               {TIER_COLORS.slice(0, data.priceTiers.length).map((tier, i) => {
                 const min = data.priceTiers[i];
                 const max =
@@ -1263,22 +1264,25 @@ export default function InteractivePlotMap3({
           />
         </YMap>
 
-        {/* Top-left "Мои места" button + panel */}
+        {/* Top-left "Мои места" button + panel.
+            Styled as a prominent green pill so the button is always
+            visible against both scheme and satellite backdrops.
+            Larger than the map-type button so users notice it. */}
         <div className="absolute top-3 left-3 z-30">
           <button
             type="button"
             onClick={handlePlacesButtonClick}
-            className={`inline-flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold shadow-xl ring-1 ring-black/5 transition-all ${
+            className={`inline-flex items-center gap-2 px-4 h-10 xl:h-11 rounded-xl text-xs xl:text-sm font-black tracking-wider shadow-xl ring-1 ring-black/5 transition-all active:scale-95 ${
               showPlacesPanel || activeRouteId
-                ? "bg-gradient-to-r from-green-700 to-emerald-700 text-white"
-                : "bg-white/95 backdrop-blur-md text-gray-800 hover:bg-white"
+                ? "bg-gradient-to-r from-green-800 to-emerald-800 text-white"
+                : "bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-600 hover:to-emerald-600"
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            Мои места
+            <MapPin className="w-4 h-4 xl:w-[18px] xl:h-[18px]" strokeWidth={2.4} />
+            МОИ МЕСТА
             {places.length > 0 && (
               <span
-                className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black ${
+                className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black ${
                   showPlacesPanel || activeRouteId
                     ? "bg-white text-green-800"
                     : "bg-green-600 text-white"
@@ -1462,29 +1466,30 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Top-right stack: map-type toggle + zoom controls.
-            Moving everything to the top-right cleanly avoids the
-            global "Подберу участок" FAB that the page layout places
-            at bottom-right. One vertical stack, one location.
-
-            Map-type toggle is a single icon-only button whose icon
-            is the TARGET state: on scheme it shows the satellite
-            Layers icon (tap → satellite); on satellite it shows the
-            scheme Map icon (tap → scheme). Default = scheme. */}
-        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
+        {/* Top-right stack: map-type pill + zoom controls.
+            The map-type button now shows an icon + text label for
+            the TARGET state — on scheme it reads "🔲 СПУТНИК" and on
+            satellite it reads "🗺 СХЕМА", so the user never has to
+            guess what a bare icon means. One tap flips the state. */}
+        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2 items-end">
           <button
             type="button"
             onClick={() =>
               setMapType((m) => (m === "map" ? "satellite" : "map"))
             }
-            className="w-10 h-10 xl:w-11 xl:h-11 rounded-xl bg-white/95 backdrop-blur-md text-emerald-700 hover:bg-white shadow-xl ring-1 ring-black/5 transition-all flex items-center justify-center active:scale-95"
+            className="inline-flex items-center gap-1.5 h-10 xl:h-11 px-3.5 rounded-xl bg-white/95 backdrop-blur-md text-gray-900 hover:bg-white text-xs xl:text-sm font-black tracking-wider shadow-xl ring-1 ring-black/5 transition-all active:scale-95"
             aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
-            title={mapType === "map" ? "Спутник" : "Схема"}
           >
             {mapType === "map" ? (
-              <Layers className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.4} />
+              <>
+                <Layers className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-700" strokeWidth={2.4} />
+                СПУТНИК
+              </>
             ) : (
-              <MapIcon className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.4} />
+              <>
+                <MapIcon className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-700" strokeWidth={2.4} />
+                СХЕМА
+              </>
             )}
           </button>
           <div className="flex flex-col bg-white rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
