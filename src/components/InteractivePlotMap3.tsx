@@ -47,6 +47,8 @@ import {
   Home as HomeIcon,
   Briefcase,
   MapPin,
+  Map as MapIcon,
+  Layers,
   Navigation,
   Loader2,
   Phone,
@@ -377,7 +379,14 @@ export default function InteractivePlotMap3({
     setPlaces(loadPlaces());
   }, []);
 
-  // ─── Initial fit to village bounds ─────────────────────────
+  // ─── Initial centring ─────────────────────────────────────
+  // Center on the computed village midpoint at a fixed zoom of 17
+  // rather than fitting to villageCoords bounds. The bounds-fit
+  // approach leaves huge empty forest around the village on wide
+  // monitors (2560 px+) because the container aspect ratio is much
+  // wider than the village polygon's, and the fit pads generously.
+  // A fixed center + zoom 17 gives the same tight plot-picking view
+  // on laptops, desktops, and ultra-wides.
   useEffect(() => {
     if (initialSelectDone.current) return;
     if (bundle.kind !== "ready" || !data || data.villageCoords.length === 0) {
@@ -393,12 +402,9 @@ export default function InteractivePlotMap3({
       if (lon < minLon) minLon = lon;
       if (lon > maxLon) maxLon = lon;
     }
-    setLocation({
-      bounds: [
-        [minLon, minLat],
-        [maxLon, maxLat],
-      ],
-    });
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLon = (minLon + maxLon) / 2;
+    setLocation({ center: [centerLon, centerLat], zoom: 17 });
 
     // Auto-select median-priced available plot
     const avail = data.plots
@@ -539,7 +545,9 @@ export default function InteractivePlotMap3({
     setActiveRouteId(null);
     setRouteInfo(null);
 
-    // Re-fit to village bounds
+    // Re-centre on the village midpoint at a tight zoom level —
+    // matches the initial load view for a consistent "back to plots"
+    // experience regardless of screen size.
     if (data?.villageCoords?.length) {
       let minLat = Infinity,
         maxLat = -Infinity,
@@ -551,11 +559,11 @@ export default function InteractivePlotMap3({
         if (lon < minLon) minLon = lon;
         if (lon > maxLon) maxLon = lon;
       }
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLon = (minLon + maxLon) / 2;
       setLocation({
-        bounds: [
-          [minLon, minLat],
-          [maxLon, maxLat],
-        ],
+        center: [centerLon, centerLat],
+        zoom: 17,
         duration: 400,
       });
     }
@@ -840,8 +848,8 @@ export default function InteractivePlotMap3({
   return (
     <section className="relative w-full h-[calc(100vh-80px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]">
       {/* ───── Left sidebar ───── */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col">
-        {/* Header */}
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[340px] 2xl:w-[380px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col">
+        {/* Header — title + stats + prominent call button right below */}
         <div className="px-4 pt-4 pb-3 border-b border-gray-100">
           <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
             Карта участков · v3
@@ -883,6 +891,18 @@ export default function InteractivePlotMap3({
               </div>
             </div>
           </div>
+
+          {/* Phone call — right under the stats, prominent.
+              User feedback: "трубку позвонить можно чуть выше" —
+              moved out of the sticky footer so it's immediately visible
+              without needing to scroll past the price filters. */}
+          <a
+            href="tel:+79859052555"
+            className="mt-3 flex items-center justify-center gap-1.5 w-full h-9 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] hover:from-green-100 hover:to-emerald-100 transition-all"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            +7 (985) 905-25-55
+          </a>
         </div>
 
         {/* Selected plot card */}
@@ -1023,20 +1043,10 @@ export default function InteractivePlotMap3({
           </div>
         )}
 
-        {/* Sticky footer phone */}
-        <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
-          <a
-            href="tel:+79859052555"
-            className="flex items-center justify-center gap-1.5 w-full text-green-700 font-bold py-2 hover:bg-green-50 rounded-lg transition-all text-[11px]"
-          >
-            <Phone className="w-3.5 h-3.5" />
-            +7 (985) 905-25-55
-          </a>
-        </div>
       </aside>
 
       {/* ───── Map column ───── */}
-      <div className="absolute inset-0 lg:left-[288px]">
+      <div className="absolute inset-0 lg:left-[288px] xl:left-[340px] 2xl:left-[380px]">
         <YMap location={location}>
           <YMapDefaultSchemeLayer theme="light" />
           <YMapDefaultFeaturesLayer />
@@ -1050,6 +1060,26 @@ export default function InteractivePlotMap3({
               />
               <YMapLayer source="sat-source" type="ground" />
             </>
+          )}
+
+          {/* Village boundary — same green outline as the legacy 2.1
+              component. No fill, just a thick emerald stroke so you
+              can see the plot perimeter against the basemap. */}
+          {data.villageCoords.length >= 3 && (
+            <YMapFeature
+              key="village-border"
+              geometry={{
+                type: "Polygon",
+                coordinates: [ringLatLonToLonLat(data.villageCoords)],
+              }}
+              style={{
+                fill: "#16a34a",
+                fillOpacity: 0.04,
+                stroke: [
+                  { color: "#16a34a", width: 3, opacity: 0.85 },
+                ],
+              }}
+            />
           )}
 
           {/* Plot polygons */}
@@ -1082,12 +1112,20 @@ export default function InteractivePlotMap3({
             );
           })}
 
-          {/* Plot number markers */}
+          {/* Plot number markers.
+              Wrap the visible dot in a 0×0 anchor div so YMapMarker
+              pins the wrapper at the coordinate and the inner dot
+              floats on top of it via absolute + translate(-50%,-50%).
+              Without the 0×0 pattern the dot's top-left ends up at
+              the coordinate and every marker drifts down-and-right
+              off its plot centre — this was the exact "участки поехали"
+              issue from the legacy component. */}
           {visiblePlots.map((plot) => {
             if (!isPlotActive(plot.statusName)) return null;
             const palette = plotPalette(plot);
             const isSelected = selectedPlot?.number === plot.number;
             const coord: LngLat = [plot.center[1], plot.center[0]];
+            const size = isSelected ? 26 : 20;
             return (
               <YMapMarker
                 key={`mark-${plot.number}`}
@@ -1096,21 +1134,27 @@ export default function InteractivePlotMap3({
                 zIndex={isSelected ? 1000 : isPlotAvailable(plot.statusName) ? 200 : 100}
                 onClick={() => setSelectedPlot(plot)}
               >
-                <div
-                  className="inline-flex items-center justify-center rounded-full cursor-pointer select-none shadow-[0_0_0_1.5px_#fff,0_2px_4px_rgba(0,0,0,0.35)]"
-                  style={{
-                    width: isSelected ? 26 : 20,
-                    height: isSelected ? 26 : 20,
-                    fontSize: isSelected ? 10 : 9,
-                    fontWeight: 800,
-                    color: "#fff",
-                    background: isSelected ? "#22c55e" : palette.fill,
-                    transform: "translate(-50%, -50%)",
-                    fontFamily:
-                      "var(--font-inter), system-ui, -apple-system, sans-serif",
-                  }}
-                >
-                  {plot.number}
+                <div style={{ position: "relative", width: 0, height: 0 }}>
+                  <div
+                    className="flex items-center justify-center rounded-full cursor-pointer select-none shadow-[0_0_0_1.5px_#fff,0_2px_4px_rgba(0,0,0,0.35)]"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: size,
+                      height: size,
+                      marginLeft: -size / 2,
+                      marginTop: -size / 2,
+                      fontSize: isSelected ? 10 : 9,
+                      fontWeight: 800,
+                      color: "#fff",
+                      background: isSelected ? "#22c55e" : palette.fill,
+                      fontFamily:
+                        "var(--font-inter), system-ui, -apple-system, sans-serif",
+                    }}
+                  >
+                    {plot.number}
+                  </div>
                 </div>
               </YMapMarker>
             );
@@ -1129,7 +1173,9 @@ export default function InteractivePlotMap3({
             />
           )}
 
-          {/* Route endpoints */}
+          {/* Route endpoints — labeled pills that sit above their
+              coordinate via the same 0×0 anchor pattern as the plot
+              markers. The pill's bottom edge lands on the point. */}
           {routeStart && (
             <YMapMarker
               key="route-start"
@@ -1137,12 +1183,19 @@ export default function InteractivePlotMap3({
               draggable={false}
               zIndex={2000}
             >
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black shadow-[0_0_0_2px_#fff,0_2px_6px_rgba(0,0,0,0.35)] whitespace-nowrap"
-                style={{ transform: "translate(-50%, -100%)" }}
-              >
-                <HomeIcon className="w-3 h-3" strokeWidth={3} />
-                {routeStartLabel}
+              <div style={{ position: "relative", width: 0, height: 0 }}>
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black shadow-[0_0_0_2px_#fff,0_2px_6px_rgba(0,0,0,0.35)] whitespace-nowrap"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    bottom: 4,
+                    transform: "translate(-50%, 0)",
+                  }}
+                >
+                  <HomeIcon className="w-3 h-3" strokeWidth={3} />
+                  {routeStartLabel}
+                </div>
               </div>
             </YMapMarker>
           )}
@@ -1153,12 +1206,19 @@ export default function InteractivePlotMap3({
               draggable={false}
               zIndex={2000}
             >
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black shadow-[0_0_0_2px_#fff,0_2px_6px_rgba(0,0,0,0.35)] whitespace-nowrap"
-                style={{ transform: "translate(-50%, -100%)" }}
-              >
-                <MapPin className="w-3 h-3" strokeWidth={3} />
-                {villageName}
+              <div style={{ position: "relative", width: 0, height: 0 }}>
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black shadow-[0_0_0_2px_#fff,0_2px_6px_rgba(0,0,0,0.35)] whitespace-nowrap"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    bottom: 4,
+                    transform: "translate(-50%, 0)",
+                  }}
+                >
+                  <MapPin className="w-3 h-3" strokeWidth={3} />
+                  {villageName}
+                </div>
               </div>
             </YMapMarker>
           )}
@@ -1371,8 +1431,37 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Right-bottom controls */}
-        <div className="absolute right-3 bottom-3 z-30 flex flex-col gap-1.5">
+        {/* Top-right single map-type toggle. Shows the OPPOSITE state:
+            currently on scheme → button says "Спутник" and one tap
+            switches, and vice versa. User asked for this UX explicitly. */}
+        <div className="absolute top-3 right-3 z-30">
+          <button
+            type="button"
+            onClick={() =>
+              setMapType((m) => (m === "map" ? "satellite" : "map"))
+            }
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/95 backdrop-blur-md text-gray-800 hover:bg-white text-xs font-bold shadow-xl ring-1 ring-black/5 transition-all"
+            aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
+          >
+            {mapType === "map" ? (
+              <>
+                <Layers className="w-3.5 h-3.5 text-emerald-700" />
+                Спутник
+              </>
+            ) : (
+              <>
+                <MapIcon className="w-3.5 h-3.5 text-emerald-700" />
+                Схема
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Right-bottom zoom controls.
+            Bottom offset is generous (bottom-24 = 96 px) so the
+            "Подберу участок" floating-action button that the global
+            layout places at bottom-right doesn't overlap them. */}
+        <div className="absolute right-3 bottom-24 z-30">
           <div className="flex flex-col bg-white rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
             <button
               type="button"
@@ -1390,34 +1479,6 @@ export default function InteractivePlotMap3({
               aria-label="Отдалить"
             >
               <Minus className="w-4 h-4" strokeWidth={2.5} />
-            </button>
-          </div>
-          <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/5 p-0.5 flex flex-col gap-0.5">
-            <button
-              type="button"
-              onClick={() => setMapType("map")}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black transition-all ${
-                mapType === "map"
-                  ? "bg-gradient-to-br from-emerald-700 to-green-700 text-white"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-              aria-label="Схема"
-              title="Схема"
-            >
-              СХ
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapType("satellite")}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black transition-all ${
-                mapType === "satellite"
-                  ? "bg-gradient-to-br from-emerald-700 to-green-700 text-white"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-              aria-label="Спутник"
-              title="Спутник"
-            >
-              СП
             </button>
           </div>
         </div>
