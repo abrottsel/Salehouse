@@ -148,11 +148,15 @@ function formatDistance(km: number): string {
 }
 
 function formatDuration(min: number): string {
-  if (min < 60) return `${min} мин`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (m === 0) return `${h} ч`;
-  return `${h} ч ${m} мин`;
+  // Always round to whole minutes — OSRM returns seconds, we convert to
+  // minutes as a float, and the route info bar must not show a raw
+  // 51.78333333333333 mess to the user.
+  const m = Math.round(min);
+  if (m < 60) return `${m} мин`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  if (rem === 0) return `${h} ч`;
+  return `${h} ч ${rem} мин`;
 }
 
 type MapType = "map" | "satellite" | "hybrid";
@@ -728,7 +732,10 @@ export default function InteractivePlotMap({
         },
         { suppressMapOpenBlock: true }
       );
-      mapInstanceRef.current.options.set("minZoom", 14);
+      // Allow zooming out far enough to see a full home→village route
+      // (can be 50–100 km, would not fit at zoom 14). Plot-picking view
+      // is still fit to village bounds on init via setBounds.
+      mapInstanceRef.current.options.set("minZoom", 5);
       mapInstanceRef.current.options.set("maxZoom", 19);
       mapInstanceRef.current.setType(
         mapType === "satellite"
