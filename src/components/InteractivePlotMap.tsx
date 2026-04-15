@@ -1884,16 +1884,31 @@ export default function InteractivePlotMap({
           }
         }
 
-        /* ─── Hide Yandex Maps "Создать свою карту" in the copyright block ─── */
-        /* The copyright block contains three links: © Яндекс, Условия
-           использования, Создать свою карту. The last one is the "create
-           your own map" promotion we want to drop. Yandex's versioned
-           class name changes (2-1-79, 2-1-80, etc) so we target all
-           variants plus a generic attribute-based fallback. */
-        .ymaps-2-1-79-copyright__link[href*="constructor"],
-        .ymaps-2-1-79-copyright__link[href*="create"],
+        /* ─── Hide Yandex Maps footer buttons ───
+           We want gone:
+             1) "Открыть в Яндекс Картах" (despite suppressMapOpenBlock,
+                this button still renders in some 2.1 builds since the
+                option was renamed / behavior regressed).
+             2) "Создать свою карту" link in the copyright block.
+           Yandex's versioned class names change (2-1-79, 2-1-80, …) so
+           we target everything via wildcard attribute selectors plus
+           keep the specific versioned ones as belt-and-braces. © Яндекс
+           and the ToS link must stay (license requirement). */
+        [class*="ymaps-"][class*="map-copyrights-promo"],
+        [class*="ymaps-"][class*="copyrights-pane-text__promo"],
+        [class*="ymaps-"][class*="gotoymaps"],
+        [class*="ymaps-"][class*="gotomap"],
         [class*="ymaps-"][class*="copyright__link"][href*="constructor"],
         [class*="ymaps-"][class*="copyright__link"][href*="create"] {
+          display: none !important;
+        }
+        /* Belt-and-braces: hide any <a> inside a ymaps copyright container
+           whose href points at Yandex's "create your own map" wizard or
+           the "open in Yandex Maps" deep link. Keeps the © Яндекс and
+           ToS links (they don't match these patterns). */
+        [class*="ymaps-"][class*="copyright"] a[href*="/constructor"],
+        [class*="ymaps-"][class*="copyright"] a[href*="/?ll"],
+        [class*="ymaps-"][class*="copyright"] a[href*="yandex.ru/maps/?"] {
           display: none !important;
         }
       `}</style>
