@@ -44,10 +44,13 @@ export default async function VillageV3Page({ params }: Props) {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-stone-50 pt-20">
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 pb-8">
+      <main className="min-h-screen bg-stone-50 pt-16 lg:pt-20">
+        {/* Full-bleed layout — no max-width. On 2560 px monitors the
+            map fills the entire width so nothing feels cramped, and
+            the sidebar + map can both breathe at their xl / 2xl sizes. */}
+        <div className="px-2 sm:px-3 lg:px-4 pb-6">
           {/* Breadcrumb back to the real village page */}
-          <div className="mb-3 flex items-center gap-2 text-xs">
+          <div className="mb-2 flex items-center gap-2 text-xs">
             <Link
               href={`/village/${village.slug}`}
               className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-semibold"
@@ -66,13 +69,6 @@ export default async function VillageV3Page({ params }: Props) {
             villageName={village.name}
             villageSlug={village.slug}
           />
-
-          <div className="mt-4 rounded-xl bg-amber-50 ring-1 ring-amber-200 p-3 text-[11px] text-amber-900 leading-relaxed">
-            <b>Phase 1 scope:</b> карта + полигоны + маркеры + выбор + zoom / scheme-satellite.
-            Остальное (sidebar, фильтры, «Мои места», маршрут) — в Phase 2–3.
-            Эта страница скрыта от поисковиков (<code>robots: noindex</code>)
-            и доступна только по прямой ссылке.
-          </div>
         </div>
       </main>
       <Footer />

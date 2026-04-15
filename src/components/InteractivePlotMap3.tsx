@@ -246,6 +246,7 @@ type ReactifiedYmaps3 = {
     } & Record<string, unknown>
   >;
   YMapDefaultSchemeLayer: ComponentType<Record<string, unknown>>;
+  YMapDefaultSatelliteLayer: ComponentType<Record<string, unknown>>;
   YMapDefaultFeaturesLayer: ComponentType<Record<string, unknown>>;
   YMapLayer: ComponentType<Record<string, unknown>>;
   YMapTileDataSource: ComponentType<Record<string, unknown>>;
@@ -837,56 +838,55 @@ export default function InteractivePlotMap3({
   const {
     YMap,
     YMapDefaultSchemeLayer,
+    YMapDefaultSatelliteLayer,
     YMapDefaultFeaturesLayer,
-    YMapLayer,
-    YMapTileDataSource,
     YMapFeature,
     YMapMarker,
     YMapListener,
   } = bundle.components;
 
   return (
-    <section className="relative w-full h-[calc(100vh-80px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]">
+    <section className="relative w-full h-[calc(100vh-96px)] min-h-[640px] bg-stone-200 rounded-2xl overflow-hidden ring-1 ring-black/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)]">
       {/* ───── Left sidebar ───── */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[340px] 2xl:w-[380px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col">
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[288px] xl:w-[360px] 2xl:w-[420px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col">
         {/* Header — title + stats + prominent call button right below */}
-        <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-          <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
+        <div className="px-4 xl:px-5 pt-4 xl:pt-5 pb-3 xl:pb-4 border-b border-gray-100">
+          <div className="text-[9px] xl:text-[10px] uppercase font-bold text-emerald-700 tracking-wider">
             Карта участков · v3
           </div>
-          <div className="text-xl font-black text-gray-900 leading-tight">
+          <div className="text-xl xl:text-2xl 2xl:text-3xl font-black text-gray-900 leading-tight">
             {villageName}
           </div>
-          <div className="mt-2 grid grid-cols-4 gap-2">
+          <div className="mt-2 xl:mt-3 grid grid-cols-4 gap-2">
             <div>
-              <div className="text-[8px] uppercase font-bold text-gray-500 tracking-wider">
+              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-gray-500 tracking-wider">
                 Всего
               </div>
-              <div className="text-base font-black text-gray-900 leading-none mt-0.5">
+              <div className="text-base xl:text-lg 2xl:text-xl font-black text-gray-900 leading-none mt-0.5">
                 {data.plots.length}
               </div>
             </div>
             <div>
-              <div className="text-[8px] uppercase font-bold text-green-600 tracking-wider">
+              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-green-600 tracking-wider">
                 Свободно
               </div>
-              <div className="text-base font-black text-green-600 leading-none mt-0.5">
+              <div className="text-base xl:text-lg 2xl:text-xl font-black text-green-600 leading-none mt-0.5">
                 {data.statistics.free}
               </div>
             </div>
             <div>
-              <div className="text-[8px] uppercase font-bold text-blue-600 tracking-wider">
+              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-blue-600 tracking-wider">
                 Бронь
               </div>
-              <div className="text-base font-black text-blue-600 leading-none mt-0.5">
+              <div className="text-base xl:text-lg 2xl:text-xl font-black text-blue-600 leading-none mt-0.5">
                 {data.statistics.reserved}
               </div>
             </div>
             <div>
-              <div className="text-[8px] uppercase font-bold text-gray-500 tracking-wider">
+              <div className="text-[8px] xl:text-[9px] uppercase font-bold text-gray-500 tracking-wider">
                 Продано
               </div>
-              <div className="text-base font-black text-gray-500 leading-none mt-0.5">
+              <div className="text-base xl:text-lg 2xl:text-xl font-black text-gray-500 leading-none mt-0.5">
                 {data.statistics.sold}
               </div>
             </div>
@@ -898,29 +898,29 @@ export default function InteractivePlotMap3({
               without needing to scroll past the price filters. */}
           <a
             href="tel:+79859052555"
-            className="mt-3 flex items-center justify-center gap-1.5 w-full h-9 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] hover:from-green-100 hover:to-emerald-100 transition-all"
+            className="mt-3 xl:mt-4 flex items-center justify-center gap-1.5 w-full h-9 xl:h-10 2xl:h-11 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] xl:text-[13px] 2xl:text-sm hover:from-green-100 hover:to-emerald-100 transition-all"
           >
-            <Phone className="w-3.5 h-3.5" />
+            <Phone className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
             +7 (985) 905-25-55
           </a>
         </div>
 
         {/* Selected plot card */}
-        <div className="px-4 pt-3 pb-3 border-b border-gray-100">
+        <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4 border-b border-gray-100">
           {selectedPlot ? (
-            <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-3">
+            <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-3 xl:p-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
+                  <div className="text-[9px] xl:text-[10px] uppercase font-bold text-emerald-700 tracking-wider">
                     Участок
                   </div>
-                  <div className="text-xl font-black text-gray-900 leading-none mt-0.5">
+                  <div className="text-xl xl:text-2xl 2xl:text-3xl font-black text-gray-900 leading-none mt-0.5">
                     № {selectedPlot.number}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <span
-                    className={`inline-flex items-center px-2 h-5 rounded-full text-[9px] font-black ${
+                    className={`inline-flex items-center px-2 h-5 xl:h-6 rounded-full text-[9px] xl:text-[10px] font-black ${
                       isPlotAvailable(selectedPlot.statusName)
                         ? "bg-green-100 text-green-800"
                         : isPlotReserved(selectedPlot.statusName)
@@ -946,7 +946,7 @@ export default function InteractivePlotMap3({
                   />
                 </div>
               </div>
-              <div className="mt-2 space-y-0.5 text-[11px]">
+              <div className="mt-2 xl:mt-3 space-y-0.5 xl:space-y-1 text-[11px] xl:text-[13px]">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Площадь</span>
                   <span className="font-bold text-gray-900 tabular-nums">
@@ -959,35 +959,43 @@ export default function InteractivePlotMap3({
                     {formatRub(selectedPlot.pricePerHundred)}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline pt-1 border-t border-emerald-200/60 mt-1">
+                <div className="flex justify-between items-baseline pt-1 xl:pt-2 border-t border-emerald-200/60 mt-1 xl:mt-2">
                   <span className="text-gray-500">Итого</span>
-                  <span className="font-black text-green-700 text-sm tabular-nums">
+                  <span className="font-black text-green-700 text-sm xl:text-base 2xl:text-lg tabular-nums">
                     {formatRub(selectedPlot.totalCost)}
                   </span>
                 </div>
               </div>
               {!isSoldSelected && (
-                <a
-                  href="#contact-form"
-                  className="mt-2.5 block w-full bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white py-2 rounded-lg font-bold text-[11px] text-center shadow-md shadow-green-800/25 transition-all"
-                >
-                  Записаться на просмотр
-                </a>
+                <div className="mt-2.5 xl:mt-3 grid grid-cols-1 gap-1.5">
+                  <a
+                    href="#contact-form"
+                    className="block w-full bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white py-2 xl:py-2.5 2xl:py-3 rounded-lg font-bold text-[11px] xl:text-[13px] 2xl:text-sm text-center shadow-md shadow-green-800/25 transition-all"
+                  >
+                    Забронировать
+                  </a>
+                  <a
+                    href="#contact-form"
+                    className="block w-full bg-white ring-1 ring-emerald-200 text-emerald-700 hover:bg-emerald-50 py-2 xl:py-2.5 2xl:py-3 rounded-lg font-bold text-[11px] xl:text-[13px] 2xl:text-sm text-center transition-colors"
+                  >
+                    Записаться на просмотр
+                  </a>
+                </div>
               )}
             </div>
           ) : (
-            <div className="text-[11px] text-gray-400 text-center py-3">
+            <div className="text-[11px] xl:text-[13px] text-gray-400 text-center py-3">
               Кликните на участок на карте
             </div>
           )}
         </div>
 
         {/* Status legend */}
-        <div className="px-4 pt-3 pb-3 border-b border-gray-100">
-          <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-2">
+        <div className="px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4 border-b border-gray-100">
+          <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-2">
             Статус
           </h3>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 xl:gap-y-2">
             <LegendDot color="#22c55e" label="Свободен" />
             <LegendDot color="#3b82f6" label="Забронирован" />
             <LegendDot color="#9ca3af" label="Продан" muted />
@@ -997,11 +1005,11 @@ export default function InteractivePlotMap3({
 
         {/* Price tier filters */}
         {data.priceTiers.length > 0 && (
-          <div className="flex-1 overflow-y-auto px-4 pt-3 pb-3">
-            <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-2">
+          <div className="flex-1 overflow-y-auto px-4 xl:px-5 pt-3 xl:pt-4 pb-3 xl:pb-4">
+            <h3 className="text-[9px] xl:text-[10px] font-bold text-gray-900 uppercase tracking-wider mb-2">
               Цена за сотку
             </h3>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 xl:space-y-2">
               {TIER_COLORS.slice(0, data.priceTiers.length).map((tier, i) => {
                 const min = data.priceTiers[i];
                 const max =
@@ -1020,7 +1028,7 @@ export default function InteractivePlotMap3({
                     className="flex items-center gap-2 w-full text-left group"
                   >
                     <span
-                      className={`w-3 h-3 rounded-full shrink-0 ring-2 shadow-sm transition-all ${
+                      className={`w-3 h-3 xl:w-3.5 xl:h-3.5 rounded-full shrink-0 ring-2 shadow-sm transition-all ${
                         on || enabledTiers.size === 0
                           ? "ring-white"
                           : "ring-gray-200 opacity-40 grayscale"
@@ -1028,7 +1036,7 @@ export default function InteractivePlotMap3({
                       style={{ backgroundColor: tier.dot }}
                     />
                     <span
-                      className={`text-[10px] font-semibold tabular-nums transition-colors ${
+                      className={`text-[10px] xl:text-[12px] font-semibold tabular-nums transition-colors ${
                         on || enabledTiers.size === 0
                           ? "text-gray-800 group-hover:text-gray-900"
                           : "text-gray-400 line-through"
@@ -1048,19 +1056,16 @@ export default function InteractivePlotMap3({
       {/* ───── Map column ───── */}
       <div className="absolute inset-0 lg:left-[288px] xl:left-[340px] 2xl:left-[380px]">
         <YMap location={location}>
-          <YMapDefaultSchemeLayer theme="light" />
-          <YMapDefaultFeaturesLayer />
-
-          {mapType === "satellite" && (
-            <>
-              <YMapTileDataSource
-                id="sat-source"
-                raster={{ type: "satellite" }}
-                copyrights={["© Яндекс"]}
-              />
-              <YMapLayer source="sat-source" type="ground" />
-            </>
+          {/* Base layer — scheme OR satellite, mutually exclusive.
+              YMapDefaultSatelliteLayer ships with ymaps3 core, so no
+              extra ymaps3.import() is needed — it's just another named
+              export from the main imperative module. */}
+          {mapType === "satellite" ? (
+            <YMapDefaultSatelliteLayer />
+          ) : (
+            <YMapDefaultSchemeLayer theme="light" />
           )}
+          <YMapDefaultFeaturesLayer />
 
           {/* Village boundary — same green outline as the legacy 2.1
               component. No fill, just a thick emerald stroke so you
@@ -1431,54 +1436,48 @@ export default function InteractivePlotMap3({
           )}
         </div>
 
-        {/* Top-right single map-type toggle. Shows the OPPOSITE state:
-            currently on scheme → button says "Спутник" and one tap
-            switches, and vice versa. User asked for this UX explicitly. */}
-        <div className="absolute top-3 right-3 z-30">
+        {/* Top-right stack: map-type toggle + zoom controls.
+            Moving everything to the top-right cleanly avoids the
+            global "Подберу участок" FAB that the page layout places
+            at bottom-right. One vertical stack, one location.
+
+            Map-type toggle is a single icon-only button whose icon
+            is the TARGET state: on scheme it shows the satellite
+            Layers icon (tap → satellite); on satellite it shows the
+            scheme Map icon (tap → scheme). Default = scheme. */}
+        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
           <button
             type="button"
             onClick={() =>
               setMapType((m) => (m === "map" ? "satellite" : "map"))
             }
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/95 backdrop-blur-md text-gray-800 hover:bg-white text-xs font-bold shadow-xl ring-1 ring-black/5 transition-all"
+            className="w-10 h-10 xl:w-11 xl:h-11 rounded-xl bg-white/95 backdrop-blur-md text-emerald-700 hover:bg-white shadow-xl ring-1 ring-black/5 transition-all flex items-center justify-center active:scale-95"
             aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
+            title={mapType === "map" ? "Спутник" : "Схема"}
           >
             {mapType === "map" ? (
-              <>
-                <Layers className="w-3.5 h-3.5 text-emerald-700" />
-                Спутник
-              </>
+              <Layers className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.4} />
             ) : (
-              <>
-                <MapIcon className="w-3.5 h-3.5 text-emerald-700" />
-                Схема
-              </>
+              <MapIcon className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.4} />
             )}
           </button>
-        </div>
-
-        {/* Right-bottom zoom controls.
-            Bottom offset is generous (bottom-24 = 96 px) so the
-            "Подберу участок" floating-action button that the global
-            layout places at bottom-right doesn't overlap them. */}
-        <div className="absolute right-3 bottom-24 z-30">
           <div className="flex flex-col bg-white rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-9 h-9 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-10 h-10 xl:w-11 xl:h-11 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
               aria-label="Приблизить"
             >
-              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <Plus className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.5} />
             </button>
             <div className="h-px bg-gray-100 mx-1.5" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-9 h-9 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-10 h-10 xl:w-11 xl:h-11 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
               aria-label="Отдалить"
             >
-              <Minus className="w-4 h-4" strokeWidth={2.5} />
+              <Minus className="w-4 h-4 xl:w-5 xl:h-5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -1517,16 +1516,34 @@ export default function InteractivePlotMap3({
           </div>
         )}
 
-        {/* Mobile: minimal selected plot sheet */}
+        {/* Mobile: selected plot sheet (lg hidden) — full-width card
+            with price, area, status, FavoriteHeart and the Записаться
+            CTA so the mobile experience is first-class. */}
         {selectedPlot && (
-          <div className="lg:hidden absolute bottom-3 left-3 right-20 z-20 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 px-3 py-2">
-            <div className="flex items-center justify-between gap-2">
+          <div className="lg:hidden absolute bottom-3 left-3 right-3 z-20 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 px-3 py-2.5">
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
-                  Участок № {selectedPlot.number}
+                <div className="flex items-center gap-1.5">
+                  <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
+                    Участок № {selectedPlot.number}
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-1.5 h-4 rounded-full text-[8px] font-black ${
+                      isPlotAvailable(selectedPlot.statusName)
+                        ? "bg-green-100 text-green-800"
+                        : isPlotReserved(selectedPlot.statusName)
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {selectedPlot.statusName}
+                  </span>
                 </div>
-                <div className="text-sm font-black text-gray-900 truncate">
+                <div className="text-sm font-black text-gray-900 truncate mt-0.5">
                   {selectedPlot.area} сот · {formatRub(selectedPlot.totalCost)}
+                </div>
+                <div className="text-[10px] text-gray-500 truncate">
+                  {formatRub(selectedPlot.pricePerHundred)} / сот
                 </div>
               </div>
               <FavoriteHeart
@@ -1541,9 +1558,25 @@ export default function InteractivePlotMap3({
                   status: selectedPlot.statusName,
                 }}
                 variant="light"
-                className="!w-7 !h-7 shrink-0"
+                className="!w-8 !h-8 shrink-0"
               />
             </div>
+            {!isSoldSelected && (
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
+                <a
+                  href="#contact-form"
+                  className="flex items-center justify-center gap-1 h-9 rounded-lg bg-gradient-to-r from-green-700 to-emerald-700 text-white text-[11px] font-bold shadow-md shadow-green-800/25"
+                >
+                  Забронировать
+                </a>
+                <a
+                  href="#contact-form"
+                  className="flex items-center justify-center gap-1 h-9 rounded-lg bg-white ring-1 ring-emerald-200 text-emerald-700 text-[11px] font-bold hover:bg-emerald-50 transition-colors"
+                >
+                  Записаться
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>
