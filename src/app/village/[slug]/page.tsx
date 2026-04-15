@@ -4,7 +4,11 @@ import VillageHero from "@/components/VillageHero";
 import VillageGallery from "@/components/VillageGallery";
 import PlotsSection from "@/components/PlotsSection";
 import VillageMap from "@/components/VillageMap";
-import InteractivePlotMap from "@/components/InteractivePlotMap";
+// Phase 5 switchover: /village/[slug] now renders the ymaps3
+// component. The legacy 2.1 component is retained for one release
+// as src/components/InteractivePlotMap.tsx in case we need a fast
+// git revert, but it is no longer imported anywhere.
+import InteractivePlotMap from "@/components/InteractivePlotMap3";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
