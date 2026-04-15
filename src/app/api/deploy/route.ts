@@ -106,7 +106,16 @@ export async function POST(req: NextRequest) {
   // service. `--property=KillMode=process` prevents systemd from
   // killing subprocesses of deploy.sh if we ever stop the unit early.
   const unitName = `zemplus-deploy-${Date.now()}`;
+  // systemd-run starts with a blank environment — no HOME, no PATH,
+  // no USER. PM2 needs HOME to find its dump file (otherwise it
+  // silently creates a fresh /etc/.pm2 instance and "reload zemplus"
+  // targets a ghost process list). Setting PATH too so `npm`, `npx`,
+  // `pm2`, `curl` resolve.
   const envArgs = [
+    "--setenv=HOME=/root",
+    "--setenv=USER=root",
+    "--setenv=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "--setenv=PM2_HOME=/root/.pm2",
     `--setenv=DEPLOY_REF=${ref}`,
     `--setenv=DEPLOY_SHA=${sha}`,
     `--setenv=DEPLOY_ACTOR=${actor}`,
