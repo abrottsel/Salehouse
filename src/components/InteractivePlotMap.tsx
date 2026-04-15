@@ -6,7 +6,7 @@ import {
   Loader2,
   Plus,
   Minus,
-  Map,
+  Map as MapIcon,
   Layers,
   Phone,
   X,
@@ -1316,7 +1316,7 @@ export default function InteractivePlotMap({
                   aria-label="Схема"
                   title="Схема"
                 >
-                  <Map className="w-3.5 h-3.5" />
+                  <MapIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setMapType("satellite")}
