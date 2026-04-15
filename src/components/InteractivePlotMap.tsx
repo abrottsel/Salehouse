@@ -6,8 +6,8 @@ import {
   Loader2,
   Plus,
   Minus,
+  Map,
   Layers,
-  Mountain,
   Phone,
   X,
   MapPin,
@@ -151,7 +151,7 @@ function formatDuration(min: number): string {
   return `${h} ч ${m} мин`;
 }
 
-type MapType = "satellite" | "hybrid";
+type MapType = "map" | "satellite" | "hybrid";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -178,7 +178,7 @@ export default function InteractivePlotMap({
   const [selectedPlot, setSelectedPlot] = useState<NormalizedPlot | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [enabledTiers, setEnabledTiers] = useState<Set<number>>(new Set());
-  const [mapType, setMapType] = useState<MapType>("satellite");
+  const [mapType, setMapType] = useState<MapType>("map");
   const [currentZoom, setCurrentZoom] = useState(17);
 
   // User places (home/work) — stored in localStorage, show route to village
@@ -435,60 +435,109 @@ export default function InteractivePlotMap({
     [persistPlace]
   );
 
-  // Detect user location via browser Geolocation + reverse geocode via proxy
+  // Detect user location via browser Geolocation + reverse geocode via proxy.
+  //
+  // Two-stage strategy for reliability on desktop/mobile:
+  //   1. Try enableHighAccuracy:true, timeout 8s — gets a GPS fix when
+  //      possible (mobile) or fails fast indoors / on desktop.
+  //   2. On POSITION_UNAVAILABLE or TIMEOUT, fall back to
+  //      enableHighAccuracy:false which lets the browser use WiFi/IP
+  //      based lookup (more permissive, works on desktop).
+  //
+  // Everything is wrapped in an outer try/catch so a thrown error inside
+  // the success path (e.g. drawRoute failing because the map isn't ready)
+  // surfaces to the user instead of getting silently swallowed.
   const detectLocation = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGeocodeError("Браузер не поддерживает геолокацию");
       return;
     }
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setGeocodeError("Геолокация работает только на HTTPS");
+      return;
+    }
+
     setGeocodeError("");
     setGeocodeLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+
+    const onSuccess = async (pos: GeolocationPosition) => {
+      try {
+        const coordsArr: [number, number] = [
+          pos.coords.latitude,
+          pos.coords.longitude,
+        ];
+        // eslint-disable-next-line no-console
+        console.info("[geolocation] got fix:", {
+          lat: coordsArr[0],
+          lon: coordsArr[1],
+          accuracy: pos.coords.accuracy,
+        });
+
+        let fullAddress = `${coordsArr[0].toFixed(4)}, ${coordsArr[1].toFixed(4)}`;
         try {
-          const coordsArr: [number, number] = [
-            pos.coords.latitude,
-            pos.coords.longitude,
-          ];
-          let fullAddress = `${coordsArr[0].toFixed(4)}, ${coordsArr[1].toFixed(
-            4
-          )}`;
-          try {
-            const res = await fetch(
-              `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`
-            );
-            if (res.ok) {
-              const data = (await res.json()) as { address?: string };
-              if (data.address) fullAddress = data.address;
-            }
-          } catch (e) {
-            console.warn("reverse geocode failed:", e);
-          }
-          persistPlace({
-            id: makeId(),
-            label: newPlaceLabel || "Моё место",
-            address: fullAddress,
-            coords: coordsArr,
-          });
-        } finally {
-          setGeocodeLoading(false);
-        }
-      },
-      (err) => {
-        setGeocodeLoading(false);
-        if (err.code === err.PERMISSION_DENIED) {
-          setGeocodeError(
-            "Нет разрешения на геолокацию. Разрешите в настройках браузера"
+          const res = await fetch(
+            `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`,
           );
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          setGeocodeError("Не удалось определить местоположение");
-        } else if (err.code === err.TIMEOUT) {
-          setGeocodeError("Геолокация не отвечает, попробуйте ещё раз");
-        } else {
-          setGeocodeError("Ошибка геолокации");
+          if (res.ok) {
+            const data = (await res.json()) as { address?: string };
+            if (data.address) fullAddress = data.address;
+          } else {
+            console.warn("[geolocation] reverse geocode HTTP", res.status);
+          }
+        } catch (e) {
+          console.warn("[geolocation] reverse geocode failed:", e);
         }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+
+        persistPlace({
+          id: makeId(),
+          label: newPlaceLabel || "Моё место",
+          address: fullAddress,
+          coords: coordsArr,
+        });
+      } catch (e) {
+        console.error("[geolocation] success handler threw:", e);
+        setGeocodeError(
+          `Ошибка обработки координат: ${e instanceof Error ? e.message : "unknown"}`,
+        );
+      } finally {
+        setGeocodeLoading(false);
+      }
+    };
+
+    const onError = (err: GeolocationPositionError, stage: "hi" | "lo") => {
+      console.warn(`[geolocation] ${stage} error code=${err.code}: ${err.message}`);
+
+      // On hi-accuracy failure, try again without it — desktop + bad GPS
+      // coverage is very common.
+      if (stage === "hi" && err.code !== err.PERMISSION_DENIED) {
+        navigator.geolocation.getCurrentPosition(
+          onSuccess,
+          (err2) => onError(err2, "lo"),
+          { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
+        );
+        return;
+      }
+
+      setGeocodeLoading(false);
+      if (err.code === err.PERMISSION_DENIED) {
+        setGeocodeError(
+          "Нет разрешения на геолокацию. Кликните на 🔒 в адресной строке → Геолокация → Разрешить",
+        );
+      } else if (err.code === err.POSITION_UNAVAILABLE) {
+        setGeocodeError(
+          "Местоположение недоступно. Проверьте что в системных настройках разрешены службы геолокации (и отключите VPN, если включён — он может мешать)",
+        );
+      } else if (err.code === err.TIMEOUT) {
+        setGeocodeError("Слишком долго — попробуйте ещё раз или введите адрес вручную");
+      } else {
+        setGeocodeError(`Ошибка геолокации: ${err.message || "unknown"}`);
+      }
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      onSuccess,
+      (err) => onError(err, "hi"),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
     );
   }, [newPlaceLabel, persistPlace]);
 
@@ -527,7 +576,11 @@ export default function InteractivePlotMap({
       mapInstanceRef.current.options.set("minZoom", 14);
       mapInstanceRef.current.options.set("maxZoom", 19);
       mapInstanceRef.current.setType(
-        mapType === "hybrid" ? "yandex#hybrid" : "yandex#satellite"
+        mapType === "satellite"
+          ? "yandex#satellite"
+          : mapType === "hybrid"
+            ? "yandex#hybrid"
+            : "yandex#map"
       );
       // Track zoom changes for marker scaling
       mapInstanceRef.current.events.add("boundschange", () => {
@@ -538,7 +591,13 @@ export default function InteractivePlotMap({
     }
 
     const map = mapInstanceRef.current;
-    map.setType(mapType === "hybrid" ? "yandex#hybrid" : "yandex#satellite");
+    map.setType(
+      mapType === "satellite"
+        ? "yandex#satellite"
+        : mapType === "hybrid"
+          ? "yandex#hybrid"
+          : "yandex#map"
+    );
 
     // Clear
     plotObjectsRef.current.forEach((o) => map.geoObjects.remove(o));
@@ -561,11 +620,21 @@ export default function InteractivePlotMap({
       plotObjectsRef.current.push(border);
     }
 
-    // Marker template — small round dot with number
+    // Marker template — small round dot with number.
+    //
+    // Anchor trick: wrap the visible dot in a 0×0 positioning div so
+    // Yandex Maps places the wrapper exactly at the plot center. The
+    // inner .zp-dot is absolutely positioned with transform:translate(-50%,-50%)
+    // so it renders centered on the point regardless of its own size
+    // (dots grow/shrink across zoom levels). Without this wrapper the
+    // dot's top-left would sit at the point and all markers would drift
+    // down-and-right from their intended plot centers.
     const DotLayout = ymaps.templateLayoutFactory.createClass(
       [
+        '<div class="zp-dot-wrap">',
         '<div class="zp-dot zp-dot-$[properties.zpStatus]">',
         '<span class="zp-dot-num">$[properties.zpNumber]</span>',
+        "</div>",
         "</div>",
       ].join("")
     );
@@ -1238,6 +1307,18 @@ export default function InteractivePlotMap({
               </div>
               <div className="bg-white rounded-xl shadow-xl ring-1 ring-black/5 p-0.5 flex flex-col gap-0.5">
                 <button
+                  onClick={() => setMapType("map")}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    mapType === "map"
+                      ? "bg-gradient-to-br from-green-700 to-emerald-700 text-white"
+                      : "text-gray-500 hover:bg-gray-50"
+                  }`}
+                  aria-label="Схема"
+                  title="Схема"
+                >
+                  <Map className="w-3.5 h-3.5" />
+                </button>
+                <button
                   onClick={() => setMapType("satellite")}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
                     mapType === "satellite"
@@ -1245,19 +1326,9 @@ export default function InteractivePlotMap({
                       : "text-gray-500 hover:bg-gray-50"
                   }`}
                   aria-label="Спутник"
+                  title="Спутник"
                 >
                   <Layers className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setMapType("hybrid")}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                    mapType === "hybrid"
-                      ? "bg-gradient-to-br from-green-700 to-emerald-700 text-white"
-                      : "text-gray-500 hover:bg-gray-50"
-                  }`}
-                  aria-label="Гибрид"
-                >
-                  <Mountain className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -1412,11 +1483,23 @@ export default function InteractivePlotMap({
 
       {/* Round dot marker styles — zoom-responsive */}
       <style jsx global>{`
+        /* 0×0 anchor div — Yandex Maps positions this at the plot
+           center; the inner .zp-dot is centered on top of it via
+           absolute positioning + translate(-50%,-50%). Without this
+           wrapper, the dot's top-left would sit at the point. */
+        .zp-dot-wrap {
+          position: relative;
+          width: 0;
+          height: 0;
+        }
         .zp-dot {
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          display: inline-flex;
+          display: flex;
           align-items: center;
           justify-content: center;
           font-family: var(--font-inter), system-ui, sans-serif;
@@ -1520,6 +1603,19 @@ export default function InteractivePlotMap({
             box-shadow: 0 0 0 3px #fff, 0 0 0 10px rgba(34, 197, 94, 0.18),
               0 6px 16px rgba(34, 197, 94, 0.6);
           }
+        }
+
+        /* ─── Hide Yandex Maps "Создать свою карту" in the copyright block ─── */
+        /* The copyright block contains three links: © Яндекс, Условия
+           использования, Создать свою карту. The last one is the "create
+           your own map" promotion we want to drop. Yandex's versioned
+           class name changes (2-1-79, 2-1-80, etc) so we target all
+           variants plus a generic attribute-based fallback. */
+        .ymaps-2-1-79-copyright__link[href*="constructor"],
+        .ymaps-2-1-79-copyright__link[href*="create"],
+        [class*="ymaps-"][class*="copyright__link"][href*="constructor"],
+        [class*="ymaps-"][class*="copyright__link"][href*="create"] {
+          display: none !important;
         }
       `}</style>
     </section>
