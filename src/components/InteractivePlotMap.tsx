@@ -284,9 +284,20 @@ export default function InteractivePlotMap({
     });
   }, [data, enabledTiers]);
 
-  // Draw route line from a place to the village center
-  // Uses haversine distance × 1.35 for road estimate, ~55 km/h for time.
-  // No API key required, renders as a simple polyline + Placemarks.
+  // Draw route line from a place to the village center.
+  //
+  // Strategy:
+  //   1. Fetch a real driving route from /api/route (OSRM proxy). The
+  //      returned geometry is a list of [lat, lon] points following
+  //      actual roads, so the drawn polyline looks like the blue line
+  //      on ai-zem.com / Yandex Navigator rather than a straight-edge
+  //      dashed line.
+  //   2. On any failure (OSRM unreachable, no route, timeout), fall
+  //      back to a straight [from, to] polyline with a haversine-based
+  //      distance estimate so the feature still works end-to-end.
+  //
+  // In both cases the markers at either end are labeled stretchy pins
+  // ("Дом" / village name) so the user always knows which end is which.
   const drawRoute = useCallback(
     (place: UserPlace) => {
       const map = mapInstanceRef.current;
@@ -308,69 +319,118 @@ export default function InteractivePlotMap({
 
       const from = place.coords;
       const to = data.center;
+      // Keep a stable reference for the draw closure — place may be
+      // mutated elsewhere.
+      const label = place.label || "Дом";
 
-      const polyline = new ymaps.Polyline(
-        [from, to],
-        {},
-        {
-          strokeColor: "#3b82f6",
-          strokeWidth: 5,
-          strokeOpacity: 0.85,
-          strokeStyle: "shortdash",
-        }
-      );
-
-      // Use "stretchy" presets so the marker renders as a pin + text
-      // label. At far-out zoom levels the small preset icons were just a
-      // couple of pixels and invisible next to the dashed line — the
-      // labeled version stays readable at every zoom.
-      const startMark = new ymaps.Placemark(
-        from,
-        { iconContent: place.label || "Дом" },
-        {
-          preset: "islands#blueStretchyIcon",
-          iconColor: "#2563eb",
-          zIndex: 900,
-        }
-      );
-      const endMark = new ymaps.Placemark(
-        to,
-        { iconContent: villageName },
-        {
-          preset: "islands#greenStretchyIcon",
-          iconColor: "#16a34a",
-          zIndex: 900,
-        }
-      );
-
-      map.geoObjects.add(polyline);
-      map.geoObjects.add(startMark);
-      map.geoObjects.add(endMark);
-      multiRouteRef.current = [polyline, startMark, endMark];
-
-      // Fit bounds to show both endpoints
-      try {
-        const minLat = Math.min(from[0], to[0]);
-        const maxLat = Math.max(from[0], to[0]);
-        const minLon = Math.min(from[1], to[1]);
-        const maxLon = Math.max(from[1], to[1]);
-        map.setBounds(
-          [
-            [minLat, minLon],
-            [maxLat, maxLon],
-          ],
-          { checkZoomRange: true, zoomMargin: 80 }
+      const addMarkersAndFit = (
+        geometry: [number, number][],
+        distanceKm: number,
+        durationMin: number,
+      ) => {
+        const polyline = new ymaps.Polyline(
+          geometry,
+          {},
+          {
+            strokeColor: "#2563eb",
+            strokeWidth: 6,
+            strokeOpacity: 0.9,
+            // Solid line looks more like a real route; dashed was a
+            // workaround for the straight-line fallback.
+          },
         );
-      } catch {}
 
-      const straight = haversineKm(from, to);
-      const roadKm = estimateRoadKm(straight);
-      const duration = estimateDurationMin(roadKm);
-      setRouteInfo({
-        distance: formatDistance(roadKm),
-        duration: formatDuration(duration),
-      });
-      setActiveRouteId(place.id);
+        const startMark = new ymaps.Placemark(
+          from,
+          { iconContent: label },
+          {
+            preset: "islands#blueStretchyIcon",
+            iconColor: "#2563eb",
+            zIndex: 900,
+          },
+        );
+        const endMark = new ymaps.Placemark(
+          to,
+          { iconContent: villageName },
+          {
+            preset: "islands#greenStretchyIcon",
+            iconColor: "#16a34a",
+            zIndex: 900,
+          },
+        );
+
+        map.geoObjects.add(polyline);
+        map.geoObjects.add(startMark);
+        map.geoObjects.add(endMark);
+        multiRouteRef.current = [polyline, startMark, endMark];
+
+        // Fit bounds over the entire route geometry so both the
+        // winding road and both markers are visible at once.
+        try {
+          let minLat = Infinity;
+          let maxLat = -Infinity;
+          let minLon = Infinity;
+          let maxLon = -Infinity;
+          for (const [lat, lon] of geometry) {
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;
+            if (lon > maxLon) maxLon = lon;
+          }
+          map.setBounds(
+            [
+              [minLat, minLon],
+              [maxLat, maxLon],
+            ],
+            { checkZoomRange: true, zoomMargin: 80 },
+          );
+        } catch {}
+
+        setRouteInfo({
+          distance: formatDistance(distanceKm),
+          duration: formatDuration(durationMin),
+        });
+        setActiveRouteId(place.id);
+      };
+
+      // Kick off the real routing request. If it fails, fall through to
+      // the straight-line fallback so the feature still works when
+      // OSRM is unreachable.
+      (async () => {
+        try {
+          const res = await fetch(
+            `/api/route?from=${from[0]},${from[1]}&to=${to[0]},${to[1]}`,
+            { cache: "no-store" },
+          );
+          if (!res.ok) throw new Error(`route ${res.status}`);
+          const payload = (await res.json()) as {
+            ok?: boolean;
+            distanceKm?: number;
+            durationMin?: number;
+            geometry?: [number, number][];
+          };
+          if (
+            !payload.ok ||
+            !payload.geometry ||
+            payload.geometry.length < 2 ||
+            typeof payload.distanceKm !== "number" ||
+            typeof payload.durationMin !== "number"
+          ) {
+            throw new Error("malformed route payload");
+          }
+          addMarkersAndFit(
+            payload.geometry,
+            payload.distanceKm,
+            payload.durationMin,
+          );
+        } catch (e) {
+          console.warn("[route] OSRM failed, falling back to straight line:", e);
+          const straight = haversineKm(from, to);
+          const roadKm = estimateRoadKm(straight);
+          const duration = estimateDurationMin(roadKm);
+          addMarkersAndFit([from, to], roadKm, duration);
+        }
+      })();
     },
     [data, villageName]
   );
@@ -486,13 +546,21 @@ export default function InteractivePlotMap({
   );
 
   // Detect user location with a 3-stage strategy for reliability in RU:
-  //   1. navigator.geolocation, enableHighAccuracy:true (10s) — GPS fix
-  //   2. navigator.geolocation, enableHighAccuracy:false (20s) — Wi-Fi/IP
-  //   3. ymaps.geolocation.get({ provider: "yandex" }) — Yandex's server-side
-  //      IP lookup, works reliably inside Russia even when Google's
-  //      location service is unreachable (which is the common failure
-  //      mode on Safari + Chrome inside RU).
-  // Permission-denied still short-circuits to a clear error message.
+  //   1. navigator.geolocation, enableHighAccuracy:true (10s) — GPS fix,
+  //      works on mobile with location services enabled.
+  //   2. navigator.geolocation, enableHighAccuracy:false (20s) — browser
+  //      Wi-Fi/cell tower triangulation. Usually fails inside Russia
+  //      because the provider (Google Geolocation API) is blocked at
+  //      the network level on most connections.
+  //   3. Server-side IP lookup via /api/my-ip-location. Our Moscow box
+  //      hits ip-api.com (unblocked in RU) and returns approximate
+  //      city/district coordinates. City-level accuracy is fine for a
+  //      "Дом → Посёлок" distance estimate, and the user can still
+  //      refine the address manually. Yandex's own ymaps.geolocation.get
+  //      is intentionally NOT used here: in JS API 2.1 it requires a
+  //      paid API key and silently fails without one.
+  // PERMISSION_DENIED short-circuits stages 2/3 with a clear message
+  // about how to unblock the site permission.
   const detectLocation = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGeocodeError("Браузер не поддерживает геолокацию");
@@ -508,8 +576,9 @@ export default function InteractivePlotMap({
 
     const commitFix = async (
       coordsArr: [number, number],
-      source: "gps" | "wifi" | "yandex",
+      source: "gps" | "wifi" | "ip",
       accuracy?: number,
+      labelOverride?: string,
     ) => {
       // eslint-disable-next-line no-console
       console.info(`[geolocation] fix from ${source}:`, {
@@ -519,51 +588,58 @@ export default function InteractivePlotMap({
       });
 
       let fullAddress = `${coordsArr[0].toFixed(4)}, ${coordsArr[1].toFixed(4)}`;
-      try {
-        const res = await fetch(
-          `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`,
-        );
-        if (res.ok) {
-          const data = (await res.json()) as { address?: string };
-          if (data.address) fullAddress = data.address;
-        } else {
-          console.warn("[geolocation] reverse geocode HTTP", res.status);
+      if (labelOverride) {
+        fullAddress = labelOverride;
+      } else {
+        try {
+          const res = await fetch(
+            `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`,
+          );
+          if (res.ok) {
+            const data = (await res.json()) as { address?: string };
+            if (data.address) fullAddress = data.address;
+          } else {
+            console.warn("[geolocation] reverse geocode HTTP", res.status);
+          }
+        } catch (e) {
+          console.warn("[geolocation] reverse geocode failed:", e);
         }
-      } catch (e) {
-        console.warn("[geolocation] reverse geocode failed:", e);
       }
 
       persistPlace({
         id: makeId(),
-        label: newPlaceLabel || "Моё место",
+        label:
+          newPlaceLabel ||
+          (source === "ip" ? "Моё место (по IP)" : "Моё место"),
         address: fullAddress,
         coords: coordsArr,
       });
     };
 
-    const tryYandex = async () => {
-      const ymaps = window.ymaps;
-      if (!ymaps?.geolocation?.get) {
-        setGeocodeLoading(false);
-        setGeocodeError(
-          "Не удалось определить местоположение. Введите адрес вручную — например «Москва, Тверская 1»",
-        );
-        return;
-      }
+    // Server-side IP lookup via our Moscow proxy. Always works inside
+    // Russia because ip-api.com is unblocked and the request leaves
+    // from our server, not from the client device.
+    const tryIpLookup = async () => {
       try {
-        const result = await ymaps.geolocation.get({
-          provider: "yandex",
-          mapStateAutoApply: false,
-        });
-        const coords = result?.geoObjects?.get?.(0)?.geometry?.getCoordinates?.() as
-          | [number, number]
-          | undefined; // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (!coords || !isFinite(coords[0]) || !isFinite(coords[1])) {
-          throw new Error("Yandex geolocation returned no coords");
+        const res = await fetch("/api/my-ip-location", { cache: "no-store" });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          lat?: number;
+          lon?: number;
+          address?: string;
+          error?: string;
+        };
+        if (!data.ok || typeof data.lat !== "number" || typeof data.lon !== "number") {
+          throw new Error(data.error || "ip lookup failed");
         }
-        await commitFix(coords, "yandex");
+        await commitFix(
+          [data.lat, data.lon],
+          "ip",
+          undefined,
+          data.address || `${data.lat.toFixed(3)}, ${data.lon.toFixed(3)}`,
+        );
       } catch (e) {
-        console.error("[geolocation] yandex fallback failed:", e);
+        console.error("[geolocation] ip fallback failed:", e);
         setGeocodeError(
           "Не удалось определить местоположение. Введите адрес вручную — например «Москва, Тверская 1»",
         );
@@ -608,8 +684,8 @@ export default function InteractivePlotMap({
           { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 },
         );
       } else {
-        // Both native stages failed → Yandex server-side lookup.
-        tryYandex();
+        // Both native stages failed → server-side IP lookup.
+        tryIpLookup();
       }
     };
 
@@ -964,10 +1040,10 @@ export default function InteractivePlotMap({
                     </div>
                   </div>
                   <div>
-                    <div className="text-[9px] uppercase font-bold text-red-600 tracking-wider">
+                    <div className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">
                       Продано
                     </div>
-                    <div className="text-lg font-black text-red-600 leading-none mt-0.5">
+                    <div className="text-lg font-black text-gray-500 leading-none mt-0.5">
                       {data.statistics.sold}
                     </div>
                   </div>
