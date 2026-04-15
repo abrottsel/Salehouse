@@ -369,7 +369,14 @@ export default function InteractivePlotMap({
         multiRouteRef.current = [polyline, startMark, endMark];
 
         // Fit bounds over the entire route geometry so both the
-        // winding road and both markers are visible at once.
+        // winding road and both markers are visible at once. The
+        // zoomMargin is asymmetric to compensate for UI overlays that
+        // sit on top of the map and eat into the usable area —
+        // especially on mobile where the Мои места panel, the stats
+        // chip, and the selected-plot card cover ~40% of the viewport.
+        //
+        // Yandex setBounds accepts zoomMargin as [top, right, bottom, left]
+        // in pixels.
         try {
           let minLat = Infinity;
           let maxLat = -Infinity;
@@ -381,13 +388,27 @@ export default function InteractivePlotMap({
             if (lon < minLon) minLon = lon;
             if (lon > maxLon) maxLon = lon;
           }
+          // Detect coarse viewport size from the map container so the
+          // margins scale with the device. On a desktop the overlays
+          // are narrower relative to the canvas; on a phone they are
+          // giant, so we need much larger insets.
+          const mapEl = mapRef.current;
+          const w = mapEl?.clientWidth ?? 800;
+          const h = mapEl?.clientHeight ?? 600;
+          const isMobile = w < 640;
+          const zoomMargin = isMobile
+            ? [180, 30, 160, 20] // top Мои места + stats, bottom plot card
+            : [60, 60, 60, 60];
           map.setBounds(
             [
               [minLat, minLon],
               [maxLat, maxLon],
             ],
-            { checkZoomRange: true, zoomMargin: 80 },
+            { checkZoomRange: true, zoomMargin },
           );
+          // Sanity: avoid squashing bounds to invisibility when the
+          // overlays are larger than the canvas itself.
+          void h;
         } catch {}
 
         setRouteInfo({
@@ -395,6 +416,13 @@ export default function InteractivePlotMap({
           duration: formatDuration(durationMin),
         });
         setActiveRouteId(place.id);
+        // Close the Мои места panel on mobile once the route is drawn
+        // so the user can actually see it — the panel otherwise covers
+        // the top half of the screen.
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+          setShowPlacesPanel(false);
+          setAddingPlace(false);
+        }
       };
 
       // Kick off the real routing request. If it fails, fall through to
