@@ -418,12 +418,18 @@ export default function InteractivePlotMap3({
     initialSelectDone.current = true;
   }, [bundle, data]);
 
-  // ─── Pan to selected plot when it changes ──────────────────
+  // ─── Pan to selected plot when it changes (user-initiated only) ──
+  // Skip the very first selection: the auto-selected "featured" plot
+  // runs inside the initial mount effect and we want the map to stay
+  // centered on the village polygon midpoint, not jump to a random
+  // median-priced plot. A userHasSelected flag gates the pan so it
+  // only triggers on explicit plot clicks.
+  const userHasSelected = useRef(false);
   useEffect(() => {
     if (!selectedPlot) return;
     if (!initialSelectDone.current) return;
-    // Don't hijack the view when a route is active
-    if (activeRouteId) return;
+    if (!userHasSelected.current) return; // skip auto-select on init
+    if (activeRouteId) return; // don't hijack when a route is drawn
     setLocation({
       center: [selectedPlot.center[1], selectedPlot.center[0]],
       zoom: Math.max(zoom, 17),
@@ -432,6 +438,11 @@ export default function InteractivePlotMap3({
     // We intentionally don't depend on zoom to avoid camera jitter
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPlot, activeRouteId]);
+
+  const selectPlot = useCallback((plot: NormalizedPlot) => {
+    userHasSelected.current = true;
+    setSelectedPlot(plot);
+  }, []);
 
   // ─── Filter visible plots by enabledTiers ──────────────────
   const visiblePlots = useMemo(() => {
@@ -1127,7 +1138,7 @@ export default function InteractivePlotMap3({
                     },
                   ],
                 }}
-                onClick={() => setSelectedPlot(plot)}
+                onClick={() => selectPlot(plot)}
               />
             );
           })}
@@ -1152,7 +1163,7 @@ export default function InteractivePlotMap3({
                 coordinates={coord}
                 draggable={false}
                 zIndex={isSelected ? 1000 : isPlotAvailable(plot.statusName) ? 200 : 100}
-                onClick={() => setSelectedPlot(plot)}
+                onClick={() => selectPlot(plot)}
               >
                 <div style={{ position: "relative", width: 0, height: 0 }}>
                   <div
