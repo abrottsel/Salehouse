@@ -1106,19 +1106,39 @@ export default function InteractivePlotMap3({
           })}
 
           {/* Plot number markers.
-              Wrap the visible dot in a 0×0 anchor div so YMapMarker
-              pins the wrapper at the coordinate and the inner dot
-              floats on top of it via absolute + translate(-50%,-50%).
-              Without the 0×0 pattern the dot's top-left ends up at
-              the coordinate and every marker drifts down-and-right
-              off its plot centre — this was the exact "участки поехали"
-              issue from the legacy component. */}
+              Phase 3:
+              - Zoom-adaptive size (11/14/18/22/28 px across zooms
+                14-19, matching the legacy 2.1 zp-zoom-* breakpoints).
+              - Plot number hidden at zoom ≤15 when markers become
+                tiny and unreadable.
+              - Selected plot gets an extra "pulse" overlay marker:
+                absolutely positioned ping-animation behind the dot
+                so it looks like the marker is glowing.
+              0×0 anchor div keeps every marker centred on its
+              coordinate at every zoom level. */}
           {visiblePlots.map((plot) => {
             if (!isPlotActive(plot.statusName)) return null;
             const palette = plotPalette(plot);
             const isSelected = selectedPlot?.number === plot.number;
             const coord: LngLat = [plot.center[1], plot.center[0]];
-            const size = isSelected ? 26 : 20;
+
+            // Adaptive sizing: base size per zoom bucket, selected
+            // gets a slight bump so it stays distinct.
+            const baseSize =
+              zoom <= 14 ? 9 :
+              zoom === 15 ? 11 :
+              zoom === 16 ? 14 :
+              zoom === 17 ? 20 :
+              zoom === 18 ? 24 :
+              28;
+            const size = isSelected ? baseSize + 6 : baseSize;
+            const showNumber = zoom >= 16 || isSelected;
+            const fontSize =
+              size >= 26 ? 11 :
+              size >= 20 ? 10 :
+              size >= 14 ? 8 :
+              7;
+
             return (
               <YMapMarker
                 key={`mark-${plot.number}`}
@@ -1128,6 +1148,43 @@ export default function InteractivePlotMap3({
                 onClick={() => selectPlot(plot)}
               >
                 <div style={{ position: "relative", width: 0, height: 0 }}>
+                  {/* Pulse ring — only rendered for the selected plot.
+                      Two overlapping rings with staggered ping animation
+                      to give a smooth "glow" around the number dot.
+                      pointer-events none so it doesn't steal the click. */}
+                  {isSelected && (
+                    <>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: size + 16,
+                          height: size + 16,
+                          marginLeft: -(size + 16) / 2,
+                          marginTop: -(size + 16) / 2,
+                          borderRadius: "50%",
+                          background: "rgba(34,197,94,0.35)",
+                          animation: "ymaps3-plot-pulse 1.8s ease-out infinite",
+                          pointerEvents: "none",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: size + 10,
+                          height: size + 10,
+                          marginLeft: -(size + 10) / 2,
+                          marginTop: -(size + 10) / 2,
+                          borderRadius: "50%",
+                          border: "2px solid #22c55e",
+                          pointerEvents: "none",
+                        }}
+                      />
+                    </>
+                  )}
                   <div
                     className="flex items-center justify-center rounded-full cursor-pointer select-none shadow-[0_0_0_1.5px_#fff,0_2px_4px_rgba(0,0,0,0.35)]"
                     style={{
@@ -1138,15 +1195,17 @@ export default function InteractivePlotMap3({
                       height: size,
                       marginLeft: -size / 2,
                       marginTop: -size / 2,
-                      fontSize: isSelected ? 10 : 9,
+                      fontSize,
                       fontWeight: 800,
                       color: "#fff",
                       background: isSelected ? "#22c55e" : palette.fill,
                       fontFamily:
                         "var(--font-inter), system-ui, -apple-system, sans-serif",
+                      transition:
+                        "width 0.15s ease, height 0.15s ease, font-size 0.15s ease",
                     }}
                   >
-                    {plot.number}
+                    {showNumber ? plot.number : ""}
                   </div>
                 </div>
               </YMapMarker>
@@ -1565,6 +1624,26 @@ export default function InteractivePlotMap3({
           </div>
         )}
       </div>
+
+      {/* Global CSS keyframes for the pulse animation on the selected
+          plot marker. Defined inline so this component stays
+          self-contained — no global stylesheet dependency. */}
+      <style>{`
+        @keyframes ymaps3-plot-pulse {
+          0% {
+            transform: scale(0.85);
+            opacity: 0.7;
+          }
+          70% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }
