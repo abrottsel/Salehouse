@@ -87,14 +87,18 @@ function savePlaces(places: UserPlace[]) {
   } catch {}
 }
 
-/* ─── Zemexx-like tier palette for polygons ─── */
+/* ─── Palette matching map.zemexx.ru reference ─── */
+/* 5 price tiers: yellow → green → cyan → orange → red */
 const TIER_COLORS = [
-  { fill: "#f59e0b", stroke: "#b45309", dot: "#f59e0b", label: "Эконом" }, // amber
-  { fill: "#14b8a6", stroke: "#0d9488", dot: "#14b8a6", label: "Стандарт" }, // teal
-  { fill: "#3b82f6", stroke: "#1d4ed8", dot: "#3b82f6", label: "Комфорт" }, // blue
-  { fill: "#c2410c", stroke: "#7c2d12", dot: "#c2410c", label: "Бизнес" }, // orange-700
-  { fill: "#dc2626", stroke: "#991b1b", dot: "#dc2626", label: "Премиум" }, // red
+  { fill: "#facc15", stroke: "#a16207", dot: "#eab308", label: "Эконом" },   // yellow
+  { fill: "#22c55e", stroke: "#15803d", dot: "#16a34a", label: "Стандарт" }, // green
+  { fill: "#22d3ee", stroke: "#0e7490", dot: "#06b6d4", label: "Комфорт" },  // cyan
+  { fill: "#f97316", stroke: "#9a3412", dot: "#ea580c", label: "Бизнес" },   // orange
+  { fill: "#ef4444", stroke: "#991b1b", dot: "#dc2626", label: "Премиум" },  // red
 ];
+const RESERVED_COLOR = { fill: "#93c5fd", stroke: "#2563eb", dot: "#3b82f6" };
+const SOLD_COLOR = { fill: "#d1d5db", stroke: "#9ca3af", dot: "#9ca3af" };
+const TECHNICAL_COLOR = { fill: "#e5e7eb", stroke: "#9ca3af", dot: "#9ca3af" };
 
 function isPlotAvailable(status: string): boolean {
   return status === "Свободен" || status === "Свободный";
@@ -435,18 +439,14 @@ export default function InteractivePlotMap({
     [persistPlace]
   );
 
-  // Detect user location via browser Geolocation + reverse geocode via proxy.
-  //
-  // Two-stage strategy for reliability on desktop/mobile:
-  //   1. Try enableHighAccuracy:true, timeout 8s — gets a GPS fix when
-  //      possible (mobile) or fails fast indoors / on desktop.
-  //   2. On POSITION_UNAVAILABLE or TIMEOUT, fall back to
-  //      enableHighAccuracy:false which lets the browser use WiFi/IP
-  //      based lookup (more permissive, works on desktop).
-  //
-  // Everything is wrapped in an outer try/catch so a thrown error inside
-  // the success path (e.g. drawRoute failing because the map isn't ready)
-  // surfaces to the user instead of getting silently swallowed.
+  // Detect user location with a 3-stage strategy for reliability in RU:
+  //   1. navigator.geolocation, enableHighAccuracy:true (10s) — GPS fix
+  //   2. navigator.geolocation, enableHighAccuracy:false (20s) — Wi-Fi/IP
+  //   3. ymaps.geolocation.get({ provider: "yandex" }) — Yandex's server-side
+  //      IP lookup, works reliably inside Russia even when Google's
+  //      location service is unreachable (which is the common failure
+  //      mode on Safari + Chrome inside RU).
+  // Permission-denied still short-circuits to a clear error message.
   const detectLocation = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setGeocodeError("Браузер не поддерживает геолокацию");
@@ -460,40 +460,79 @@ export default function InteractivePlotMap({
     setGeocodeError("");
     setGeocodeLoading(true);
 
-    const onSuccess = async (pos: GeolocationPosition) => {
+    const commitFix = async (
+      coordsArr: [number, number],
+      source: "gps" | "wifi" | "yandex",
+      accuracy?: number,
+    ) => {
+      // eslint-disable-next-line no-console
+      console.info(`[geolocation] fix from ${source}:`, {
+        lat: coordsArr[0],
+        lon: coordsArr[1],
+        accuracy,
+      });
+
+      let fullAddress = `${coordsArr[0].toFixed(4)}, ${coordsArr[1].toFixed(4)}`;
       try {
-        const coordsArr: [number, number] = [
-          pos.coords.latitude,
-          pos.coords.longitude,
-        ];
-        // eslint-disable-next-line no-console
-        console.info("[geolocation] got fix:", {
-          lat: coordsArr[0],
-          lon: coordsArr[1],
-          accuracy: pos.coords.accuracy,
-        });
-
-        let fullAddress = `${coordsArr[0].toFixed(4)}, ${coordsArr[1].toFixed(4)}`;
-        try {
-          const res = await fetch(
-            `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`,
-          );
-          if (res.ok) {
-            const data = (await res.json()) as { address?: string };
-            if (data.address) fullAddress = data.address;
-          } else {
-            console.warn("[geolocation] reverse geocode HTTP", res.status);
-          }
-        } catch (e) {
-          console.warn("[geolocation] reverse geocode failed:", e);
+        const res = await fetch(
+          `/api/geocode?lat=${coordsArr[0]}&lon=${coordsArr[1]}`,
+        );
+        if (res.ok) {
+          const data = (await res.json()) as { address?: string };
+          if (data.address) fullAddress = data.address;
+        } else {
+          console.warn("[geolocation] reverse geocode HTTP", res.status);
         }
+      } catch (e) {
+        console.warn("[geolocation] reverse geocode failed:", e);
+      }
 
-        persistPlace({
-          id: makeId(),
-          label: newPlaceLabel || "Моё место",
-          address: fullAddress,
-          coords: coordsArr,
+      persistPlace({
+        id: makeId(),
+        label: newPlaceLabel || "Моё место",
+        address: fullAddress,
+        coords: coordsArr,
+      });
+    };
+
+    const tryYandex = async () => {
+      const ymaps = window.ymaps;
+      if (!ymaps?.geolocation?.get) {
+        setGeocodeLoading(false);
+        setGeocodeError(
+          "Не удалось определить местоположение. Введите адрес вручную — например «Москва, Тверская 1»",
+        );
+        return;
+      }
+      try {
+        const result = await ymaps.geolocation.get({
+          provider: "yandex",
+          mapStateAutoApply: false,
         });
+        const coords = result?.geoObjects?.get?.(0)?.geometry?.getCoordinates?.() as
+          | [number, number]
+          | undefined; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (!coords || !isFinite(coords[0]) || !isFinite(coords[1])) {
+          throw new Error("Yandex geolocation returned no coords");
+        }
+        await commitFix(coords, "yandex");
+      } catch (e) {
+        console.error("[geolocation] yandex fallback failed:", e);
+        setGeocodeError(
+          "Не удалось определить местоположение. Введите адрес вручную — например «Москва, Тверская 1»",
+        );
+      } finally {
+        setGeocodeLoading(false);
+      }
+    };
+
+    const onSuccess = async (pos: GeolocationPosition, source: "gps" | "wifi") => {
+      try {
+        await commitFix(
+          [pos.coords.latitude, pos.coords.longitude],
+          source,
+          pos.coords.accuracy,
+        );
       } catch (e) {
         console.error("[geolocation] success handler threw:", e);
         setGeocodeError(
@@ -507,37 +546,31 @@ export default function InteractivePlotMap({
     const onError = (err: GeolocationPositionError, stage: "hi" | "lo") => {
       console.warn(`[geolocation] ${stage} error code=${err.code}: ${err.message}`);
 
-      // On hi-accuracy failure, try again without it — desktop + bad GPS
-      // coverage is very common.
-      if (stage === "hi" && err.code !== err.PERMISSION_DENIED) {
-        navigator.geolocation.getCurrentPosition(
-          onSuccess,
-          (err2) => onError(err2, "lo"),
-          { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
+      if (err.code === err.PERMISSION_DENIED) {
+        setGeocodeLoading(false);
+        setGeocodeError(
+          "Нет разрешения на геолокацию. Кликните на 🔒 в адресной строке → Геолокация → Разрешить",
         );
         return;
       }
 
-      setGeocodeLoading(false);
-      if (err.code === err.PERMISSION_DENIED) {
-        setGeocodeError(
-          "Нет разрешения на геолокацию. Кликните на 🔒 в адресной строке → Геолокация → Разрешить",
+      // POSITION_UNAVAILABLE / TIMEOUT: try next stage
+      if (stage === "hi") {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => onSuccess(pos, "wifi"),
+          (err2) => onError(err2, "lo"),
+          { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 },
         );
-      } else if (err.code === err.POSITION_UNAVAILABLE) {
-        setGeocodeError(
-          "Местоположение недоступно. Проверьте что в системных настройках разрешены службы геолокации (и отключите VPN, если включён — он может мешать)",
-        );
-      } else if (err.code === err.TIMEOUT) {
-        setGeocodeError("Слишком долго — попробуйте ещё раз или введите адрес вручную");
       } else {
-        setGeocodeError(`Ошибка геолокации: ${err.message || "unknown"}`);
+        // Both native stages failed → Yandex server-side lookup.
+        tryYandex();
       }
     };
 
     navigator.geolocation.getCurrentPosition(
-      onSuccess,
+      (pos) => onSuccess(pos, "gps"),
       (err) => onError(err, "hi"),
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   }, [newPlaceLabel, persistPlace]);
 
@@ -632,33 +665,49 @@ export default function InteractivePlotMap({
     const DotLayout = ymaps.templateLayoutFactory.createClass(
       [
         '<div class="zp-dot-wrap">',
-        '<div class="zp-dot zp-dot-$[properties.zpStatus]">',
+        '<div class="zp-dot zp-dot-$[properties.zpStatus] zp-tier-$[properties.zpTier]">',
         '<span class="zp-dot-num">$[properties.zpNumber]</span>',
         "</div>",
         "</div>",
       ].join("")
     );
 
-    // Render polygons for ALL plots (including technical — shown gray)
+    // Render polygons for ALL plots. Styling mirrors map.zemexx.ru:
+    //   available → tier color (yellow/green/cyan/orange/red)
+    //   reserved  → light blue
+    //   sold      → light gray
+    //   technical → neutral gray (even fainter)
+    // All polygons are fully visible (no 0.25 ghost opacity) so the
+    // map reads at a glance regardless of status mix.
     visiblePlots.forEach((plot) => {
       if (!plot.coords || plot.coords.length < 3) return;
 
-      const tier = TIER_COLORS[plot.priceTier] || TIER_COLORS[0];
-      let fill = tier.fill;
-      let stroke = tier.stroke;
-      let opacity = 0.55;
+      const available = isPlotAvailable(plot.statusName);
+      const reserved = isPlotReserved(plot.statusName);
+      const sold = isPlotSold(plot.statusName);
+      const technical = !isPlotActive(plot.statusName);
 
-      if (isPlotSold(plot.statusName)) {
-        // Sold — light gray
-        fill = "#d1d5db";
-        stroke = "#9ca3af";
-        opacity = 0.25;
-      } else if (!isPlotActive(plot.statusName)) {
-        // Technical / fake — neutral dark gray, muted
-        fill = "#64748b";
-        stroke = "#475569";
-        opacity = 0.22;
+      let palette: { fill: string; stroke: string };
+      let opacity = 0.65;
+      if (available) {
+        const tier = TIER_COLORS[plot.priceTier] || TIER_COLORS[0];
+        palette = { fill: tier.fill, stroke: tier.stroke };
+        opacity = 0.7;
+      } else if (reserved) {
+        palette = { fill: RESERVED_COLOR.fill, stroke: RESERVED_COLOR.stroke };
+        opacity = 0.6;
+      } else if (sold) {
+        palette = { fill: SOLD_COLOR.fill, stroke: SOLD_COLOR.stroke };
+        opacity = 0.55;
+      } else {
+        // technical / obmanka
+        palette = { fill: TECHNICAL_COLOR.fill, stroke: TECHNICAL_COLOR.stroke };
+        opacity = 0.35;
       }
+      // Mark `technical` used for the conditional path even though the
+      // value lives in `palette` already — keeps the intent readable
+      // when someone greps for the branch later.
+      void technical;
 
       const isSelected = selectedPlot?.number === plot.number;
 
@@ -670,9 +719,9 @@ export default function InteractivePlotMap({
           )}`,
         },
         {
-          fillColor: fill,
-          fillOpacity: isSelected ? 0.85 : opacity,
-          strokeColor: isSelected ? "#22c55e" : stroke,
+          fillColor: palette.fill,
+          fillOpacity: isSelected ? 0.88 : opacity,
+          strokeColor: isSelected ? "#16a34a" : palette.stroke,
           strokeWidth: isSelected ? 4 : 1.5,
           strokeOpacity: 0.95,
           cursor: "pointer",
@@ -683,7 +732,7 @@ export default function InteractivePlotMap({
       polygon.events.add("mouseenter", () => {
         if (isSelected) return;
         polygon.options.set("strokeWidth", 2.5);
-        polygon.options.set("fillOpacity", Math.min(opacity + 0.25, 0.9));
+        polygon.options.set("fillOpacity", Math.min(opacity + 0.2, 0.92));
       });
       polygon.events.add("mouseleave", () => {
         if (isSelected) return;
@@ -695,15 +744,22 @@ export default function InteractivePlotMap({
       plotObjectsRef.current.push(polygon);
     });
 
-    // Markers (dots) — NO clusterer, all visible always
+    // Numbered dots — one per plot, all statuses including sold/reserved.
     visiblePlots.forEach((plot) => {
-      if (!isPlotActive(plot.statusName)) return;
+      const available = isPlotAvailable(plot.statusName);
+      const reserved = isPlotReserved(plot.statusName);
+      const sold = isPlotSold(plot.statusName);
+      const technical = !isPlotActive(plot.statusName);
 
-      const status = isPlotAvailable(plot.statusName)
+      const status = available
         ? "free"
-        : isPlotSold(plot.statusName)
-        ? "sold"
-        : "reserved";
+        : reserved
+          ? "reserved"
+          : sold
+            ? "sold"
+            : technical
+              ? "technical"
+              : "reserved";
       const isSelected = selectedPlot?.number === plot.number;
 
       const placemark = new ymaps.Placemark(
@@ -711,6 +767,7 @@ export default function InteractivePlotMap({
         {
           zpNumber: plot.number,
           zpStatus: isSelected ? "selected" : status,
+          zpTier: status === "free" ? String(plot.priceTier ?? 0) : "na",
           hintContent: `№ ${plot.number}`,
         },
         {
@@ -953,7 +1010,7 @@ export default function InteractivePlotMap({
               )}
             </div>
 
-            {/* Status legend — 2x2 compact grid */}
+            {/* Status legend — 2x2 compact grid (matches map.zemexx.ru) */}
             <div className="px-4 pt-3 pb-3 border-b border-gray-100">
               <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-2">
                 Статус
@@ -961,8 +1018,9 @@ export default function InteractivePlotMap({
               <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <span
-                    className="w-3 h-3 rounded-full bg-orange-500 shrink-0"
+                    className="w-3 h-3 rounded-full shrink-0"
                     style={{
+                      background: "#22c55e",
                       boxShadow: "0 0 0 1.5px #fff, 0 1px 2px rgba(0,0,0,0.2)",
                     }}
                   />
@@ -972,24 +1030,25 @@ export default function InteractivePlotMap({
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span
-                    className="w-3 h-3 rounded-full bg-blue-500 shrink-0"
+                    className="w-3 h-3 rounded-full shrink-0"
                     style={{
+                      background: "#3b82f6",
                       boxShadow: "0 0 0 1.5px #fff, 0 1px 2px rgba(0,0,0,0.2)",
                     }}
                   />
                   <span className="text-[10px] font-semibold text-gray-800">
-                    Бронь
+                    Забронирован
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span
                     className="w-3 h-3 rounded-full shrink-0"
                     style={{
-                      background: "rgba(107, 114, 128, 0.35)",
-                      boxShadow: "0 0 0 1px rgba(107, 114, 128, 0.4)",
+                      background: "#9ca3af",
+                      boxShadow: "0 0 0 1.5px #fff, 0 1px 2px rgba(0,0,0,0.2)",
                     }}
                   />
-                  <span className="text-[10px] font-semibold text-gray-500">
+                  <span className="text-[10px] font-semibold text-gray-600">
                     Продан
                   </span>
                 </div>
@@ -1550,25 +1609,35 @@ export default function InteractivePlotMap({
           font-size: 11px;
         }
 
-        /* ─── Colors by status ─── */
-        /* Free — orange filled */
+        /* ─── Colors by status (matches reference map.zemexx.ru) ─── */
+        /* Free — fallback amber; overridden below per price tier */
         .zp-dot-free {
           background: #f97316;
           color: #fff;
           box-shadow: 0 0 0 1.5px #fff, 0 2px 4px rgba(0, 0, 0, 0.35);
         }
-        /* Reserved — blue filled */
+        .zp-dot-free.zp-tier-0 { background: #eab308; }  /* yellow */
+        .zp-dot-free.zp-tier-1 { background: #16a34a; }  /* green */
+        .zp-dot-free.zp-tier-2 { background: #06b6d4; }  /* cyan */
+        .zp-dot-free.zp-tier-3 { background: #ea580c; }  /* orange */
+        .zp-dot-free.zp-tier-4 { background: #dc2626; }  /* red */
+        /* Reserved — solid blue, like "Забронирован" in reference */
         .zp-dot-reserved {
           background: #3b82f6;
           color: #fff;
           box-shadow: 0 0 0 1.5px #fff, 0 2px 4px rgba(0, 0, 0, 0.35);
         }
-        /* Sold — very faint gray, barely visible */
+        /* Sold — neutral gray, white number, visible but muted */
         .zp-dot-sold {
-          background: rgba(107, 114, 128, 0.35);
-          color: rgba(255, 255, 255, 0.85);
-          box-shadow: 0 0 0 1px rgba(107, 114, 128, 0.45),
-            0 1px 2px rgba(0, 0, 0, 0.18);
+          background: #9ca3af;
+          color: #fff;
+          box-shadow: 0 0 0 1.5px #fff, 0 1px 3px rgba(0, 0, 0, 0.25);
+        }
+        /* Technical — same as sold but slightly fainter */
+        .zp-dot-technical {
+          background: #cbd5e1;
+          color: #64748b;
+          box-shadow: 0 0 0 1.5px #fff, 0 1px 3px rgba(0, 0, 0, 0.15);
         }
         /* Selected — bright green with white ring + glow + pulse */
         .zp-dot-selected {
