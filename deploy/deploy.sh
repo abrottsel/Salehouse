@@ -126,20 +126,48 @@ chmod +x "$APP_DIR/deploy/deploy.sh" 2>/dev/null || true
 
 cd "$APP_DIR" || on_failure "cd app dir"
 
-# ── 3. Prod deps ───────────────────────────────────────────────────
-log "▶ npm ci --omit=dev"
-npm ci --omit=dev --no-audit --no-fund \
+# ── 3. Full deps install ───────────────────────────────────────────
+# Full `npm ci` including devDeps — we need @tailwindcss/postcss,
+# tailwindcss, typescript, @types/* at build time. The 4 GB box
+# handles this fine (~500 MB peak during install).
+#
+# NODE_ENV is forced to "development" for this step because npm
+# silently switches to production mode (omitting devDeps) when it
+# detects NODE_ENV=production in the environment, even with an
+# explicit --include=dev. Forcing the env here is the only reliable
+# way to guarantee a complete install across fresh boxes.
+log "▶ npm ci (with devDeps)"
+NODE_ENV=development npm ci --include=dev --no-audit --no-fund \
     || on_failure "npm ci"
 
-# Next 16 requires @tailwindcss/postcss at build time even though it's a
-# devDependency. Install build-time tooling separately without blowing away
-# the prod node_modules.
-log "▶ Ensuring build-time tailwindcss is present"
-npm install --no-save --no-audit --no-fund \
-    @tailwindcss/postcss tailwindcss postcss autoprefixer typescript @types/node @types/react @types/react-dom \
-    || on_failure "npm install build deps"
+# ── 3b. Prisma client ──────────────────────────────────────────────
+# Generate the Prisma client from schema.prisma — Next picks up the
+# generated types when building the /api/leads route. Safe to run even
+# when the DB is unreachable: `generate` only touches the filesystem.
+if [ -f "$APP_DIR/prisma/schema.prisma" ]; then
+    log "▶ prisma generate"
+    npx prisma generate \
+        || on_failure "prisma generate"
+
+    # Apply pending migrations only if DATABASE_URL is set. Missing DB
+    # is not fatal here — the runtime code degrades gracefully when
+    # Prisma can't connect, falling back to Telegram-only lead delivery.
+    if [ -n "${DATABASE_URL:-}" ]; then
+        log "▶ prisma migrate deploy"
+        npx prisma migrate deploy \
+            || log "⚠ prisma migrate deploy failed — continuing without DB schema update"
+    else
+        log "⚠ DATABASE_URL is not set — skipping prisma migrate deploy"
+    fi
+fi
 
 # ── 4. Build ───────────────────────────────────────────────────────
+# Wipe the old .next/ so the new build doesn't inherit stale turbopack
+# artifacts that reference long-gone node_modules paths. This was the
+# root cause of the "Cannot find module '@tailwindcss/postcss'" errors.
+log "▶ rm -rf .next"
+rm -rf "$APP_DIR/.next"
+
 log "▶ next build"
 NODE_OPTIONS="--max-old-space-size=1536" npm run build \
     || on_failure "next build"
