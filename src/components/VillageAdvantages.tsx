@@ -73,7 +73,7 @@ export default function VillageAdvantages({
   return (
     <section className="py-6 lg:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-[28px] bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 ring-1 ring-emerald-700/30 shadow-2xl shadow-emerald-900/20 overflow-hidden">
+        <div className="relative rounded-[28px] bg-gradient-to-br from-emerald-400 via-green-400 to-teal-500 ring-1 ring-emerald-600/30 shadow-2xl shadow-emerald-900/20 overflow-hidden">
           {/* Texture */}
           <div
             className="absolute inset-0 opacity-[0.06] pointer-events-none"
@@ -102,8 +102,8 @@ export default function VillageAdvantages({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
               {/* Left: stats */}
               <div className="lg:col-span-5">
-                <h2 className="text-white text-2xl lg:text-[28px] font-black leading-[1.05]">
-                  Лучшие участки в {name.toLowerCase()}
+                <h2 className="text-white text-2xl lg:text-[30px] font-black leading-[1.05] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                  Лучшие участки в {name}
                 </h2>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <StatCell label="От" value={priceFrom.toLocaleString("ru-RU")} unit="₽ / сотка" />
@@ -201,8 +201,8 @@ function FeatureRow({ icon, badge, title, desc }: {
         <div className="inline-flex items-center h-4 px-1.5 rounded-full bg-white/20 text-white text-[8px] font-black uppercase tracking-wider mb-1">
           {badge}
         </div>
-        <div className="text-white text-[13px] font-black leading-tight">{title}</div>
-        <div className="text-white/70 text-[11px] leading-snug mt-0.5">{desc}</div>
+        <div className="text-white text-sm font-black leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.2)]">{title}</div>
+        <div className="text-white/80 text-[11px] leading-snug mt-0.5">{desc}</div>
       </div>
     </div>
   );
