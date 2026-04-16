@@ -55,24 +55,26 @@ export default function MortgageCalculator() {
   return (
     <section
       id="calculator"
-      className="relative py-5 lg:py-8 scroll-mt-16 overflow-hidden"
+      className="relative py-10 lg:py-14 scroll-mt-16 overflow-hidden"
       style={{ background: "linear-gradient(135deg, #1a3a2a 0%, #2d5a3f 25%, #1a3a2a 50%, #2d5a3f 75%, #1a3a2a 100%)" }}
     >
       {/* Decorative geometric background — green/gold stripes */}
+      {/* Diagonal gold stripes */}
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: `
-          linear-gradient(45deg, rgba(180,155,100,0.12) 25%, transparent 25%),
-          linear-gradient(-45deg, rgba(180,155,100,0.12) 25%, transparent 25%),
-          linear-gradient(135deg, rgba(180,155,100,0.08) 25%, transparent 25%),
-          linear-gradient(-135deg, rgba(180,155,100,0.08) 25%, transparent 25%),
-          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+          repeating-linear-gradient(45deg, rgba(180,155,100,0.18) 0px, rgba(180,155,100,0.18) 2px, transparent 2px, transparent 60px),
+          repeating-linear-gradient(-45deg, rgba(180,155,100,0.12) 0px, rgba(180,155,100,0.12) 2px, transparent 2px, transparent 80px),
+          repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 40px)
         `,
-        backgroundSize: "120px 120px, 120px 120px, 80px 80px, 80px 80px, 40px 40px, 40px 40px",
       }} />
-      {/* Radial glow center */}
+      {/* Gold dots grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-30" style={{
+        backgroundImage: `radial-gradient(circle, rgba(180,155,100,0.4) 1px, transparent 1px)`,
+        backgroundSize: "32px 32px",
+      }} />
+      {/* Center radial glow */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse at center, rgba(180,155,100,0.15) 0%, transparent 60%)",
+        background: "radial-gradient(ellipse at center, rgba(180,155,100,0.2) 0%, transparent 50%)",
       }} />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -112,12 +114,12 @@ export default function MortgageCalculator() {
 
         {/* Main card — liquid glass */}
         <div
-          className="calc-glass-card rounded-3xl overflow-hidden"
+          className="calc-glass-card relative rounded-3xl overflow-hidden"
           style={{
-            backdropFilter: "blur(2px) saturate(2)",
-            WebkitBackdropFilter: "blur(2px) saturate(2)",
-            background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.25), inset 0 -0.5px 0 rgba(255,255,255,0.08), 0 12px 40px -8px rgba(0,0,0,0.3)",
+            backdropFilter: "blur(12px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(12px) saturate(1.6)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%)",
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.3), inset 0 -0.5px 0 rgba(255,255,255,0.08), 0 16px 48px -8px rgba(0,0,0,0.35)",
           }}
         >
           {/* Top specular */}
