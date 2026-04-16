@@ -94,9 +94,9 @@ export default function MortgageCalculator() {
 
         {/* Main card */}
         <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/5 ring-1 ring-gray-100 overflow-hidden">
-          <div className="lg:grid lg:grid-cols-5">
+          <div className="lg:grid lg:grid-cols-2">
             {/* Inputs */}
-            <div className="lg:col-span-3 p-5 sm:p-7">
+            <div className="p-5 sm:p-7">
               <div className="space-y-5">
                 <Slider
                   label="Стоимость участка"
@@ -148,7 +148,7 @@ export default function MortgageCalculator() {
             </div>
 
             {/* Result panel */}
-            <div className="lg:col-span-2 bg-gradient-to-br from-emerald-500 via-green-600 to-emerald-700 p-6 sm:p-8 text-white flex flex-col relative overflow-hidden">
+            <div className="bg-gradient-to-br from-emerald-500 via-green-600 to-emerald-700 p-6 sm:p-8 text-white flex flex-col relative overflow-hidden">
               <div className="absolute -top-20 -right-20 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none" />
               <div
