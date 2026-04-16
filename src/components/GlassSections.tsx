@@ -2,8 +2,8 @@
 
 /**
  * GlassSections — three glass cards on a photo background.
- * Variant 11: blur 4px, visible background, rainbow border.
- * Each card expands on click to show its content.
+ * Click a card → content expands BELOW all three cards at full width.
+ * Only one section open at a time (accordion behavior).
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -21,23 +21,115 @@ interface CardDef {
 }
 
 export default function GlassSections({ cards }: { cards: CardDef[] }) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const toggle = (id: string) => {
+    setActiveId((prev) => {
+      const next = prev === id ? null : id;
+      if (next) {
+        requestAnimationFrame(() => {
+          contentRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+      }
+      return next;
+    });
+  };
+
+  // Auto-open from URL hash
+  useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      const match = cards.find((c) => c.id === hash);
+      if (match) {
+        setActiveId(match.id);
+        requestAnimationFrame(() => {
+          contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, [cards]);
+
+  const activeCard = cards.find((c) => c.id === activeId);
+
   return (
     <section
       className="relative py-6 lg:py-8 bg-cover bg-center bg-no-repeat overflow-hidden"
       style={{ backgroundImage: "url(/hero-home.jpg)" }}
     >
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
 
       <div className="relative z-10 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Three cards in a row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {cards.map((card) => (
-            <GlassCard key={card.id} {...card} />
-          ))}
+          {cards.map((card) => {
+            const Icon = iconMap[card.icon];
+            const isActive = activeId === card.id;
+            return (
+              <button
+                key={card.id}
+                id={card.id}
+                type="button"
+                onClick={() => toggle(card.id)}
+                className={`glass-section-card overflow-hidden rounded-[20px] text-left transition-all duration-300 scroll-mt-20 ${
+                  isActive
+                    ? "shadow-2xl ring-2 ring-white/30"
+                    : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                }`}
+                style={{
+                  backdropFilter: "blur(4px) saturate(1.8)",
+                  WebkitBackdropFilter: "blur(4px) saturate(1.8)",
+                  background: "linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                  boxShadow: isActive
+                    ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.3), 0 12px 40px -8px rgba(0,0,0,0.3)",
+                }}
+              >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
+                <div className="flex items-center gap-3 p-5 lg:p-6">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
+                    <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-black text-white leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                      {card.title}
+                    </div>
+                    <div className="text-xs text-white/60 mt-0.5">{card.subtitle}</div>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
+                      isActive ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Expanded content — full width below all cards */}
+        {activeCard && (
+          <div
+            ref={contentRef}
+            className="mt-4 glass-section-card rounded-[20px] overflow-hidden transition-all duration-300"
+            style={{
+              backdropFilter: "blur(8px) saturate(1.6)",
+              WebkitBackdropFilter: "blur(8px) saturate(1.6)",
+              background: "linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
+            <div className="p-5 lg:p-8">
+              {activeCard.children}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Rainbow border CSS */}
       <style>{`
         .glass-section-card {
           position: relative;
@@ -67,78 +159,5 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
         }
       `}</style>
     </section>
-  );
-}
-
-function GlassCard({ id, title, subtitle, icon, children }: CardDef) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const Icon = iconMap[icon];
-
-  // Auto-open when URL hash matches
-  useEffect(() => {
-    const checkHash = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash === id) {
-        setOpen(true);
-        requestAnimationFrame(() => {
-          rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      }
-    };
-    checkHash();
-    window.addEventListener("hashchange", checkHash);
-    return () => window.removeEventListener("hashchange", checkHash);
-  }, [id]);
-
-  return (
-    <div
-      id={id}
-      ref={rootRef}
-      className={`glass-section-card overflow-hidden rounded-[20px] transition-all duration-300 scroll-mt-20 ${
-        open ? "shadow-2xl" : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-      }`}
-      style={{
-        backdropFilter: "blur(4px) saturate(1.8)",
-        WebkitBackdropFilter: "blur(4px) saturate(1.8)",
-        background: "linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-        boxShadow: open
-          ? "inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.05), 0 16px 48px -8px rgba(0,0,0,0.35)"
-          : "inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.05), 0 12px 40px -8px rgba(0,0,0,0.3)",
-      }}
-    >
-      {/* Specular highlight */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
-
-      {/* Header — always visible */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="w-full flex items-center gap-3 p-5 lg:p-6 text-left"
-      >
-        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
-          <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-base font-black text-white leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-            {title}
-          </div>
-          <div className="text-xs text-white/60 mt-0.5">{subtitle}</div>
-        </div>
-        <ChevronDown
-          className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {/* Content — expands on click */}
-      {open && (
-        <div className="px-5 lg:px-6 pb-5 lg:pb-6 border-t border-white/10">
-          {children}
-        </div>
-      )}
-    </div>
   );
 }
