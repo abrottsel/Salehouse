@@ -894,7 +894,7 @@ export default function InteractivePlotMap3({
       {/* overflow-y-auto so all sections fit on short viewports. Pack
           everything tighter so on a 13\" MBA (950 px useful height)
           the price filter lands above the fold without scrolling. */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[272px] xl:w-[320px] 2xl:w-[360px] bg-white/98 backdrop-blur-md z-20 border-r border-gray-100 flex-col overflow-y-auto">
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[272px] xl:w-[320px] 2xl:w-[360px] bg-white z-20 border-r border-gray-100 flex-col overflow-y-auto">
         {/* Header — village title + compact inline stats + phone pill */}
         <div className="px-3 xl:px-4 pt-3 pb-2 border-b border-gray-100">
           <div className="text-lg xl:text-xl font-black text-gray-900 leading-tight">

@@ -134,26 +134,30 @@ export default function VillageHeroSwiper({
         {/* Photo layers — absolute stacked, fade between indexes.
             First photo is also the CSS background-image so it paints
             instantly without waiting for JS hydration. */}
-        {photos.map((src, i) => (
-          <div
-            key={src}
-            className={`absolute inset-0 transition-opacity duration-500 ease-out ${
-              i === index ? "opacity-100" : "opacity-0"
-            }`}
-            aria-hidden={i !== index}
-          >
-            <Image
-              src={src}
-              alt={`${name} — фото ${i + 1} из ${total}`}
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              quality={85}
-              className="object-cover"
-              draggable={false}
-            />
-          </div>
-        ))}
+        {photos.map((src, i) => {
+          const isNear = i === index || i === (index - 1 + total) % total || i === (index + 1) % total;
+          if (!isNear && i !== 0) return null;
+          return (
+            <div
+              key={src}
+              className={`absolute inset-0 transition-opacity duration-500 ease-out ${
+                i === index ? "opacity-100" : "opacity-0"
+              }`}
+              aria-hidden={i !== index}
+            >
+              <Image
+                src={src}
+                alt={`${name} — фото ${i + 1} из ${total}`}
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                quality={85}
+                className="object-cover"
+                draggable={false}
+              />
+            </div>
+          );
+        })}
 
         {/* Dimming overlay — 30% dark instead of the old ~50%, so the
             photo actually carries the mood. Bottom fade is a little
@@ -178,7 +182,7 @@ export default function VillageHeroSwiper({
         <div className="absolute inset-0 z-20 flex flex-col pt-20 px-4 sm:px-8 lg:px-16 pb-6 lg:pb-10 pointer-events-none">
           {/* Top-right FavoriteHeart + photo counter */}
           <div className="flex items-start justify-between pointer-events-auto">
-            <div className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/25 text-white text-[11px] font-bold">
+            <div className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[11px] font-bold">
               <MapPin className="w-3.5 h-3.5" />
               {direction} · {distance} км от МКАД
             </div>
@@ -198,7 +202,7 @@ export default function VillageHeroSwiper({
             </p>
 
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
-              <div className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/25 text-white text-[12px] font-bold">
+              <div className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[12px] font-bold">
                 <span className="text-white/60 text-[10px] uppercase tracking-wider">
                   от
                 </span>
@@ -207,16 +211,16 @@ export default function VillageHeroSwiper({
                 </span>
                 <span className="text-white/70 text-[11px]">₽/сот</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
+              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
                 <Ruler className="w-3.5 h-3.5 text-white/70" />
                 {areaFrom}–{areaTo} сот
               </div>
-              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
+              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
                 <span className="text-white/70 text-[10px] uppercase">свободно</span>
                 {plotsAvailable}
                 <span className="text-white/50 text-[10px]">/ {plotsCount}</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
+              <div className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[12px] font-bold tabular-nums">
                 <span className="text-white/70 text-[10px] uppercase">готовность</span>
                 {readiness}%
               </div>
@@ -231,7 +235,7 @@ export default function VillageHeroSwiper({
               </a>
               <a
                 href="#contact-form"
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/30 hover:bg-white/20 text-white font-bold text-sm transition-all"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-black/35 ring-1 ring-white/30 hover:bg-white/20 text-white font-bold text-sm transition-all"
               >
                 Записаться на просмотр
               </a>
@@ -249,7 +253,7 @@ export default function VillageHeroSwiper({
                 e.stopPropagation();
                 go(-1);
               }}
-              className="hidden sm:flex absolute left-3 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/25 items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
+              className="hidden sm:flex absolute left-3 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/35 ring-1 ring-white/25 items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
               aria-label="Предыдущее фото"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -260,7 +264,7 @@ export default function VillageHeroSwiper({
                 e.stopPropagation();
                 go(1);
               }}
-              className="hidden sm:flex absolute right-3 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/25 items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
+              className="hidden sm:flex absolute right-3 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/35 ring-1 ring-white/25 items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
               aria-label="Следующее фото"
             >
               <ChevronRight className="w-5 h-5" />
@@ -271,7 +275,7 @@ export default function VillageHeroSwiper({
         {/* Counter + progress dots — bottom-right */}
         {total > 1 && (
           <div className="absolute right-4 sm:right-8 lg:right-16 bottom-5 lg:bottom-10 z-30 flex items-center gap-2 pointer-events-auto">
-            <div className="inline-flex items-center gap-1 text-white text-[11px] font-black tabular-nums px-2.5 h-7 rounded-full bg-black/40 backdrop-blur-md">
+            <div className="inline-flex items-center gap-1 text-white text-[11px] font-black tabular-nums px-2.5 h-7 rounded-full bg-black/40">
               {index + 1}
               <span className="text-white/60">/</span>
               {total}

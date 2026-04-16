@@ -72,7 +72,7 @@ export default function VillageAdvantages({
 }: Props) {
   return (
     <section className="py-6 lg:py-8">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-2 sm:px-3 lg:px-4">
         <div className="relative rounded-[28px] bg-gradient-to-br from-green-600 via-emerald-500 to-cyan-600 ring-1 ring-green-800/25 shadow-2xl shadow-green-900/15 overflow-hidden">
           {/* Texture */}
           <div
