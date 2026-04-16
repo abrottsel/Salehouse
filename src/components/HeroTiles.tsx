@@ -131,26 +131,26 @@ export default function HeroTiles() {
             <a
               key={tile.title}
               href={tile.href}
-              className={`group relative rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur-md p-3.5 sm:p-4 lg:p-5 hover:bg-white/15 hover:ring-white/30 hover:-translate-y-0.5 transition-[background-color,transform,border-color] duration-200 ${
-                tile.wide ? "col-span-2 lg:col-span-2" : ""
+              className={`group relative rounded-[20px] bg-white/[0.08] ring-1 ring-white/[0.18] backdrop-blur-2xl backdrop-saturate-150 p-3.5 sm:p-4 lg:p-5 hover:bg-white/[0.14] hover:ring-white/30 hover:-translate-y-0.5 transition-all duration-200 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] ${
+                tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center" : ""
               }`}
             >
               <div
-                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-xl ${tile.iconBg} flex items-center justify-center shadow-md shadow-black/25 mb-2.5 sm:mb-3`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-[14px] ${tile.iconBg} flex items-center justify-center shadow-lg shadow-black/20 mb-2.5 sm:mb-3`}
               >
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
               </div>
 
-              <div className="text-white text-sm sm:text-base font-bold leading-tight">
+              <div className="text-white text-sm sm:text-base font-semibold leading-tight">
                 {tile.title}
               </div>
               {tile.subtitle && (
-                <div className="text-white/60 text-[11px] sm:text-xs mt-1 leading-snug">
+                <div className="text-white/50 text-[11px] sm:text-xs mt-1 leading-snug">
                   {tile.subtitle}
                 </div>
               )}
 
-              <ArrowRight className="absolute top-4 right-4 w-4 h-4 text-white/30 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/70 transition-all duration-200" />
+              <ArrowRight className={`absolute top-4 right-4 w-4 h-4 text-white/20 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/60 transition-all duration-200 ${tile.wide ? "hidden" : ""}`} />
             </a>
           ))}
         </div>
