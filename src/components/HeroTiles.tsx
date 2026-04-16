@@ -131,8 +131,8 @@ export default function HeroTiles() {
             <a
               key={tile.title}
               href={tile.href}
-              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 xl:p-6 hero-glass-tile hover:-translate-y-0.5 transition-all duration-300 ${
-                tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center" : ""
+              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 xl:p-6 hover:-translate-y-0.5 transition-all duration-300 ${
+                tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center hero-glass-tile-wide" : "hero-glass-tile"
               }`}
               style={{
                 backdropFilter: "blur(1px) saturate(2)",
@@ -167,7 +167,8 @@ export default function HeroTiles() {
       </div>
       {/* Rainbow border for liquid glass tiles */}
       <style>{`
-        .hero-glass-tile {
+        .hero-glass-tile,
+        .hero-glass-tile-wide {
           position: relative;
         }
         .hero-glass-tile::before {
@@ -178,14 +179,37 @@ export default function HeroTiles() {
           padding: 1.5px;
           background: conic-gradient(
             from 0deg,
-            rgba(255,0,0,0.4),
-            rgba(255,165,0,0.4),
-            rgba(255,255,0,0.3),
-            rgba(0,255,0,0.3),
-            rgba(0,200,255,0.4),
-            rgba(100,100,255,0.4),
-            rgba(200,0,255,0.4),
-            rgba(255,0,0,0.4)
+            rgba(255,0,0,0.35),
+            rgba(255,165,0,0.35),
+            rgba(255,255,0,0.25),
+            rgba(0,255,0,0.25),
+            rgba(0,200,255,0.35),
+            rgba(100,100,255,0.35),
+            rgba(200,0,255,0.35),
+            rgba(255,0,0,0.35)
+          );
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+        .hero-glass-tile-wide::before {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          border-radius: inherit;
+          padding: 2px;
+          background: conic-gradient(
+            from 45deg,
+            rgba(255,255,255,0.6),
+            rgba(200,255,200,0.5),
+            rgba(255,255,255,0.4),
+            rgba(200,230,255,0.5),
+            rgba(255,255,255,0.6),
+            rgba(255,220,200,0.5),
+            rgba(255,255,255,0.4),
+            rgba(220,200,255,0.5),
+            rgba(255,255,255,0.6)
           );
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
