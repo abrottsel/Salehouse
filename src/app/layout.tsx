@@ -4,6 +4,7 @@ import "./globals.css";
 import AIChatWidget from "@/components/AIChatWidget";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
 import ScrollToTop from "@/components/ScrollToTop";
+import SocialFloating from "@/components/SocialFloating";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -40,6 +41,7 @@ export default function RootLayout({
           {children}
           <AIChatWidget />
           <ScrollToTop />
+          <SocialFloating />
         </FavoritesProvider>
       </body>
     </html>
