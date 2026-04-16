@@ -104,8 +104,8 @@ export default function Header() {
               href={ctaHref}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs shadow-sm shadow-green-600/25 whitespace-nowrap"
             >
-              <span className="2xl:hidden">Записаться</span>
-              <span className="hidden 2xl:inline">Записаться на просмотр</span>
+              <span className="2xl:hidden">Посмотреть вживую</span>
+              <span className="hidden 2xl:inline">Посмотреть вживую</span>
             </a>
           </div>
 
@@ -162,7 +162,7 @@ export default function Header() {
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-center text-sm shadow-sm"
               onClick={() => setIsOpen(false)}
             >
-              Записаться на просмотр
+              Посмотреть вживую
             </a>
           </div>
         </div>
