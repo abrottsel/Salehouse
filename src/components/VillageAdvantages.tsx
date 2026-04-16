@@ -73,36 +73,36 @@ export default function VillageAdvantages({
   return (
     <section className="py-6 lg:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-[28px] bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 ring-1 ring-emerald-200/60 shadow-xl shadow-emerald-900/5 overflow-hidden">
-          {/* Subtle texture */}
+        <div className="relative rounded-[28px] bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 ring-1 ring-emerald-700/30 shadow-2xl shadow-emerald-900/20 overflow-hidden">
+          {/* Texture */}
           <div
-            className="absolute inset-0 opacity-[0.04] pointer-events-none"
+            className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, #059669 1px, transparent 0)`,
+              backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
               backgroundSize: "24px 24px",
             }}
           />
-          <div className="absolute -right-32 -bottom-32 w-80 h-80 rounded-full bg-emerald-200/30 blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -top-20 w-60 h-60 rounded-full bg-teal-200/20 blur-3xl pointer-events-none" />
+          <div className="absolute -right-32 -bottom-32 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+          <div className="absolute -left-20 -top-20 w-60 h-60 rounded-full bg-white/5 blur-3xl pointer-events-none" />
 
           <div className="relative p-5 lg:p-7">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <div className="inline-flex items-center gap-2 h-7 px-3.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-sm">
+              <div className="inline-flex items-center gap-2 h-7 px-3.5 rounded-full bg-white/15 backdrop-blur ring-1 ring-white/25 text-white text-[10px] font-black uppercase tracking-widest">
                 <Sparkles className="w-3 h-3" />
                 Почему {name}
               </div>
-              <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-white/80 ring-1 ring-emerald-200 text-emerald-800 text-[10px] font-bold">
+              <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-white/10 ring-1 ring-white/20 text-white/80 text-[10px] font-bold">
                 <MapPin className="w-3 h-3" />
                 {direction} · {distance} км
               </div>
             </div>
 
-            {/* Main: stats left + infra center + features right */}
+            {/* Main: stats left + features right */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
               {/* Left: stats */}
-              <div className="lg:col-span-4">
-                <h2 className="text-emerald-900 text-2xl lg:text-[28px] font-black leading-[1.05]">
+              <div className="lg:col-span-5">
+                <h2 className="text-white text-2xl lg:text-[28px] font-black leading-[1.05]">
                   Лучшие участки в {name.toLowerCase()}
                 </h2>
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -113,61 +113,55 @@ export default function VillageAdvantages({
                 </div>
                 <a
                   href="#plots-map"
-                  className="mt-3 inline-flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all"
+                  className="mt-3 inline-flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-white hover:bg-white/95 text-emerald-800 font-black text-sm shadow-lg active:scale-[0.98] transition-all"
                 >
                   Посмотреть все участки →
                 </a>
               </div>
 
-              {/* Center: infrastructure */}
-              <div className="lg:col-span-3 flex flex-col items-center justify-center">
-                <div className="text-[9px] font-black uppercase tracking-widest text-emerald-700/50 mb-2">
-                  Инфраструктура
-                </div>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {features.map((feature, i) => {
-                    const { Icon, color } = featureIcon(feature, i);
-                    return (
-                      <div
-                        key={feature}
-                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-white/80 ring-1 ring-emerald-200/60 hover:ring-emerald-400 hover:bg-white transition-colors"
-                      >
-                        <Icon className={`w-3 h-3 ${color}`} strokeWidth={2.5} />
-                        <span className="text-emerald-900 text-[11px] font-bold">{feature}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Right: features */}
-              <div className="lg:col-span-5 flex flex-col gap-2.5">
+              <div className="lg:col-span-7 flex flex-col gap-2.5">
                 <FeatureRow
-                  icon={<Wallet className="w-5 h-5 text-emerald-700" strokeWidth={2.4} />}
-                  iconBg="bg-emerald-100"
+                  icon={<Wallet className="w-5 h-5 text-white" strokeWidth={2.4} />}
                   badge="Экономия"
-                  badgeColor="bg-emerald-100 text-emerald-800"
                   title="Фиксированная цена в договоре"
                   desc="Никаких доплат после бронирования — цена за сотку прописана в договоре."
                 />
                 <FeatureRow
-                  icon={<CheckCircle2 className="w-5 h-5 text-sky-700" strokeWidth={2.4} />}
-                  iconBg="bg-sky-100"
+                  icon={<CheckCircle2 className="w-5 h-5 text-white" strokeWidth={2.4} />}
                   badge="Простота"
-                  badgeColor="bg-sky-100 text-sky-800"
                   title="Сделка 1 день"
                   desc="Электронная регистрация в Росреестре. Без нотариуса и очередей."
                 />
                 <FeatureRow
-                  icon={<LayoutGrid className="w-5 h-5 text-amber-700" strokeWidth={2.4} />}
-                  iconBg="bg-amber-100"
+                  icon={<LayoutGrid className="w-5 h-5 text-white" strokeWidth={2.4} />}
                   badge="Рассрочка"
-                  badgeColor="bg-amber-100 text-amber-900"
                   title="Ипотека от 6.5%"
                   desc="Работаем со Сбером, ВТБ, Альфой и ещё 6 банками. Одобрение за 3 дня."
                 />
               </div>
             </div>
+
+            {/* Infrastructure pills — centered below */}
+            {features.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-white/15 flex flex-wrap justify-center items-center gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/40 mr-1">
+                  Инфраструктура
+                </span>
+                {features.map((feature, i) => {
+                  const { Icon } = featureIcon(feature, i);
+                  return (
+                    <div
+                      key={feature}
+                      className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-white/10 ring-1 ring-white/20 hover:bg-white/15 transition-colors"
+                    >
+                      <Icon className="w-3 h-3 text-white/70" strokeWidth={2.5} />
+                      <span className="text-white/90 text-[11px] font-bold">{feature}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -179,36 +173,36 @@ function StatCell({ label, value, suffix, unit, progress }: {
   label: string; value: string; suffix?: string; unit?: string; progress?: number;
 }) {
   return (
-    <div className="rounded-xl bg-white/70 ring-1 ring-emerald-200/50 p-2.5">
-      <div className="text-[9px] uppercase tracking-wider text-emerald-700/60 font-bold">{label}</div>
-      <div className="text-emerald-900 text-lg font-black tabular-nums leading-none mt-1">
+    <div className="rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/20 p-2.5">
+      <div className="text-[9px] uppercase tracking-wider text-white/60 font-bold">{label}</div>
+      <div className="text-white text-lg font-black tabular-nums leading-none mt-1">
         {value}
-        {suffix && <span className="text-sm text-emerald-600/60 font-black ml-1">{suffix}</span>}
+        {suffix && <span className="text-sm text-white/60 font-black ml-1">{suffix}</span>}
       </div>
-      {unit && <div className="text-emerald-700/50 text-[10px] font-bold mt-0.5">{unit}</div>}
+      {unit && <div className="text-white/60 text-[10px] font-bold mt-0.5">{unit}</div>}
       {typeof progress === "number" && (
-        <div className="mt-1.5 h-1 rounded-full bg-emerald-200/50 overflow-hidden">
-          <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${progress}%` }} />
+        <div className="mt-1.5 h-1 rounded-full bg-white/20 overflow-hidden">
+          <div className="h-full bg-white rounded-full" style={{ width: `${progress}%` }} />
         </div>
       )}
     </div>
   );
 }
 
-function FeatureRow({ icon, iconBg, badge, badgeColor, title, desc }: {
-  icon: React.ReactNode; iconBg: string; badge: string; badgeColor: string; title: string; desc: string;
+function FeatureRow({ icon, badge, title, desc }: {
+  icon: React.ReactNode; iconBg?: string; badge: string; badgeColor?: string; title: string; desc: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-white/60 ring-1 ring-emerald-200/40 p-3.5 hover:bg-white/80 hover:shadow-md transition-all">
-      <div className={`shrink-0 w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shadow-sm`}>
+    <div className="flex items-start gap-3 rounded-2xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 p-3.5 hover:bg-white/15 transition-colors">
+      <div className="shrink-0 w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
         {icon}
       </div>
       <div className="min-w-0">
-        <div className={`inline-flex items-center h-4 px-1.5 rounded-full text-[8px] font-black uppercase tracking-wider ${badgeColor} mb-1`}>
+        <div className="inline-flex items-center h-4 px-1.5 rounded-full bg-white/20 text-white text-[8px] font-black uppercase tracking-wider mb-1">
           {badge}
         </div>
-        <div className="text-gray-900 text-[13px] font-black leading-tight">{title}</div>
-        <div className="text-gray-600 text-[11px] leading-snug mt-0.5">{desc}</div>
+        <div className="text-white text-[13px] font-black leading-tight">{title}</div>
+        <div className="text-white/70 text-[11px] leading-snug mt-0.5">{desc}</div>
       </div>
     </div>
   );
