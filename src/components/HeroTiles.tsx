@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   TreePine,
   CalendarCheck,
@@ -103,19 +102,12 @@ const tiles: HeroTile[] = [
 
 export default function HeroTiles() {
   return (
-    <section className="relative min-h-svh overflow-hidden flex bg-slate-950">
-      {/* Full-bleed background photo */}
-      <Image
-        src="/hero-home.jpg"
-        alt="Коттеджный посёлок в Подмосковье — вид с высоты"
-        fill
-        priority
-        sizes="100vw"
-        quality={85}
-        className="object-cover"
-      />
-      {/* Dark overlay — strong enough for tile/text readability on any photo */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/60 to-slate-950/80" />
+    <section
+      className="relative min-h-svh overflow-hidden flex bg-slate-950 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url(/hero-home.jpg)" }}
+    >
+      {/* Dark overlay — readable text without killing the photo */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/65" />
 
       {/* Subtle bottom fade to white so next section transitions smoothly */}
       <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
