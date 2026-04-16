@@ -107,6 +107,7 @@ export default function Header() {
               <span className="2xl:hidden">Посмотреть вживую</span>
               <span className="hidden 2xl:inline">Посмотреть вживую</span>
             </a>
+
           </div>
 
           {/* Mobile toggle */}
