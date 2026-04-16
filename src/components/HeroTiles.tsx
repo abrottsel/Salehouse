@@ -131,17 +131,18 @@ export default function HeroTiles() {
             <a
               key={tile.title}
               href={tile.href}
-              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 backdrop-blur-[28px] backdrop-saturate-[1.8] hover:-translate-y-0.5 transition-all duration-300 ${
+              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 hero-glass-tile hover:-translate-y-0.5 transition-all duration-300 ${
                 tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center" : ""
               }`}
               style={{
-                background: "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%)",
-                boxShadow: "inset 0 1px 1px 0 rgba(255,255,255,0.25), inset 0 -1px 1px 0 rgba(255,255,255,0.05), 0 8px 32px -4px rgba(0,0,0,0.3), 0 2px 8px -2px rgba(0,0,0,0.15)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                backdropFilter: "blur(1px) saturate(2)",
+                WebkitBackdropFilter: "blur(1px) saturate(2)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)",
+                boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 8px 32px -4px rgba(0,0,0,0.25)",
               }}
             >
-              {/* Top specular highlight — liquid glass shine */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              {/* Top specular highlight */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.45] to-transparent" />
 
               <div
                 className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-[14px] ${tile.iconBg} flex items-center justify-center mb-2.5 sm:mb-3`}
@@ -150,11 +151,11 @@ export default function HeroTiles() {
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
               </div>
 
-              <div className="text-white text-sm sm:text-base font-semibold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="text-white text-sm sm:text-base font-semibold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
                 {tile.title}
               </div>
               {tile.subtitle && (
-                <div className="text-white/60 text-[11px] sm:text-xs mt-1 leading-snug">
+                <div className="text-white/70 text-[11px] sm:text-xs mt-1 leading-snug drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
                   {tile.subtitle}
                 </div>
               )}
@@ -164,6 +165,34 @@ export default function HeroTiles() {
           ))}
         </div>
       </div>
+      {/* Rainbow border for liquid glass tiles */}
+      <style>{`
+        .hero-glass-tile {
+          position: relative;
+        }
+        .hero-glass-tile::before {
+          content: '';
+          position: absolute;
+          inset: -1.5px;
+          border-radius: inherit;
+          padding: 1.5px;
+          background: conic-gradient(
+            from 0deg,
+            rgba(255,0,0,0.4),
+            rgba(255,165,0,0.4),
+            rgba(255,255,0,0.3),
+            rgba(0,255,0,0.3),
+            rgba(0,200,255,0.4),
+            rgba(100,100,255,0.4),
+            rgba(200,0,255,0.4),
+            rgba(255,0,0,0.4)
+          );
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+      `}</style>
     </section>
   );
 }

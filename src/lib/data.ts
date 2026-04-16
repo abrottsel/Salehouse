@@ -670,6 +670,7 @@ export const villages: Village[] = [
     id: 21,
     name: "Артемово ИЖС",
     slug: "artemovo-izhs",
+    iframeMapUrl: "https://map.zemexx.ru/v2/index.php?village_id=4a3d91d2-cf1d-11ee-b3ad-005056a6b235",
     direction: "Каширское шоссе",
     distance: 42,
     readiness: 60,
