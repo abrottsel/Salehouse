@@ -17,8 +17,9 @@ export default function SocialFloating() {
         className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 ring-1 ring-white/20"
         style={{ background: "linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)" }}
       >
-        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.03 2 11c0 2.83 1.49 5.35 3.81 6.97L5 22l4.19-2.19c.9.19 1.84.19 2.81.19 5.52 0 10-4.03 10-9S17.52 2 12 2zm-1.5 12.5l-2.5-2.5 1.06-1.06L10.5 12.38l3.94-3.94L15.5 9.5l-5 5z"/>
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8" stroke="white" strokeWidth="2.5"/>
+          <circle cx="12" cy="12" r="3" fill="white"/>
         </svg>
       </a>
 
