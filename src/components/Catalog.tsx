@@ -664,44 +664,62 @@ export default function Catalog() {
           </div>
         )}
 
-        {/* CTA Banner — compact, horizontal on desktop */}
-        <div className="relative mt-10 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 ring-1 ring-emerald-300/70 px-5 py-5 sm:px-7 sm:py-6">
-          {/* Decorative blobs */}
-          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-emerald-400/25 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-green-400/25 blur-3xl pointer-events-none" />
+        {/* CTA Banner — liquid glass on photo background */}
+        <div
+          className="relative mt-10 overflow-hidden rounded-2xl bg-cover bg-center"
+          style={{ backgroundImage: "url(/hero-home.jpg)" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/25 to-black/40" />
+          <div
+            className="catalog-cta-glass relative overflow-hidden rounded-2xl px-5 py-5 sm:px-7 sm:py-6"
+            style={{
+              backdropFilter: "blur(4px) saturate(1.8)",
+              background: "linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 8px 32px -4px rgba(0,0,0,0.25)",
+            }}
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
-            {/* Text */}
-            <div className="text-center md:text-left min-w-0">
-              <h3 className="text-lg sm:text-xl font-black text-emerald-950 tracking-tight">
-                Не нашли подходящий посёлок?
-              </h3>
-              <p className="text-xs sm:text-sm text-emerald-900/75 mt-0.5">
-                Оставьте заявку или рассчитайте ипотеку — подберём участок под
-                ваш бюджет.
-              </p>
-            </div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
+              <div className="text-center md:text-left min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                  Не нашли подходящий посёлок?
+                </h3>
+                <p className="text-xs sm:text-sm text-white/70 mt-0.5">
+                  Оставьте заявку или рассчитайте ипотеку — подберём участок под ваш бюджет.
+                </p>
+              </div>
 
-            {/* Actions */}
-            <div className="flex items-stretch gap-2 shrink-0">
-              <a
-                href="#contacts"
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:shadow-xl hover:shadow-emerald-600/35 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
-              >
-                <SlidersHorizontal className="w-4 h-4 shrink-0" />
-                Заявка
-                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-              </a>
-              <a
-                href="#calculator"
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-800 ring-1 ring-emerald-300 hover:ring-emerald-400 px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
-              >
-                <Wallet className="w-4 h-4 shrink-0" />
-                Ипотека
-              </a>
+              <div className="flex items-stretch gap-2 shrink-0">
+                <a
+                  href="#contacts"
+                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                >
+                  <SlidersHorizontal className="w-4 h-4 shrink-0" />
+                  Заявка
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                </a>
+                <a
+                  href="#calculator"
+                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white ring-1 ring-white/25 px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                >
+                  <Wallet className="w-4 h-4 shrink-0" />
+                  Ипотека
+                </a>
+              </div>
             </div>
           </div>
         </div>
+
+        <style>{`
+          .catalog-cta-glass { position: relative; }
+          .catalog-cta-glass::before {
+            content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;
+            background:conic-gradient(from 0deg,rgba(255,0,0,0.25),rgba(255,165,0,0.25),rgba(255,255,0,0.18),rgba(0,255,0,0.18),rgba(0,200,255,0.25),rgba(100,100,255,0.25),rgba(200,0,255,0.25),rgba(255,0,0,0.25));
+            -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+            -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:1;
+          }
+        `}</style>
       </div>
     </section>
   );

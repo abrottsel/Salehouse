@@ -17,24 +17,22 @@ export default function Home() {
       <main>
         <HeroTiles />
         <Catalog />
-        <MortgageCalculator />
-        <Advantages />
 
         <GlassSections
           cards={[
-            {
-              id: "steps-block",
-              title: "Как купить участок",
-              subtitle: "6 шагов до ключей",
-              icon: "ListChecks",
-              children: <Steps />,
-            },
             {
               id: "faq-block",
               title: "Частые вопросы",
               subtitle: "Ответы на главное",
               icon: "HelpCircle",
               children: <FAQ />,
+            },
+            {
+              id: "steps-block",
+              title: "Как купить участок",
+              subtitle: "6 шагов до ключей",
+              icon: "ListChecks",
+              children: <Steps />,
             },
             {
               id: "reviews-block",
@@ -46,6 +44,8 @@ export default function Home() {
           ]}
         />
 
+        <Advantages />
+        <MortgageCalculator />
         <ContactForm />
       </main>
       <Footer />
