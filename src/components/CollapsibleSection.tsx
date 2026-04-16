@@ -60,7 +60,7 @@ export default function CollapsibleSection({
     <div
       id={id}
       ref={rootRef}
-      className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2 scroll-mt-20"
+      className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-2 scroll-mt-20"
     >
       <div className="rounded-2xl ring-1 ring-gray-200 bg-white shadow-sm overflow-hidden">
         <button

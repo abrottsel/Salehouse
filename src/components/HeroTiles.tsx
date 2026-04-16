@@ -126,12 +126,12 @@ export default function HeroTiles() {
         </div>
 
         {/* Tile grid: 2 cols mobile / 4 cols desktop; 7 tiles with 1 wide (2×) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-5">
           {tiles.map((tile) => (
             <a
               key={tile.title}
               href={tile.href}
-              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 hero-glass-tile hover:-translate-y-0.5 transition-all duration-300 ${
+              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 xl:p-6 hero-glass-tile hover:-translate-y-0.5 transition-all duration-300 ${
                 tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center" : ""
               }`}
               style={{
@@ -145,7 +145,7 @@ export default function HeroTiles() {
               <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.45] to-transparent" />
 
               <div
-                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-[14px] ${tile.iconBg} flex items-center justify-center mb-2.5 sm:mb-3`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-[14px] ${tile.iconBg} flex items-center justify-center mb-2.5 sm:mb-3`}
                 style={{ boxShadow: "0 4px 16px -2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)" }}
               >
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />

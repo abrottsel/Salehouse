@@ -95,7 +95,7 @@ export default async function VillagePage({ params }: Props) {
               <iframe
                 src={village.iframeMapUrl}
                 width="100%"
-                height="600"
+                height="750"
                 allow="fullscreen"
                 className="block border-0"
                 title={`Карта участков — ${village.name}`}

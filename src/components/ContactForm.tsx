@@ -107,7 +107,7 @@ export default function ContactForm() {
       <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-emerald-200/20 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-green-200/15 blur-3xl pointer-events-none" />
 
-      <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-3">
