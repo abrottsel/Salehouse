@@ -922,6 +922,7 @@ export const villages: Village[] = [
     id: 30,
     name: "Суриково",
     slug: "surikovo",
+    iframeMapUrl: "https://map.zemexx.ru/v2/index.php?village_id=08b3e361-da76-11f0-b3d0-005056b0f2da",
     direction: "Каширское шоссе",
     distance: 43,
     readiness: 80,
