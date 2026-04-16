@@ -55,19 +55,36 @@ export default function MortgageCalculator() {
   return (
     <section
       id="calculator"
-      className="relative py-5 lg:py-8 scroll-mt-16 bg-gradient-to-b from-gray-50 to-gray-100"
+      className="relative py-5 lg:py-8 scroll-mt-16 overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #1a3a2a 0%, #2d5a3f 25%, #1a3a2a 50%, #2d5a3f 75%, #1a3a2a 100%)" }}
     >
+      {/* Decorative geometric background — green/gold stripes */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: `
+          linear-gradient(45deg, rgba(180,155,100,0.12) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(180,155,100,0.12) 25%, transparent 25%),
+          linear-gradient(135deg, rgba(180,155,100,0.08) 25%, transparent 25%),
+          linear-gradient(-135deg, rgba(180,155,100,0.08) 25%, transparent 25%),
+          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: "120px 120px, 120px 120px, 80px 80px, 80px 80px, 40px 40px, 40px 40px",
+      }} />
+      {/* Radial glow center */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse at center, rgba(180,155,100,0.15) 0%, transparent 60%)",
+      }} />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm ring-1 ring-white/20 text-white/90 text-[11px] font-bold uppercase tracking-wider mb-2">
             <Landmark className="w-3.5 h-3.5" />
             Ипотека
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight mb-3 leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mb-3 leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             Свой участок{" "}
-            <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-200 to-yellow-200 bg-clip-text text-transparent">
               дешевле аренды квартиры
             </span>
           </h2>
@@ -76,16 +93,16 @@ export default function MortgageCalculator() {
             {banks.map((b) => (
               <div
                 key={b.name}
-                className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-white ring-1 ring-gray-200 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-white/10 backdrop-blur-sm ring-1 ring-white/15 shadow-sm"
               >
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ backgroundColor: b.dot }}
                 />
-                <span className="text-[11px] font-black text-gray-900">
+                <span className="text-[11px] font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
                   {b.name}
                 </span>
-                <span className="text-[10px] text-emerald-700 font-bold tabular-nums">
+                <span className="text-[10px] text-amber-200/80 font-bold tabular-nums">
                   {b.rate}
                 </span>
               </div>
@@ -97,10 +114,10 @@ export default function MortgageCalculator() {
         <div
           className="calc-glass-card rounded-3xl overflow-hidden"
           style={{
-            backdropFilter: "blur(20px) saturate(1.8)",
-            WebkitBackdropFilter: "blur(20px) saturate(1.8)",
-            background: "linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(15,23,42,0.60) 100%)",
-            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.15), inset 0 -0.5px 0 rgba(255,255,255,0.05), 0 12px 40px -8px rgba(0,0,0,0.25)",
+            backdropFilter: "blur(2px) saturate(2)",
+            WebkitBackdropFilter: "blur(2px) saturate(2)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+            boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.25), inset 0 -0.5px 0 rgba(255,255,255,0.08), 0 12px 40px -8px rgba(0,0,0,0.3)",
           }}
         >
           {/* Top specular */}
