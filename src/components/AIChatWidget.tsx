@@ -389,13 +389,18 @@ export default function AIChatWidget() {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
               />
-              <input
-                type="tel"
-                placeholder="+7 (___) ___-__-__"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
-              />
+              <div className="flex items-center h-11 rounded-xl border border-gray-200 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/20 overflow-hidden">
+                <span className="flex items-center gap-1.5 px-3 h-full bg-emerald-50 text-emerald-700 text-sm font-bold border-r border-gray-200 shrink-0 select-none">
+                  🇷🇺 +7
+                </span>
+                <input
+                  type="tel"
+                  placeholder="(___) ___-__-__"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="flex-1 h-full px-3 text-sm focus:outline-none bg-transparent"
+                />
+              </div>
               {error && <div className="text-xs text-red-600">{error}</div>}
               <button
                 type="submit"
