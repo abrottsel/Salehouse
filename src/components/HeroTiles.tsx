@@ -196,20 +196,20 @@ export default function HeroTiles() {
         .hero-glass-tile-wide::before {
           content: '';
           position: absolute;
-          inset: -2px;
+          inset: -3px;
           border-radius: inherit;
-          padding: 2px;
+          padding: 3px;
           background: conic-gradient(
             from 45deg,
+            rgba(255,255,255,0.85),
+            rgba(180,255,180,0.7),
             rgba(255,255,255,0.6),
-            rgba(200,255,200,0.5),
-            rgba(255,255,255,0.4),
-            rgba(200,230,255,0.5),
+            rgba(180,220,255,0.7),
+            rgba(255,255,255,0.85),
+            rgba(255,200,180,0.7),
             rgba(255,255,255,0.6),
-            rgba(255,220,200,0.5),
-            rgba(255,255,255,0.4),
-            rgba(220,200,255,0.5),
-            rgba(255,255,255,0.6)
+            rgba(200,180,255,0.7),
+            rgba(255,255,255,0.85)
           );
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
