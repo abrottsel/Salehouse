@@ -126,12 +126,14 @@ export default function VillageHeroSwiper({
   return (
     <>
       <section
-        className="relative w-full h-[100svh] min-h-[560px] overflow-hidden bg-black select-none"
+        className="relative w-full h-[100svh] min-h-[560px] overflow-hidden bg-black bg-cover bg-center bg-no-repeat select-none"
+        style={{ backgroundImage: `url(${photos[0]})` }}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >
-        {/* Photo layers — absolute stacked, fade between indexes for
-            a soft transition instead of a hard cut. */}
+        {/* Photo layers — absolute stacked, fade between indexes.
+            First photo is also the CSS background-image so it paints
+            instantly without waiting for JS hydration. */}
         {photos.map((src, i) => (
           <div
             key={src}
