@@ -312,6 +312,7 @@ export default function InteractivePlotMap3({
     null,
   );
   const [enabledTiers, setEnabledTiers] = useState<Set<number>>(new Set());
+  const [enabledStatuses, setEnabledStatuses] = useState<Set<string>>(new Set());
   const initialSelectDone = useRef(false);
 
   // ─── "Мои места" panel state ───────────────────────────────
@@ -445,15 +446,25 @@ export default function InteractivePlotMap3({
     setSelectedPlot(plot);
   }, []);
 
-  // ─── Filter visible plots by enabledTiers ──────────────────
+  // ─── Filter visible plots by enabledTiers + enabledStatuses ─
   const visiblePlots = useMemo(() => {
     if (!data) return [];
     return data.plots.filter((p) => {
+      // Status filter
+      if (enabledStatuses.size > 0) {
+        const cat = isPlotAvailable(p.statusName)
+          ? "available"
+          : isPlotReserved(p.statusName)
+            ? "reserved"
+            : "sold";
+        if (!enabledStatuses.has(cat)) return false;
+      }
+      // Price tier filter (only for active/available plots)
       if (!isPlotActive(p.statusName)) return true;
       if (enabledTiers.size > 0 && !enabledTiers.has(p.priceTier)) return false;
       return true;
     });
-  }, [data, enabledTiers]);
+  }, [data, enabledTiers, enabledStatuses]);
 
   const toggleTier = useCallback((i: number) => {
     setEnabledTiers((prev) => {
@@ -462,6 +473,20 @@ export default function InteractivePlotMap3({
       else next.add(i);
       return next;
     });
+  }, []);
+
+  const toggleStatus = useCallback((status: string) => {
+    setEnabledStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setEnabledTiers(new Set());
+    setEnabledStatuses(new Set());
   }, []);
 
   // ─── Route drawing ─────────────────────────────────────────
@@ -935,15 +960,47 @@ export default function InteractivePlotMap3({
           );
         })()}
 
-        {/* Status legend */}
+        {/* Filter header + reset */}
+        <div className="px-3 xl:px-4 pt-2.5 pb-2 border-b border-gray-100 flex items-center justify-between">
+          <h3 className="text-sm font-black text-gray-900">Фильтр</h3>
+          {(enabledTiers.size > 0 || enabledStatuses.size > 0) && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+            >
+              Сбросить
+            </button>
+          )}
+        </div>
+
+        {/* Status filter — clickable dots */}
         <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
-          <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1">
+          <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
             Статус
           </h3>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-            <LegendDot color="#22c55e" label="Свободен" />
-            <LegendDot color="#3b82f6" label="Забронирован" />
-            <LegendDot color="#9ca3af" label="Продан" muted />
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+            <StatusFilter
+              color="#22c55e"
+              label="Свободен"
+              count={data.statistics.free}
+              active={enabledStatuses.size === 0 || enabledStatuses.has("available")}
+              onClick={() => toggleStatus("available")}
+            />
+            <StatusFilter
+              color="#3b82f6"
+              label="Забронирован"
+              count={data.statistics.reserved}
+              active={enabledStatuses.size === 0 || enabledStatuses.has("reserved")}
+              onClick={() => toggleStatus("reserved")}
+            />
+            <StatusFilter
+              color="#9ca3af"
+              label="Продан"
+              count={data.statistics.sold}
+              active={enabledStatuses.size === 0 || enabledStatuses.has("sold")}
+              onClick={() => toggleStatus("sold")}
+            />
             <LegendDot color="#22c55e" label="Выбран" pulsing />
           </div>
         </div>
@@ -1584,5 +1641,53 @@ function LegendDot({
         {label}
       </span>
     </div>
+  );
+}
+
+function StatusFilter({
+  color,
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  color: string;
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1.5 group"
+    >
+      <span
+        className={`w-3.5 h-3.5 rounded-full shrink-0 ring-2 transition-all ${
+          active ? "ring-white" : "ring-gray-200 opacity-30 grayscale"
+        }`}
+        style={{
+          background: color,
+          boxShadow: "0 0 0 1.5px #fff, 0 1px 2px rgba(0,0,0,0.2)",
+        }}
+      />
+      <span
+        className={`text-[10px] font-semibold transition-colors ${
+          active
+            ? "text-gray-800 group-hover:text-gray-900"
+            : "text-gray-400 line-through"
+        }`}
+      >
+        {label}
+      </span>
+      <span
+        className={`text-[9px] tabular-nums font-bold transition-colors ${
+          active ? "text-gray-500" : "text-gray-300"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
   );
 }

@@ -73,7 +73,7 @@ export default function VillageAdvantages({
   return (
     <section className="py-6 lg:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-[28px] bg-gradient-to-br from-emerald-400 via-green-400 to-teal-500 ring-1 ring-emerald-600/30 shadow-2xl shadow-emerald-900/20 overflow-hidden">
+        <div className="relative rounded-[28px] bg-gradient-to-br from-green-600 via-emerald-500 to-cyan-600 ring-1 ring-green-800/25 shadow-2xl shadow-green-900/15 overflow-hidden">
           {/* Texture */}
           <div
             className="absolute inset-0 opacity-[0.06] pointer-events-none"
