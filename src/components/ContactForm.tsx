@@ -102,7 +102,7 @@ export default function ContactForm() {
     <section
       id="contacts"
       className="py-8 lg:py-12 scroll-mt-16 relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #2c3338 0%, #3a4248 40%, #2c3338 100%)" }}
+      style={{ background: "linear-gradient(135deg, #2d3436 0%, #636e72 40%, #2d3436 100%)" }}
     >
       <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
