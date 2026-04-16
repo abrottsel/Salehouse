@@ -131,26 +131,35 @@ export default function HeroTiles() {
             <a
               key={tile.title}
               href={tile.href}
-              className={`group relative rounded-[20px] bg-white/[0.08] ring-1 ring-white/[0.18] backdrop-blur-2xl backdrop-saturate-150 p-3.5 sm:p-4 lg:p-5 hover:bg-white/[0.14] hover:ring-white/30 hover:-translate-y-0.5 transition-all duration-200 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] ${
+              className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 backdrop-blur-[28px] backdrop-saturate-[1.8] hover:-translate-y-0.5 transition-all duration-300 ${
                 tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center" : ""
               }`}
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%)",
+                boxShadow: "inset 0 1px 1px 0 rgba(255,255,255,0.25), inset 0 -1px 1px 0 rgba(255,255,255,0.05), 0 8px 32px -4px rgba(0,0,0,0.3), 0 2px 8px -2px rgba(0,0,0,0.15)",
+                border: "1px solid rgba(255,255,255,0.2)",
+              }}
             >
+              {/* Top specular highlight — liquid glass shine */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+
               <div
-                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-[14px] ${tile.iconBg} flex items-center justify-center shadow-lg shadow-black/20 mb-2.5 sm:mb-3`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-[14px] ${tile.iconBg} flex items-center justify-center mb-2.5 sm:mb-3`}
+                style={{ boxShadow: "0 4px 16px -2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)" }}
               >
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
               </div>
 
-              <div className="text-white text-sm sm:text-base font-semibold leading-tight">
+              <div className="text-white text-sm sm:text-base font-semibold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                 {tile.title}
               </div>
               {tile.subtitle && (
-                <div className="text-white/50 text-[11px] sm:text-xs mt-1 leading-snug">
+                <div className="text-white/60 text-[11px] sm:text-xs mt-1 leading-snug">
                   {tile.subtitle}
                 </div>
               )}
 
-              <ArrowRight className={`absolute top-4 right-4 w-4 h-4 text-white/20 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/60 transition-all duration-200 ${tile.wide ? "hidden" : ""}`} />
+              <ArrowRight className={`absolute top-4 right-4 w-4 h-4 text-white/25 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/60 transition-all duration-200 ${tile.wide ? "hidden" : ""}`} />
             </a>
           ))}
         </div>

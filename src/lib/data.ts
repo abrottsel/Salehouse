@@ -115,7 +115,6 @@ export const villages: Village[] = [
     areaTo: 12,
     photos: [
       `/villages/novoe-sonino/01.jpg`,
-      `/villages/novoe-sonino/02.jpg`,
       `/villages/novoe-sonino/03.jpg`,
       `/villages/novoe-sonino/04.jpg`,
       `/villages/novoe-sonino/05.jpg`,
