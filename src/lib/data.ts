@@ -539,8 +539,8 @@ export const villages: Village[] = [
     areaFrom: 6,
     areaTo: 12,
     photos: [
-      `/villages/novoe-felisovo/01.jpg`,
       `/villages/novoe-felisovo/02.jpg`,
+      `/villages/novoe-felisovo/01.jpg`,
       `/villages/novoe-felisovo/03.jpg`,
       `/villages/novoe-felisovo/04.jpg`,
       `/villages/novoe-felisovo/05.jpg`,
