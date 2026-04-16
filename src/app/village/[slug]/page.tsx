@@ -79,7 +79,6 @@ export default async function VillagePage({ params }: Props) {
           direction={village.direction}
           distance={village.distance}
           readiness={village.readiness}
-          description={village.description}
           priceFrom={village.priceFrom}
           plotsAvailable={village.plotsAvailable}
           plotsCount={village.plotsCount}

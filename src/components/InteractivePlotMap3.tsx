@@ -893,13 +893,47 @@ export default function InteractivePlotMap3({
           </a>
         </div>
 
-        {/* Phase B: the selected-plot card moved out of the sidebar
-            into the VillagePlotBottomSheet component (Yandex-Maps-
-            style slide-up panel on the map itself). The sidebar now
-            carries only the passive info — stats, phone, legend,
-            and price-tier filters. This gives the filter list room
-            to breathe on short viewports and keeps the active
-            selection UI right next to the plot on the map. */}
+        {/* Quick aggregate stats — area & price range from loaded data */}
+        {(() => {
+          const available = data.plots.filter((p) => isPlotAvailable(p.statusName));
+          if (available.length === 0) return null;
+          const areas = available.map((p) => p.area);
+          const prices = available.map((p) => p.pricePerHundred);
+          const minArea = Math.min(...areas);
+          const maxArea = Math.max(...areas);
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          return (
+            <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-emerald-50 ring-1 ring-emerald-200/60 p-2">
+                  <div className="text-[8px] uppercase font-bold text-emerald-700 tracking-wider">
+                    Площадь
+                  </div>
+                  <div className="text-sm font-black text-gray-900 tabular-nums leading-none mt-0.5">
+                    {minArea}–{maxArea}{" "}
+                    <span className="text-[9px] text-gray-500 font-bold">сот</span>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-emerald-50 ring-1 ring-emerald-200/60 p-2">
+                  <div className="text-[8px] uppercase font-bold text-emerald-700 tracking-wider">
+                    От
+                  </div>
+                  <div className="text-sm font-black text-gray-900 tabular-nums leading-none mt-0.5">
+                    {minPrice.toLocaleString("ru-RU")}{" "}
+                    <span className="text-[9px] text-gray-500 font-bold">₽/сот</span>
+                  </div>
+                </div>
+              </div>
+              <a
+                href="#contact-form"
+                className="mt-2 flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-bold text-[11px] shadow-md shadow-emerald-900/20 transition-all"
+              >
+                Записаться на просмотр
+              </a>
+            </div>
+          );
+        })()}
 
         {/* Status legend */}
         <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">

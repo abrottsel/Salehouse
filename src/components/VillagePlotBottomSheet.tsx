@@ -1,28 +1,21 @@
 "use client";
 
 /**
- * VillagePlotBottomSheet — Yandex-Maps-style bottom sheet that
- * slides up when the user taps a plot on the InteractivePlotMap3
- * canvas. Carries plot details, the hidden-fees breakdown, and the
- * primary CTA (Забронировать).
+ * VillagePlotBottomSheet — compact bottom sheet (Yandex-Maps-style).
  *
- * States:
- *   null       → hidden, slide-down off-screen
- *   selected   → visible at rest, ~60% of map height max
- *   expanded   → full-height within the map container
+ * Collapsed state takes ~35% of map height — enough for header + stats
+ * + CTAs in a single glance without hiding the map. Expanding reveals
+ * the hidden-fees breakdown.
  *
- * Interactions:
- *   - tap grabber or "Подробнее" → toggle expanded
- *   - tap the X chip → clear selection (caller passes onClose)
- *   - Escape key → clear selection
- *   - on mobile, drag the grabber downward to close
+ * On desktop (lg+) the header and stats are laid out horizontally to
+ * use the wide sheet width efficiently.
  */
 
 import { useEffect, useRef, useState } from "react";
 import {
   X,
-  ChevronUp,
   ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Info,
   ExternalLink,
@@ -35,7 +28,6 @@ import {
   formatFeePrice,
   estimateOneOffTotal,
   type HiddenFee,
-  type FeeGroupId,
 } from "@/lib/hidden-fees";
 
 interface PlotLike {
@@ -65,16 +57,13 @@ export default function VillagePlotBottomSheet({
 }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [showFees, setShowFees] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number | null>(null);
 
-  // Collapse to default height whenever a new plot is selected
   useEffect(() => {
     setExpanded(false);
     setShowFees(false);
   }, [plot?.number]);
 
-  // Escape to close
   useEffect(() => {
     if (!plot) return;
     const onKey = (e: KeyboardEvent) => {
@@ -90,72 +79,88 @@ export default function VillagePlotBottomSheet({
   const monthly = fees.find((f) => /мес/i.test(f.unit ?? ""));
 
   const status = plot.statusName;
-  const statusPalette = isSold
+  const statusColor = isSold
     ? "bg-gray-100 text-gray-600"
     : status === "Бронь" || status === "Забронирован"
       ? "bg-blue-100 text-blue-800"
       : "bg-green-100 text-green-800";
 
-  const handleGrabberPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabberDown = (e: React.PointerEvent) => {
     dragStartY.current = e.clientY;
   };
-  const handleGrabberPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabberUp = (e: React.PointerEvent) => {
     if (dragStartY.current === null) return;
     const dy = e.clientY - dragStartY.current;
     dragStartY.current = null;
-    if (Math.abs(dy) < 10) {
-      // tap — toggle expansion
-      setExpanded((v) => !v);
-    } else if (dy > 60) {
-      // drag down → close
-      onClose();
-    } else if (dy < -60) {
-      // drag up → expand
-      setExpanded(true);
-    }
+    if (Math.abs(dy) < 10) setExpanded((v) => !v);
+    else if (dy > 60) onClose();
+    else if (dy < -60) setExpanded(true);
   };
 
   return (
     <div
-      ref={sheetRef}
-      className={`absolute left-0 right-0 bottom-0 z-40 rounded-t-3xl bg-white shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.35)] ring-1 ring-black/5 transition-[max-height] duration-300 ease-out overflow-hidden flex flex-col pointer-events-auto ${
-        expanded ? "max-h-[90%]" : "max-h-[56%]"
+      className={`absolute left-0 right-0 bottom-0 z-40 rounded-t-2xl bg-white shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.3)] ring-1 ring-black/5 transition-[max-height] duration-300 ease-out overflow-hidden flex flex-col pointer-events-auto ${
+        expanded ? "max-h-[85%]" : "max-h-[36%]"
       }`}
       style={{ willChange: "max-height" }}
     >
-      {/* Drag handle / grabber — tappable area that also receives
-          the drag gesture on mobile. */}
+      {/* Grabber */}
       <div
-        className="shrink-0 pt-2 pb-1 flex flex-col items-center cursor-pointer select-none"
-        onPointerDown={handleGrabberPointerDown}
-        onPointerUp={handleGrabberPointerUp}
+        className="shrink-0 pt-1.5 pb-1 flex flex-col items-center cursor-pointer select-none"
+        onPointerDown={onGrabberDown}
+        onPointerUp={onGrabberUp}
       >
-        <div className="w-10 h-1 rounded-full bg-gray-300" />
+        <div className="w-9 h-1 rounded-full bg-gray-300" />
       </div>
 
-      {/* Content scroller */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-5 pb-5">
-        {/* Header row: plot number + status + FavoriteHeart + close */}
-        <div className="flex items-start justify-between gap-3 pt-1">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="text-[9px] uppercase font-black tracking-wider text-emerald-700">
-                Участок
-              </div>
-              <span
-                className={`inline-flex items-center h-4 px-1.5 rounded-full text-[9px] font-black uppercase ${statusPalette}`}
-              >
-                {status}
-              </span>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 pb-3">
+        {/* ── Desktop: single horizontal row ── */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+          {/* Plot identity */}
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
+            <div className="text-[9px] uppercase font-black tracking-wider text-emerald-700">
+              Участок
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-gray-900 leading-none mt-0.5 tabular-nums">
+            <div className="text-xl font-black text-gray-900 tabular-nums leading-none">
               № {plot.number}
             </div>
-            <div className="mt-1.5 text-[11px] text-gray-500">
-              {villageName}
-            </div>
+            <span
+              className={`inline-flex items-center h-4 px-1.5 rounded-full text-[8px] font-black uppercase ${statusColor}`}
+            >
+              {status}
+            </span>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+
+          {/* Stats — inline on lg */}
+          <div className="mt-2 lg:mt-0 flex items-center gap-2 flex-1 min-w-0">
+            <Stat label="Площадь" value={`${plot.area} сот`} />
+            <Stat label="За сотку" value={`${plot.pricePerHundred.toLocaleString("ru-RU")} ₽`} />
+            <Stat
+              label="Итого"
+              value={`${plot.totalCost.toLocaleString("ru-RU")} ₽`}
+              accent
+            />
+          </div>
+
+          {/* CTAs + controls */}
+          <div className="mt-2 lg:mt-0 flex items-center gap-2 shrink-0">
+            {!isSold && (
+              <>
+                <a
+                  href="#contact-form"
+                  className="flex items-center justify-center h-9 px-4 rounded-lg bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-900/20 active:scale-[0.98] transition-all"
+                >
+                  Забронировать
+                </a>
+                <a
+                  href="#contact-form"
+                  className="flex items-center justify-center h-9 px-4 rounded-lg bg-white ring-1 ring-emerald-300 hover:bg-emerald-50 text-emerald-800 font-bold text-xs active:scale-[0.98] transition-all"
+                >
+                  Записаться
+                </a>
+              </>
+            )}
             <FavoriteHeart
               kind="plot"
               plot={{
@@ -176,95 +181,44 @@ export default function VillagePlotBottomSheet({
               className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
               aria-label="Закрыть"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Main stats row — area, per sotka, total */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 ring-1 ring-gray-200 p-2.5">
-            <div className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">
-              Площадь
-            </div>
-            <div className="text-sm font-black text-gray-900 leading-none mt-1 tabular-nums">
-              {plot.area} <span className="text-[10px] text-gray-500 font-bold">сот</span>
-            </div>
-          </div>
-          <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 ring-1 ring-gray-200 p-2.5">
-            <div className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">
-              За сотку
-            </div>
-            <div className="text-sm font-black text-gray-900 leading-none mt-1 tabular-nums">
-              {plot.pricePerHundred.toLocaleString("ru-RU")}{" "}
-              <span className="text-[10px] text-gray-500 font-bold">₽</span>
-            </div>
-          </div>
-          <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-100 ring-1 ring-emerald-200 p-2.5">
-            <div className="text-[9px] uppercase font-bold text-emerald-700 tracking-wider">
-              Итого
-            </div>
-            <div className="text-sm font-black text-green-800 leading-none mt-1 tabular-nums">
-              {plot.totalCost.toLocaleString("ru-RU")}{" "}
-              <span className="text-[10px] text-emerald-700 font-bold">₽</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Primary CTAs */}
-        {!isSold && (
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <a
-              href="#contact-form"
-              className="flex items-center justify-center h-11 rounded-xl bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-black text-sm shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-all"
-            >
-              Забронировать
-            </a>
-            <a
-              href="#contact-form"
-              className="flex items-center justify-center h-11 rounded-xl bg-white ring-1 ring-emerald-300 hover:bg-emerald-50 text-emerald-800 font-black text-sm active:scale-[0.98] transition-all"
-            >
-              Записаться
-            </a>
-          </div>
-        )}
-
         {/* Hidden fees toggle */}
         <button
           type="button"
-          onClick={() => setShowFees((v) => !v)}
-          className="mt-4 w-full flex items-center justify-between gap-2 p-3 rounded-xl bg-amber-50 ring-1 ring-amber-200 text-amber-900 text-[12px] font-bold hover:bg-amber-100 transition-colors"
+          onClick={() => {
+            setShowFees((v) => !v);
+            if (!expanded) setExpanded(true);
+          }}
+          className="mt-2.5 w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 ring-1 ring-amber-200 text-amber-900 text-[11px] font-bold hover:bg-amber-100 transition-colors"
         >
-          <span className="inline-flex items-center gap-2">
-            <Banknote className="w-4 h-4 text-amber-700" />
+          <span className="inline-flex items-center gap-1.5">
+            <Banknote className="w-3.5 h-3.5 text-amber-700" />
             Скрытые платежи
-            <span className="inline-flex items-center h-4 px-1.5 rounded-full bg-amber-200 text-amber-900 text-[9px] font-black uppercase tracking-wider">
+            <span className="inline-flex items-center h-3.5 px-1 rounded-full bg-amber-200 text-amber-900 text-[8px] font-black uppercase tracking-wider">
               прозрачно
             </span>
           </span>
           {showFees ? (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-3.5 h-3.5" />
           ) : (
-            <ChevronUp className="w-4 h-4 rotate-180" />
+            <ChevronUp className="w-3.5 h-3.5 rotate-180" />
           )}
         </button>
 
-        {/* Hidden fees panel */}
+        {/* Expanded fees panel */}
         {showFees && (
-          <div className="mt-2 space-y-3">
-            {/* Summary */}
-            <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-3">
-              <div className="flex items-center gap-2 text-[11px] font-black text-emerald-800">
-                <Info className="w-3.5 h-3.5" />У нас всё в договоре, ничего потом не всплывёт
+          <div className="mt-2 space-y-2.5">
+            <div className="rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-200/60 p-2.5">
+              <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-800">
+                <Info className="w-3 h-3" />У нас всё в договоре, ничего потом не
+                всплывёт
               </div>
-              <p className="mt-1 text-[11px] text-emerald-900/80 leading-snug">
-                {villageName} — прозрачная структура. Ниже все
-                потенциальные расходы сверх цены участка.
-                Зелёная галочка = включено, серая pill = за ваш счёт
-                с ориентировочной суммой из официальных источников.
-              </p>
-              <div className="mt-2 text-[11px] text-emerald-900/80">
-                <b>Ориентир one-off:</b>{" "}
+              <div className="mt-1.5 text-[10px] text-emerald-900/80">
+                <b>Разово:</b>{" "}
                 <span className="tabular-nums font-black text-emerald-800">
                   {low.toLocaleString("ru-RU")} – {high.toLocaleString("ru-RU")} ₽
                 </span>
@@ -280,22 +234,21 @@ export default function VillagePlotBottomSheet({
               </div>
             </div>
 
-            {/* Per-group breakdown */}
             {FEE_GROUPS.map((group) => {
               const inGroup = fees.filter((f) => f.group === group.id);
               if (inGroup.length === 0) return null;
               return (
                 <div
                   key={group.id}
-                  className="rounded-xl bg-white ring-1 ring-gray-200 p-3"
+                  className="rounded-lg bg-white ring-1 ring-gray-200 p-2.5"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg leading-none">{group.emoji}</span>
-                    <h4 className="text-[11px] font-black uppercase tracking-wider text-gray-900">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="text-sm leading-none">{group.emoji}</span>
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-gray-900">
                       {group.title}
                     </h4>
                   </div>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {inGroup.map((fee) => (
                       <FeeRow key={fee.id} fee={fee} />
                     ))}
@@ -304,14 +257,13 @@ export default function VillagePlotBottomSheet({
               );
             })}
 
-            <p className="text-[10px] text-gray-500 leading-snug pt-1">
-              Суммы ориентировочные, указаны на{" "}
+            <p className="text-[9px] text-gray-500 leading-snug">
+              Суммы ориентировочные на{" "}
               {new Date().toLocaleDateString("ru-RU", {
                 month: "long",
                 year: "numeric",
-              })}{" "}
-              по данным Росреестра, Россетей МР и Мособлгаза. Точная
-              калькуляция по вашему участку — на просмотре.
+              })}
+              . Точная калькуляция — на просмотре.
             </p>
           </div>
         )}
@@ -320,24 +272,49 @@ export default function VillagePlotBottomSheet({
   );
 }
 
+/* ─── compact stat pill ─── */
+
+function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div
+      className={`rounded-lg px-2.5 py-1.5 ring-1 ${
+        accent
+          ? "bg-emerald-50 ring-emerald-200"
+          : "bg-gray-50 ring-gray-200"
+      }`}
+    >
+      <div className="text-[8px] uppercase font-bold text-gray-500 tracking-wider">{label}</div>
+      <div
+        className={`text-xs font-black leading-none mt-0.5 tabular-nums ${
+          accent ? "text-green-800" : "text-gray-900"
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+/* ─── fee row ─── */
+
 function FeeRow({ fee }: { fee: HiddenFee }) {
   return (
-    <li className="flex items-start justify-between gap-3">
-      <div className="flex items-start gap-2 min-w-0">
+    <li className="flex items-start justify-between gap-2">
+      <div className="flex items-start gap-1.5 min-w-0">
         {fee.included ? (
           <CheckCircle2
-            className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5"
+            className="w-3.5 h-3.5 shrink-0 text-emerald-600 mt-0.5"
             strokeWidth={2.5}
           />
         ) : (
-          <div className="w-4 h-4 shrink-0 mt-0.5 rounded-full border-2 border-amber-300 bg-amber-50" />
+          <div className="w-3.5 h-3.5 shrink-0 mt-0.5 rounded-full border-2 border-amber-300 bg-amber-50" />
         )}
         <div className="min-w-0">
-          <div className="text-[11px] font-black text-gray-900 leading-snug">
+          <div className="text-[10px] font-black text-gray-900 leading-snug">
             {fee.label}
           </div>
           {fee.hint && (
-            <div className="text-[10px] text-gray-500 leading-snug mt-0.5">
+            <div className="text-[9px] text-gray-500 leading-snug mt-0.5">
               {fee.hint}
               {fee.source && (
                 <>
@@ -349,7 +326,7 @@ function FeeRow({ fee }: { fee: HiddenFee }) {
                     className="inline-flex items-center gap-0.5 text-emerald-700 hover:text-emerald-900 font-bold"
                   >
                     {fee.source.label}
-                    <ExternalLink className="w-2.5 h-2.5" />
+                    <ExternalLink className="w-2 h-2" />
                   </a>
                 </>
               )}
@@ -358,10 +335,8 @@ function FeeRow({ fee }: { fee: HiddenFee }) {
         </div>
       </div>
       <div
-        className={`shrink-0 text-[10px] font-black tabular-nums whitespace-nowrap ${
-          fee.included
-            ? "text-emerald-700"
-            : "text-amber-900"
+        className={`shrink-0 text-[9px] font-black tabular-nums whitespace-nowrap ${
+          fee.included ? "text-emerald-700" : "text-amber-900"
         }`}
       >
         {formatFeePrice(fee)}
