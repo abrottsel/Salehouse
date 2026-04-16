@@ -87,8 +87,22 @@ export default async function VillagePage({ params }: Props) {
           features={village.features}
         />
 
-        {/* 3. Interactive plot map */}
-        {village.mapUuid && (
+        {/* 3. Interactive plot map — either our ymaps3 widget or an
+            external iframe for villages that don't have a mapUuid */}
+        {village.iframeMapUrl ? (
+          <section id="plots-map" className="px-2 sm:px-3 lg:px-4 pb-6">
+            <div className="max-w-[1920px] mx-auto overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-lg">
+              <iframe
+                src={village.iframeMapUrl}
+                width="100%"
+                height="600"
+                allow="fullscreen"
+                className="block border-0"
+                title={`Карта участков — ${village.name}`}
+              />
+            </div>
+          </section>
+        ) : village.mapUuid ? (
           <section id="plots-map" className="px-2 sm:px-3 lg:px-4 pb-6">
             <InteractivePlotMap
               villageUuid={village.mapUuid}
@@ -96,7 +110,7 @@ export default async function VillagePage({ params }: Props) {
               villageSlug={village.slug}
             />
           </section>
-        )}
+        ) : null}
 
         {/* 4. Contact form */}
         <div id="contact-form">

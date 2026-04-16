@@ -17,6 +17,8 @@ export interface Village {
   plots?: Plot[];
   /** UUID for map.zemexx.ru interactive plot map API (optional) */
   mapUuid?: string;
+  /** Full iframe URL for villages that use an external map widget */
+  iframeMapUrl?: string;
 }
 
 export interface Plot {
@@ -574,6 +576,7 @@ export const villages: Village[] = [
     id: 18,
     name: "Станционный ИЖС",
     slug: "stantsionnyy",
+    iframeMapUrl: "https://map.zemexx.ru/v2/index.php?village_id=c8745794-c297-11ef-b3b6-005056a6b235",
     direction: "Каширское шоссе",
     distance: 35,
     readiness: 80,
