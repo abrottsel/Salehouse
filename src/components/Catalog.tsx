@@ -680,17 +680,17 @@ export default function Catalog() {
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
               <div className="text-center md:text-left min-w-0">
-                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                <h3 className="text-base sm:text-lg md:text-xl font-black text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
                   Один показ — и вы влюбитесь в своё место
                 </h3>
-                <p className="text-xs sm:text-sm text-white/70 mt-0.5">
+                <p className="text-[11px] sm:text-xs md:text-sm text-white/70 mt-0.5">
                   95% клиентов бронируют участок после первого визита. Приезжайте — покажем лично.
                 </p>
               </div>
 
-              <div className="flex items-stretch gap-2 shrink-0">
+              <div className="flex flex-col sm:flex-row items-stretch gap-2 shrink-0">
                 <a
                   href="#contacts"
                   className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
