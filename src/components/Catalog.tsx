@@ -29,7 +29,7 @@ const directions = [
   "Новорижское шоссе",
 ];
 
-const INITIAL_VISIBLE = 15;
+const INITIAL_VISIBLE = 20;
 
 /* ─── data-driven bounds, rounded to nice values ─── */
 const PRICE_STEP = 10000;
