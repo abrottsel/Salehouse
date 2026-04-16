@@ -58,7 +58,7 @@ export default function MortgageCalculator() {
       id="calculator"
       className="py-5 lg:py-8 bg-gradient-to-b from-white to-emerald-50/40 scroll-mt-16"
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-2">

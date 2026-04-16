@@ -349,7 +349,7 @@ export default function Catalog() {
 
   return (
     <section id="catalog" className="py-10 lg:py-14 bg-gray-50 scroll-mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Catalog hero — dynamic stats strip */}
         <div className="text-center mb-6">
           {/* Uppercase pill */}
@@ -533,7 +533,7 @@ export default function Catalog() {
         )}
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {visible.map((village) => (
             <a
               key={village.id}

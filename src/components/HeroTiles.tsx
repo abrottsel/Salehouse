@@ -113,7 +113,7 @@ export default function HeroTiles() {
       <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 flex flex-col justify-center min-h-svh">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 flex flex-col justify-center min-h-svh">
         {/* Headline */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight">
