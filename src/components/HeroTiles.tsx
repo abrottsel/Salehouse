@@ -103,7 +103,7 @@ const tiles: HeroTile[] = [
 
 export default function HeroTiles() {
   return (
-    <section className="relative min-h-svh overflow-hidden flex">
+    <section className="relative min-h-svh overflow-hidden flex bg-slate-950">
       {/* Full-bleed background photo */}
       <Image
         src="/hero-home.jpg"
