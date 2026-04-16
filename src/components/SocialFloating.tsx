@@ -18,8 +18,9 @@ export default function SocialFloating() {
         style={{ background: "linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)" }}
       >
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="8" stroke="white" strokeWidth="2.5"/>
-          <circle cx="12" cy="12" r="3" fill="white"/>
+          <path d="M12 3C7.03 3 3 6.58 3 11c0 2.52 1.35 4.76 3.46 6.23L5.5 21l3.74-1.72C10.14 19.58 11.05 19.75 12 19.75c4.97 0 9-3.58 9-8S16.97 3 12 3z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
+          <circle cx="11.5" cy="11" r="3.5" stroke="white" strokeWidth="2"/>
+          <path d="M15 8.5V11c0 1.1-.45 2-1.5 2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       </a>
 
