@@ -683,10 +683,10 @@ export default function Catalog() {
             <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
               <div className="text-center md:text-left min-w-0">
                 <h3 className="text-lg sm:text-xl font-black text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-                  Не нашли подходящий посёлок?
+                  Один показ — и вы влюбитесь в своё место
                 </h3>
                 <p className="text-xs sm:text-sm text-white/70 mt-0.5">
-                  Оставьте заявку или рассчитайте ипотеку — подберём участок под ваш бюджет.
+                  95% клиентов бронируют участок после первого визита. Приезжайте — покажем лично.
                 </p>
               </div>
 
@@ -696,7 +696,7 @@ export default function Catalog() {
                   className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
                 >
                   <SlidersHorizontal className="w-4 h-4 shrink-0" />
-                  Заявка
+                  Посмотреть вживую
                   <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                 </a>
                 <a
@@ -704,7 +704,7 @@ export default function Catalog() {
                   className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white ring-1 ring-white/25 px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
                 >
                   <Wallet className="w-4 h-4 shrink-0" />
-                  Ипотека
+                  Рассчитать ипотеку
                 </a>
               </div>
             </div>

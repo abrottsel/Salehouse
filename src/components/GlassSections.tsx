@@ -17,6 +17,7 @@ interface CardDef {
   title: string;
   subtitle: string;
   icon: IconName;
+  photo?: string;
   children: React.ReactNode;
 }
 
@@ -74,22 +75,21 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
                 id={card.id}
                 type="button"
                 onClick={() => toggle(card.id)}
-                className={`glass-section-card overflow-hidden rounded-[20px] text-left transition-all duration-300 scroll-mt-20 ${
+                className={`glass-section-card overflow-hidden rounded-[20px] text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
                   isActive
                     ? "shadow-2xl ring-2 ring-white/30"
                     : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 }`}
                 style={{
-                  backdropFilter: "blur(4px) saturate(1.8)",
-                  WebkitBackdropFilter: "blur(4px) saturate(1.8)",
-                  background: "linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                  backgroundImage: card.photo ? `url(${card.photo})` : undefined,
                   boxShadow: isActive
                     ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)"
                     : "inset 0 1px 0 rgba(255,255,255,0.3), 0 12px 40px -8px rgba(0,0,0,0.3)",
                 }}
               >
+                {card.photo && <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-black/50" />}
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
-                <div className="flex items-center gap-3 p-5 lg:p-6">
+                <div className="relative z-10 flex items-center gap-3 p-5 lg:p-6">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
                     <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
                   </div>

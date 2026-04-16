@@ -25,6 +25,7 @@ export default function Home() {
               title: "Частые вопросы",
               subtitle: "Ответы на главное",
               icon: "HelpCircle",
+              photo: "/villages/favorit/03.jpg",
               children: <FAQ />,
             },
             {
@@ -32,6 +33,7 @@ export default function Home() {
               title: "Как купить участок",
               subtitle: "6 шагов до ключей",
               icon: "ListChecks",
+              photo: "/villages/lesnoy-ostrov/01.jpg",
               children: <Steps />,
             },
             {
@@ -39,6 +41,7 @@ export default function Home() {
               title: "Отзывы клиентов",
               subtitle: "Реальный опыт",
               icon: "MessageSquare",
+              photo: "/villages/novoe-sonino/01.jpg",
               children: <Reviews />,
             },
           ]}
