@@ -43,10 +43,23 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
+// Revalidate each village page every 15 minutes for live plot counts
+export const revalidate = 900;
+
 export default async function VillagePage({ params }: Props) {
   const { slug } = await params;
   const village = villages.find((v) => v.slug === slug);
   if (!village) notFound();
+
+  // Fetch live plot stats from zemexx (cached 15 min, falls back to data.ts)
+  const { fetchVillageStats, extractVillageUuid } = await import("@/lib/village-stats");
+  const uuid = extractVillageUuid(village.iframeMapUrl, village.mapUuid);
+  const stats = uuid
+    ? await fetchVillageStats(uuid, {
+        plotsAvailable: village.plotsAvailable,
+        plotsCount: village.plotsCount,
+      })
+    : { plotsAvailable: village.plotsAvailable, plotsCount: village.plotsCount };
 
   // Fallback when no photos available yet (new villages waiting for upload)
   const FALLBACK_HERO =
@@ -66,8 +79,8 @@ export default async function VillagePage({ params }: Props) {
           readiness={village.readiness}
           description={village.description}
           priceFrom={village.priceFrom}
-          plotsAvailable={village.plotsAvailable}
-          plotsCount={village.plotsCount}
+          plotsAvailable={stats.plotsAvailable}
+          plotsCount={stats.plotsCount}
           areaFrom={village.areaFrom}
           areaTo={village.areaTo}
           photos={photos}
@@ -80,8 +93,8 @@ export default async function VillagePage({ params }: Props) {
           distance={village.distance}
           readiness={village.readiness}
           priceFrom={village.priceFrom}
-          plotsAvailable={village.plotsAvailable}
-          plotsCount={village.plotsCount}
+          plotsAvailable={stats.plotsAvailable}
+          plotsCount={stats.plotsCount}
           areaFrom={village.areaFrom}
           areaTo={village.areaTo}
           features={village.features}

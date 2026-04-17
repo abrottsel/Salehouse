@@ -9,14 +9,23 @@ import Reviews from "@/components/Reviews";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import GlassSections from "@/components/GlassSections";
+import { villages } from "@/lib/data";
+import { fetchAllVillageStats } from "@/lib/village-stats";
 
-export default function Home() {
+// Revalidate the homepage every 15 minutes so plot counts stay fresh
+export const revalidate = 900;
+
+export default async function Home() {
+  // Fetch live plot counts from zemexx in parallel, fall back to data.ts
+  // on any error. Cached for 15 min via fetch() revalidate in helper.
+  const liveStats = await fetchAllVillageStats(villages);
+
   return (
     <>
       <Header />
       <main>
         <HeroTiles />
-        <Catalog />
+        <Catalog liveStats={liveStats} />
 
         <GlassSections
           cards={[

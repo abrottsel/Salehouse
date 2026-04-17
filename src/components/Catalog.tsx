@@ -21,6 +21,16 @@ import FavoriteHeart from "./FavoriteHeart";
 import CardPhotoSwiper from "./CardPhotoSwiper";
 import RangeSlider from "./RangeSlider";
 
+interface VillageStats {
+  plotsAvailable: number;
+  plotsCount: number;
+}
+
+interface CatalogProps {
+  /** Optional live stats fetched on the server (by slug). Overrides data.ts. */
+  liveStats?: Record<string, VillageStats>;
+}
+
 const directions = [
   "Все",
   "Каширское шоссе",
@@ -290,7 +300,7 @@ function NumberField({
   );
 }
 
-export default function Catalog() {
+export default function Catalog({ liveStats }: CatalogProps = {}) {
   const [activeDirection, setActiveDirection] = useState("Все");
   const [priceRange, setPriceRange] = useState<[number, number]>([
     PRICE_MIN,
@@ -572,7 +582,7 @@ export default function Catalog() {
                       </div>
                       <div className="flex items-baseline gap-1 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full">
                         <span className="text-sm font-bold leading-none">
-                          {village.plotsAvailable}
+                          {liveStats?.[village.slug]?.plotsAvailable ?? village.plotsAvailable}
                         </span>
                         <span className="text-[10px] uppercase tracking-wider opacity-90 leading-none">
                           свободно
