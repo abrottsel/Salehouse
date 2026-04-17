@@ -75,15 +75,6 @@ export default function Footer() {
                 info@zem-plus.ru
               </a>
               <a
-                href="https://t.me/zemplus_bot"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" />
-                @zemplus
-              </a>
-              <a
                 href="https://t.me/zemplus"
                 target="_blank"
                 rel="noopener noreferrer"
