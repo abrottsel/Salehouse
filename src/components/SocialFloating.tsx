@@ -7,7 +7,7 @@
 
 export default function SocialFloating() {
   return (
-    <div className="fixed right-[76px] bottom-2 z-40 flex items-center gap-2">
+    <div className="fixed right-[200px] sm:right-[220px] bottom-2 sm:bottom-3 z-40 flex items-center gap-2">
       {/* Telegram */}
       <a
         href="https://t.me/zemplus"
