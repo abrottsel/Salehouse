@@ -215,7 +215,7 @@ export default function AIChatWidget() {
         <button
           onClick={handleOpen}
           aria-label="Открыть AI-подбор участка"
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 group"
+          className="fixed bottom-2 right-5 sm:bottom-3 sm:right-6 z-40 group"
         >
           <span
             className={`absolute inset-0 rounded-full bg-green-500 transition-transform ${

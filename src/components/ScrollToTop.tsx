@@ -26,16 +26,13 @@ export default function ScrollToTop() {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Вернуться наверх"
-      className={`fixed bottom-5 left-5 z-40 inline-flex items-center gap-2 h-11 pl-3 pr-4 rounded-full bg-gray-900/90 text-white text-sm font-semibold shadow-xl shadow-black/20 ring-1 ring-white/10 hover:bg-gray-900 hover:scale-105 active:scale-95 transition-all duration-300 ${
+      className={`fixed bottom-2 left-5 z-40 w-11 h-11 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-xl shadow-emerald-900/30 ring-1 ring-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 ${
         visible
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 translate-y-4 pointer-events-none"
       }`}
     >
-      <span className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-sm shadow-green-900/40">
-        <ArrowUp className="w-3.5 h-3.5" strokeWidth={3} />
-      </span>
-      Наверх
+      <ArrowUp className="w-5 h-5" strokeWidth={3} />
     </button>
   );
 }
