@@ -157,7 +157,7 @@ export default function Advantages() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
-            <PiggyBank className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5" />
             Наши преимущества
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1.5">
