@@ -400,7 +400,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       let desiredTop: number;
       if (isFrame) {
         // Frame: правый край панели = правый край кнопки. На мобиле — доп. сдвиг 12px влево (утв. вариант Z).
-        desiredLeft = r.right - dropdownWidth - (mobileFrame ? 12 : 0);
+        // Mobile frame — сдвиг +4px вправо (утв. пользователем). Desktop — без сдвига.
+        desiredLeft = r.right - dropdownWidth + (mobileFrame ? 4 : 0);
         desiredTop = r.bottom + 8;
       } else {
         // Hero: anchor под рядом пилюль. На мобиле — по левому краю,
@@ -662,7 +663,11 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Москва, Тверская, 1"
-              className="w-full h-10 pl-8 pr-2.5 rounded-lg bg-white/15 ring-1 ring-white/40 text-[13px] text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
+              className={`w-full h-10 pl-8 pr-2.5 rounded-lg ring-1 text-[13px] text-white focus:outline-none focus:ring-2 focus:ring-emerald-400/70 transition font-bold ${
+                isMobileFrame
+                  ? "bg-black/40 ring-white/50 placeholder:text-white/90 focus:bg-black/50"
+                  : "bg-white/15 ring-white/40 placeholder:text-white/70 focus:bg-white/20"
+              }`}
             />
           </div>
 
