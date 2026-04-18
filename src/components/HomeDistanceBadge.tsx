@@ -389,7 +389,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       if (!anchor) return;
       const r = anchor.getBoundingClientRect();
       const vw = window.innerWidth;
-      const dropdownWidth = vw < 640 ? 260 : 340;
+      const dropdownWidth = vw < 640 ? 260 : 420;
       const isFrame = !!anchor.closest("[data-frame-overlay]");
 
       let desiredLeft: number;
@@ -581,7 +581,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        className="fixed z-[100] w-[260px] sm:w-[340px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
+        className="fixed z-[100] w-[260px] sm:w-[420px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
