@@ -389,7 +389,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       if (!anchor) return;
       const r = anchor.getBoundingClientRect();
       const vw = window.innerWidth;
-      const dropdownWidth = 340;
+      const dropdownWidth = vw < 640 ? 260 : 340;
       const isFrame = !!anchor.closest("[data-frame-overlay]");
 
       let desiredLeft: number;
@@ -581,29 +581,29 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        className="fixed z-[100] w-[340px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
+        className="fixed z-[100] w-[260px] sm:w-[340px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
           opacity: pos ? 1 : 0,
           pointerEvents: pos ? "auto" : "none",
-          backdropFilter: "blur(1px) saturate(2)",
-          WebkitBackdropFilter: "blur(1px) saturate(2)",
+          backdropFilter: "blur(10px) saturate(1.8)",
+          WebkitBackdropFilter: "blur(10px) saturate(1.8)",
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)",
+            "linear-gradient(135deg, rgba(15,30,20,0.35) 0%, rgba(5,15,10,0.25) 100%)",
           boxShadow:
-            "inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 8px 32px -4px rgba(0,0,0,0.25)",
+            "inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 12px 40px -8px rgba(0,0,0,0.55)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-4 pt-3 pb-4">
+        <div className="px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <h3 className="text-lg font-black flex items-center gap-1.5 tracking-tight text-emerald-300">
-                <Route className="w-[18px] h-[18px] text-emerald-300 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight text-emerald-300">
+                <Route className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
-              <p className="text-sm text-white mt-0.5 font-bold leading-snug">
+              <p className="text-xs sm:text-sm text-white mt-0.5 font-bold leading-snug">
                 {home
                   ? `Сохранено: ${home.address.split(",").slice(0, 2).join(",")}`
                   : "Сколько ехать от вашего дома"}
@@ -621,7 +621,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           <button
             onClick={useGeolocation}
             disabled={geoLoading}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-base font-black transition shadow-lg shadow-emerald-500/40"
+            className="w-full flex items-center justify-center gap-2 h-10 sm:h-11 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm sm:text-base font-black transition shadow-lg shadow-emerald-500/40"
           >
             {geoLoading ? (
               <>
@@ -659,7 +659,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Москва, Тверская, 1"
-              className="w-full h-11 pl-9 pr-3 rounded-lg bg-white/15 ring-1 ring-white/40 text-sm text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
+              className="w-full h-10 sm:h-11 pl-9 pr-3 rounded-lg bg-white/15 ring-1 ring-white/40 text-sm text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
             />
           </div>
 
