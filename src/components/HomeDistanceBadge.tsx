@@ -389,7 +389,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       if (!anchor) return;
       const r = anchor.getBoundingClientRect();
       const vw = window.innerWidth;
-      const dropdownWidth = vw < 640 ? 260 : 340;
+      const dropdownWidth = vw < 640 ? 260 : 280;
       const isFrame = !!anchor.closest("[data-frame-overlay]");
 
       let desiredLeft: number;
@@ -411,7 +411,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           const leftEdge = leftPill.getBoundingClientRect().left;
           const rightEdge = r.right; // r = anchor.getBoundingClientRect() = наша кнопка
           const center = (leftEdge + rightEdge) / 2;
-          desiredLeft = center - dropdownWidth / 2 + 40;
+          desiredLeft = center - dropdownWidth / 2;
         } else {
           desiredLeft = leftPad;
         }
@@ -580,7 +580,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        className="fixed z-[100] w-[260px] sm:w-[340px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
+        className="fixed z-[100] w-[260px] sm:w-[280px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
@@ -595,14 +595,14 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
-          <div className="flex items-start justify-between gap-2 mb-1.5">
+        <div className="px-3 pt-2.5 pb-3">
+          <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0">
-              <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight text-emerald-300">
-                <Route className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-300 flex-shrink-0" />
+              <h3 className="text-base font-black flex items-center gap-1.5 tracking-tight text-emerald-300">
+                <Route className="w-4 h-4 text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
-              <p className="text-xs sm:text-sm text-white mt-0.5 font-bold leading-snug">
+              <p className="text-xs text-white mt-0.5 font-bold leading-snug">
                 {home
                   ? `Сохранено: ${home.address.split(",").slice(0, 2).join(",")}`
                   : "Сколько ехать от вашего дома"}
@@ -620,7 +620,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           <button
             onClick={useGeolocation}
             disabled={geoLoading}
-            className="w-full flex items-center justify-center gap-2 h-10 sm:h-11 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm sm:text-base font-black transition shadow-lg shadow-emerald-500/40"
+            className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm font-black transition shadow-lg shadow-emerald-500/40"
           >
             {geoLoading ? (
               <>
@@ -634,7 +634,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
               </>
             )}
           </button>
-          <p className="text-[11px] text-white text-center mt-1.5 leading-snug font-semibold">
+          <p className="text-[10px] text-white text-center mt-1 leading-snug font-semibold">
             Координаты не покидают браузер
           </p>
 
@@ -644,21 +644,21 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
             </p>
           )}
 
-          <div className="text-center my-2.5">
-            <span className="text-[11px] uppercase text-white tracking-[0.15em] font-black">
+          <div className="text-center my-2">
+            <span className="text-[10px] uppercase text-white tracking-[0.15em] font-black">
               или укажите адрес
             </span>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/85" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/85" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Москва, Тверская, 1"
-              className="w-full h-10 sm:h-11 pl-9 pr-3 rounded-lg bg-white/15 ring-1 ring-white/40 text-sm text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
+              className="w-full h-10 pl-8 pr-2.5 rounded-lg bg-white/15 ring-1 ring-white/40 text-[13px] text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
             />
           </div>
 
