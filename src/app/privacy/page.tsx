@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <>
       <Header />
       <main className="min-h-screen bg-white">
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-gray prose-sm sm:prose-base">
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 prose prose-gray prose-sm sm:prose-base">
           <h1>Политика конфиденциальности</h1>
           <p className="text-sm text-gray-500">
             Редакция от {LEGAL.privacyUpdatedAt}, версия {LEGAL.policyVersion}
