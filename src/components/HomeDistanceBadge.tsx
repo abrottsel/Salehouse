@@ -400,8 +400,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       let desiredTop: number;
       if (isFrame) {
         // Frame: правый край панели = правый край кнопки. На мобиле — доп. сдвиг 12px влево (утв. вариант Z).
-        // Mobile frame — сдвиг +4px вправо (утв. пользователем). Desktop — без сдвига.
-        desiredLeft = r.right - dropdownWidth + (mobileFrame ? 4 : 0);
+        // Mobile frame — сдвиг +8px вправо (утв. пользователем). Desktop — без сдвига.
+        desiredLeft = r.right - dropdownWidth + (mobileFrame ? 8 : 0);
         desiredTop = r.bottom + 8;
       } else {
         // Hero: anchor под рядом пилюль. На мобиле — по левому краю,
