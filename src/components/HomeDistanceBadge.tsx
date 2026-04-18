@@ -395,9 +395,9 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       let desiredLeft: number;
       let desiredTop: number;
       if (isFrame) {
-        // Frame: на мобиле уводим ВЛЕВО (не перекрывает Спутник в правом углу
-        // iframe), на десктопе — правый край панели = правый край кнопки
-        desiredLeft = vw < 640 ? 8 : r.right - dropdownWidth;
+        // Frame: правый край панели = правый край кнопки (сдвигается ЛЕВЕЕ на карту).
+        // Единое правило для Mac и мобилы — clamp ниже не даст вылезти за viewport.
+        desiredLeft = r.right - dropdownWidth;
         desiredTop = r.bottom + 8;
       } else {
         // Hero: anchor под рядом пилюль. На мобиле — по левому краю,
