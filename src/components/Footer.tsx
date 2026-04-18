@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Phone, Mail, MessageCircle } from "lucide-react";
+import { LEGAL } from "@/lib/legal";
 
 export default function Footer() {
   return (
@@ -98,8 +100,22 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} ЗемПлюс. Все права защищены.
+        <div className="mt-8 pt-8 border-t border-gray-800 space-y-3 text-center text-xs text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Политика конфиденциальности
+            </Link>
+            <span className="text-gray-700">·</span>
+            <Link href="/contacts" className="hover:text-white transition-colors">
+              Контакты и реквизиты
+            </Link>
+          </div>
+          <div className="text-gray-600 leading-relaxed">
+            {LEGAL.shortName} · ИНН {LEGAL.inn} · ОГРНИП {LEGAL.ogrn}
+          </div>
+          <div>
+            &copy; {new Date().getFullYear()} {LEGAL.brand}. Все права защищены.
+          </div>
         </div>
       </div>
     </footer>

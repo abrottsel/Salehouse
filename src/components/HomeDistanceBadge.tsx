@@ -244,7 +244,7 @@ export default function HomeDistanceBadge({
   if (variant === "card") {
     if (!home) {
       return (
-        <span className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-black/45 backdrop-blur-md ring-1 ring-white/25 text-white text-[10px] font-bold shadow-lg">
+        <span className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-black/35 backdrop-blur-md ring-1 ring-white/30 text-white text-[10px] font-bold shadow-lg [&_*]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
           <MapPin className="w-3 h-3" />
           {`${Math.round(haversineKm([55.7558, 37.6176], villageCoords))} км от Москвы`}
         </span>
@@ -252,8 +252,10 @@ export default function HomeDistanceBadge({
     }
     const durationText = route ? formatDuration(route.durationMin) : "…";
     return (
-      <span className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-emerald-500/90 backdrop-blur-md ring-1 ring-emerald-300/50 text-white text-[10px] font-bold shadow-lg">
-        <Home className="w-3 h-3" />
+      <span className="inline-flex items-center gap-1 h-6 pl-1 pr-2 rounded-full bg-black/35 backdrop-blur-md ring-1 ring-white/30 text-white text-[10px] font-bold shadow-lg [&_*]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+        <span className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+          <Home className="w-2.5 h-2.5 text-white" />
+        </span>
         {loading ? "…" : `${durationText} от вас`}
       </span>
     );

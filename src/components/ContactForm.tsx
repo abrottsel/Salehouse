@@ -71,12 +71,17 @@ export default function ContactForm() {
     type: "VIEWING",
     message: "",
   });
+  const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consent) {
+      setError("Необходимо согласие на обработку персональных данных");
+      return;
+    }
     setIsSubmitting(true);
     setError("");
 
@@ -268,9 +273,29 @@ export default function ContactForm() {
                     <p className="text-red-600 text-sm">{error}</p>
                   )}
 
+                  <label className="flex items-start gap-2 text-[11px] text-white/55 leading-snug cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded accent-emerald-500 cursor-pointer flex-shrink-0"
+                    />
+                    <span>
+                      Согласен на обработку персональных данных согласно{" "}
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-400 hover:underline"
+                      >
+                        Политике конфиденциальности
+                      </a>
+                    </span>
+                  </label>
+
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !consent}
                     className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-3.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
@@ -282,11 +307,6 @@ export default function ContactForm() {
                       </>
                     )}
                   </button>
-
-                  <p className="text-[10px] text-white/30 text-center leading-tight">
-                    Нажимая кнопку, вы соглашаетесь с политикой обработки
-                    персональных данных
-                  </p>
                 </div>
               </form>
             )}
