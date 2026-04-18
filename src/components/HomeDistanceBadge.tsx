@@ -485,25 +485,25 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
       />
 
       <div
-        className="absolute left-0 top-full mt-2 z-40 w-[min(78vw,300px)] sm:w-[320px] rounded-[22px] text-gray-900 animate-in fade-in slide-in-from-top-2 duration-200 hd-glass-tile"
+        className="absolute left-0 top-full mt-2 z-40 w-[min(78vw,320px)] sm:w-[340px] rounded-[22px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
         style={{
-          backdropFilter: "blur(20px) saturate(1.8)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+          backdropFilter: "blur(1px) saturate(2)",
+          WebkitBackdropFilter: "blur(1px) saturate(2)",
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.65) 100%)",
+            "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)",
           boxShadow:
-            "inset 0 1.5px 0 rgba(255,255,255,0.7), 0 8px 32px -4px rgba(0,0,0,0.25)",
+            "inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 8px 32px -4px rgba(0,0,0,0.25)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-4 pt-3 pb-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="min-w-0">
-              <h3 className="text-base font-black flex items-center gap-1.5 tracking-tight text-gray-900">
-                <Route className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <h3 className="text-base font-black flex items-center gap-1.5 tracking-tight">
+                <Route className="w-4 h-4 text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
-              <p className="text-[11px] text-gray-700 mt-0.5 font-semibold leading-snug">
+              <p className="text-[11px] text-white/95 mt-0.5 font-semibold leading-snug">
                 {home
                   ? `Сохранено: ${home.address.split(",").slice(0, 2).join(",")}`
                   : "Покажем сколько ехать от вашего дома"}
@@ -511,10 +511,10 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
             </div>
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-full hover:bg-black/10 flex items-center justify-center -mr-1 flex-shrink-0"
+              className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center -mr-1 flex-shrink-0"
               aria-label="Закрыть"
             >
-              <X className="w-3.5 h-3.5 text-gray-700" />
+              <X className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
 
@@ -535,36 +535,36 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
               </>
             )}
           </button>
-          <p className="text-[10px] text-gray-600 text-center mt-1.5 leading-snug font-medium">
+          <p className="text-[10px] text-white/85 text-center mt-1.5 leading-snug font-medium">
             Браузер запросит разрешение. Координаты не покидают браузер.
           </p>
 
           {geoError && (
-            <p className="text-[10px] text-red-600 text-center mt-1 font-semibold">
+            <p className="text-[10px] text-red-200 text-center mt-1 font-semibold">
               {geoError}
             </p>
           )}
 
           <div className="text-center my-3">
-            <span className="text-[10px] uppercase text-gray-600 tracking-[0.15em] font-black">
+            <span className="text-[10px] uppercase text-white/85 tracking-[0.15em] font-black">
               или укажите адрес
             </span>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/70" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Москва, ул. Тверская, 1"
-              className="w-full h-10 pl-9 pr-3 rounded-xl bg-white/60 ring-1 ring-black/10 text-xs text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 focus:bg-white/80 transition font-semibold"
+              className="w-full h-10 pl-9 pr-3 rounded-xl bg-white/15 ring-1 ring-white/30 text-xs text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-semibold"
             />
           </div>
 
           {searching && (
-            <div className="text-[10px] text-gray-700 mt-2 flex items-center gap-1.5 font-semibold">
+            <div className="text-[10px] text-white/85 mt-2 flex items-center gap-1.5 font-semibold">
               <Loader2 className="w-3 h-3 animate-spin" /> Ищу адрес…
             </div>
           )}
@@ -575,9 +575,9 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
                 <li key={r.id}>
                   <button
                     onClick={() => onSave(r)}
-                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-black/5 text-[11px] text-gray-900 flex items-center gap-2 transition font-semibold"
+                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white/15 text-[11px] text-white flex items-center gap-2 transition font-semibold"
                   >
-                    <MapPin className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                    <MapPin className="w-3 h-3 text-white/70 flex-shrink-0" />
                     <span className="truncate">{r.address}</span>
                   </button>
                 </li>
@@ -589,7 +589,7 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
 
       {/* Liquid-glass border (matches HeroTiles wide variant) */}
       <style>{`
-        .hd-glass-tile { position: relative; overflow: hidden; }
+        .hd-glass-tile { position: relative; }
         .hd-glass-tile::before {
           content: '';
           position: absolute;
