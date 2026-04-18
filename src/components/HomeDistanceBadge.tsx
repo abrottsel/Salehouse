@@ -399,12 +399,23 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         desiredLeft = r.left;
         desiredTop = r.bottom + 8;
       } else {
-        // Hero: anchor к левому краю ряда пилюль, top — под этим рядом
+        // Hero: anchor под рядом пилюль. На мобиле — по левому краю,
+        // на десктопе — центрировать между «Каширское» pill и бейджем,
+        // чтобы dropdown не перекрывал стрелку слайдера слева.
         const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
         const rowRect = row?.getBoundingClientRect();
-        // Section padding: px-4 / sm:px-8 / lg:px-16
         const leftPad = vw >= 1024 ? 64 : vw >= 640 ? 32 : 16;
-        desiredLeft = rowRect ? rowRect.left : leftPad;
+        if (rowRect && vw >= 1024) {
+          // Find first pill (Каширское) — sibling before our button
+          const firstPill = row?.querySelector("div") as HTMLElement | null;
+          const firstRect = firstPill?.getBoundingClientRect();
+          const left = firstRect?.left ?? rowRect.left;
+          const right = r.right; // right edge of badge button
+          const center = (left + right) / 2;
+          desiredLeft = center - dropdownWidth / 2;
+        } else {
+          desiredLeft = rowRect ? rowRect.left : leftPad;
+        }
         desiredTop = (rowRect ? rowRect.bottom : r.bottom) + 8;
       }
 
@@ -413,13 +424,15 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
-    window.addEventListener("scroll", compute, true);
+    // Close on scroll (никаких пересчётов и мерцаний)
+    const onScroll = () => onClose();
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", compute);
     return () => {
-      window.removeEventListener("scroll", compute, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", compute);
     };
-  }, [anchor]);
+  }, [anchor, onClose]);
 
   // Click outside → close. Use mousedown so we don't fight with the button's own click toggle.
   useEffect(() => {
