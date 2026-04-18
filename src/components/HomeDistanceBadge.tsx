@@ -424,8 +424,13 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
-    // Close on scroll (никаких пересчётов и мерцаний)
-    const onScroll = () => onClose();
+    // Close on scroll, но НЕ когда фокус внутри панели (iOS открывает
+    // клавиатуру → viewport скроллится → нельзя закрывать инпут под пальцем)
+    const onScroll = () => {
+      const active = document.activeElement;
+      if (panelRef.current && active && panelRef.current.contains(active)) return;
+      onClose();
+    };
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", compute);
     return () => {
