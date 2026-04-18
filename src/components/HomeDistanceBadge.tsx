@@ -394,7 +394,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       const isFrame = !!anchor.closest("[data-frame-overlay]");
       const mobileFrame = isFrame && vw < 640;
       setIsMobileFrame(mobileFrame);
-      const dropdownWidth = mobileFrame ? 220 : vw < 640 ? 260 : 280;
+      const dropdownWidth = vw < 640 ? 260 : 280;
 
       let desiredLeft: number;
       let desiredTop: number;
@@ -584,12 +584,10 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        data-hd-compact={isMobileFrame ? "1" : undefined}
         className="fixed z-[100] w-[260px] sm:w-[280px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
-          width: isMobileFrame ? 220 : undefined,
           opacity: pos ? 1 : 0,
           pointerEvents: pos ? "auto" : "none",
           backdropFilter: "blur(1px) saturate(2)",
@@ -699,15 +697,6 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           to   { opacity: 1; transform: translateY(0); }
         }
         .hd-glass-enter { animation: hd-glass-in 200ms ease-out both; }
-        /* Mobile frame compact (Z-variant) */
-        [data-hd-compact="1"] > div:first-child { padding: 10px 12px !important; }
-        [data-hd-compact="1"] h3 { font-size: 13px !important; }
-        [data-hd-compact="1"] h3 svg { width: 13px !important; height: 13px !important; }
-        [data-hd-compact="1"] h3 + p { font-size: 10px !important; }
-        [data-hd-compact="1"] button:not([aria-label="Закрыть"]) { height: 34px !important; font-size: 12px !important; }
-        [data-hd-compact="1"] button:not([aria-label="Закрыть"]) svg { width: 12px !important; height: 12px !important; }
-        [data-hd-compact="1"] input { height: 34px !important; font-size: 11px !important; padding-left: 28px !important; }
-        [data-hd-compact="1"] input + span, [data-hd-compact="1"] .text-\[10px\] { font-size: 9px !important; }
         .hd-glass-tile::before {
           content: '';
           position: absolute;
