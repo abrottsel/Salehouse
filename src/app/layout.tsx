@@ -19,10 +19,7 @@ export const metadata: Metadata = {
     "земельные участки, подмосковье, купить участок, ИЖС, коттеджный посёлок, участок для строительства дома, ЗемПлюс",
   metadataBase: new URL("https://zem-plus.ru"),
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
     title: "ЗемПлюс — Земельные участки в Подмосковье",
