@@ -13,6 +13,8 @@ interface Config {
   pillTop: number;
   /** Короткий ли текст в пилюле */
   shortPill: boolean;
+  /** Сдвиг панели влево (положительный = влево) */
+  leftNudge?: number;
 }
 
 /** Общая основа для всех U-Z: пилюля прижата ВПЛОТНУЮ к правому краю (под Спутник),
@@ -24,7 +26,7 @@ const VARIANTS: Record<Variant, Config> = {
   W: { label: "Панель 220px, пилюля «Дорога к мечте»", width: 220, pillTop: 48, shortPill: false },
   X: { label: "Панель 220px, пилюля короче «К мечте»", width: 220, pillTop: 48, shortPill: true },
   Y: { label: "Панель 230px, пилюля «К мечте»", width: 230, pillTop: 48, shortPill: true },
-  Z: { label: "Панель 195px (−15px vs 210), пилюля БЛИЖЕ к Спутник", width: 195, pillTop: 38, shortPill: false },
+  Z: { label: "Панель 195px, сдвиг 8px влево (2мм), пилюля БЛИЖЕ", width: 195, pillTop: 38, shortPill: false, leftNudge: 8 },
 };
 
 export default function Page() {
@@ -48,7 +50,7 @@ export default function Page() {
 
   // dropdown — right-aligned к пилюле, ширина по cfg.width
   const dropWidth = cfg.width;
-  let dropLeft = pillRight - dropWidth;
+  let dropLeft = pillRight - dropWidth - (cfg.leftNudge ?? 0);
   dropLeft = Math.max(iframeLeft + 2, dropLeft);
   const dropTop = pillBottom + 6;
 
