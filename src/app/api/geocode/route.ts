@@ -66,11 +66,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Nominatim search. Bias to Russia unless query already contains other country.
+    // Nominatim search. Bias to Russia.
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("q", q.trim());
     url.searchParams.set("format", "json");
-    url.searchParams.set("limit", "1");
+    url.searchParams.set("limit", "5");
     url.searchParams.set("accept-language", "ru");
     url.searchParams.set("addressdetails", "1");
     url.searchParams.set("countrycodes", "ru");
@@ -87,13 +87,19 @@ export async function GET(request: NextRequest) {
     }
     const data = (await res.json()) as NominatimResult[];
     if (!Array.isArray(data) || data.length === 0) {
-      return NextResponse.json({ error: "not found" }, { status: 404 });
+      return NextResponse.json({ results: [] }, { status: 200 });
     }
-    const first = data[0];
+    const results = data.map((r) => ({
+      lat: parseFloat(r.lat),
+      lon: parseFloat(r.lon),
+      display_name: r.display_name,
+    }));
     return NextResponse.json({
-      lat: parseFloat(first.lat),
-      lon: parseFloat(first.lon),
-      address: first.display_name,
+      results,
+      // Backwards-compat fields:
+      lat: results[0].lat,
+      lon: results[0].lon,
+      address: results[0].display_name,
     });
   } catch (e) {
     console.error("geocode proxy error:", e);
