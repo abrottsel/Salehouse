@@ -85,10 +85,10 @@ export default function CallbackForm({
               <PhoneCall className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-base font-extrabold text-gray-900">
+              <div className="text-base font-extrabold text-white">
                 Перезвоним за 15 минут
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-white/60">
                 Расскажем про посёлки и подберём участок под ваш бюджет
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function CallbackForm({
       </div>
 
       {!compact && (
-        <label className="mt-3 flex items-start gap-2 text-[11px] text-gray-500 cursor-pointer select-none">
+        <label className="mt-3 flex items-start gap-2 text-[11px] text-white/60 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={agree}
@@ -129,7 +129,12 @@ export default function CallbackForm({
           />
           <span>
             Нажимая кнопку, вы соглашаетесь с{" "}
-            <a href="#" className="text-green-700 underline">
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400 hover:text-emerald-300 underline"
+            >
               политикой обработки персональных данных
             </a>
           </span>
