@@ -394,7 +394,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       const isFrame = !!anchor.closest("[data-frame-overlay]");
       const mobileFrame = isFrame && vw < 640;
       setIsMobileFrame(mobileFrame);
-      const dropdownWidth = mobileFrame ? 195 : vw < 640 ? 260 : 280;
+      const dropdownWidth = mobileFrame ? 220 : vw < 640 ? 260 : 280;
 
       let desiredLeft: number;
       let desiredTop: number;
@@ -589,7 +589,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
-          width: isMobileFrame ? 195 : undefined,
+          width: isMobileFrame ? 220 : undefined,
           opacity: pos ? 1 : 0,
           pointerEvents: pos ? "auto" : "none",
           backdropFilter: "blur(1px) saturate(2)",
