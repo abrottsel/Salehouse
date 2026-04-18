@@ -704,8 +704,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         [data-hd-compact="1"] h3 { font-size: 13px !important; }
         [data-hd-compact="1"] h3 svg { width: 13px !important; height: 13px !important; }
         [data-hd-compact="1"] h3 + p { font-size: 10px !important; }
-        [data-hd-compact="1"] button[type="button"]:not([aria-label="Закрыть"]) { height: 34px !important; font-size: 12px !important; }
-        [data-hd-compact="1"] button[type="button"]:not([aria-label="Закрыть"]) svg { width: 12px !important; height: 12px !important; }
+        [data-hd-compact="1"] button:not([aria-label="Закрыть"]) { height: 34px !important; font-size: 12px !important; }
+        [data-hd-compact="1"] button:not([aria-label="Закрыть"]) svg { width: 12px !important; height: 12px !important; }
         [data-hd-compact="1"] input { height: 34px !important; font-size: 11px !important; padding-left: 28px !important; }
         [data-hd-compact="1"] input + span, [data-hd-compact="1"] .text-\[10px\] { font-size: 9px !important; }
         .hd-glass-tile::before {
