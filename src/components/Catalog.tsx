@@ -20,6 +20,7 @@ import { villages } from "@/lib/data";
 import FavoriteHeart from "./FavoriteHeart";
 import CardPhotoSwiper from "./CardPhotoSwiper";
 import RangeSlider from "./RangeSlider";
+import HomeDistanceBadge from "./HomeDistanceBadge";
 
 interface VillageStats {
   plotsAvailable: number;
@@ -593,6 +594,14 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                       <FavoriteHeart kind="village" slug={village.slug} variant="light" />
                     </div>
                   </div>
+                </div>
+                {/* Bottom-right: «Дорога к мечте» chip */}
+                <div className="absolute bottom-2 right-2 z-10 pointer-events-none">
+                  <HomeDistanceBadge
+                    villageCoords={village.coords}
+                    villageName={village.name}
+                    variant="card"
+                  />
                 </div>
               </div>
 

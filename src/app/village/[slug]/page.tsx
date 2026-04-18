@@ -6,6 +6,7 @@ import InteractivePlotMap from "@/components/InteractivePlotMap3";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import IframeMapOverlay from "@/components/IframeMapOverlay";
 
 /**
  * /village/[slug] — full village detail page.
@@ -84,6 +85,7 @@ export default async function VillagePage({ params }: Props) {
           areaFrom={village.areaFrom}
           areaTo={village.areaTo}
           photos={photos}
+          coords={village.coords}
         />
 
         {/* 2. Advantages + infrastructure */}
@@ -104,7 +106,7 @@ export default async function VillagePage({ params }: Props) {
             external iframe for villages that don't have a mapUuid */}
         {village.iframeMapUrl ? (
           <section id="plots-map" className="px-2 sm:px-3 lg:px-4 pb-6">
-            <div className="max-w-[1920px] mx-auto overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-lg">
+            <div className="max-w-[1920px] mx-auto relative overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-lg">
               <iframe
                 src={village.iframeMapUrl}
                 width="100%"
@@ -112,6 +114,10 @@ export default async function VillagePage({ params }: Props) {
                 allow="fullscreen"
                 className="block border-0 w-full min-h-[750px] lg:min-h-[85vh]"
                 title={`Карта участков — ${village.name}`}
+              />
+              <IframeMapOverlay
+                villageCoords={village.coords}
+                villageName={village.name}
               />
             </div>
           </section>
