@@ -263,7 +263,7 @@ export default function HomeDistanceBadge({
   const showLiveBadge = !!home && !!route;
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block group/badge">
       <button
         onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full ring-1 text-white text-[11px] font-bold backdrop-blur-md transition shadow-lg ${
@@ -271,7 +271,7 @@ export default function HomeDistanceBadge({
             ? "bg-emerald-500/85 ring-emerald-300/50 hover:bg-emerald-500/95"
             : "bg-black/40 ring-white/25 hover:bg-black/55"
         }`}
-        title={home ? `От «${home.label}» (${home.address})` : "Указать ваш адрес"}
+        aria-label={home ? `От ${home.label}: ${home.address}` : "Указать ваш адрес"}
       >
         <span
           className={`w-4 h-4 rounded-full flex items-center justify-center ${
@@ -288,6 +288,52 @@ export default function HomeDistanceBadge({
           <span>Дорога к мечте</span>
         )}
       </button>
+
+      {/* Custom glass tooltip — only when home is set and dropdown closed */}
+      {home && !open && (
+        <div
+          className="pointer-events-none absolute left-0 top-full mt-1.5 z-30 w-max max-w-[260px] sm:max-w-[300px] opacity-0 group-hover/badge:opacity-100 transition-opacity duration-150 rounded-xl px-3 py-2 text-[11px] font-semibold text-gray-900 leading-snug hd-glass-tooltip"
+          style={{
+            backdropFilter: "blur(20px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.7) 100%)",
+            boxShadow:
+              "inset 0 1.5px 0 rgba(255,255,255,0.7), 0 6px 20px -4px rgba(0,0,0,0.25)",
+          }}
+        >
+          <div className="text-[10px] uppercase tracking-wider text-emerald-700 font-black mb-0.5">
+            От «{home.label}»
+          </div>
+          {home.address}
+          <style>{`
+            .hd-glass-tooltip { position: absolute; overflow: hidden; }
+            .hd-glass-tooltip::before {
+              content: '';
+              position: absolute;
+              inset: -1.5px;
+              border-radius: inherit;
+              padding: 1.5px;
+              background: conic-gradient(
+                from 45deg,
+                rgba(255,255,255,0.85),
+                rgba(180,255,180,0.7),
+                rgba(255,255,255,0.6),
+                rgba(180,220,255,0.7),
+                rgba(255,255,255,0.85),
+                rgba(255,200,180,0.7),
+                rgba(255,255,255,0.6),
+                rgba(200,180,255,0.7),
+                rgba(255,255,255,0.85)
+              );
+              -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+              -webkit-mask-composite: xor;
+              mask-composite: exclude;
+              pointer-events: none;
+            }
+          `}</style>
+        </div>
+      )}
 
       {open && (
         <DropdownPanel
