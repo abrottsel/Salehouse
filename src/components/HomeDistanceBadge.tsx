@@ -266,12 +266,20 @@ export default function HomeDistanceBadge({
   const showLiveBadge = !!home && !!route;
 
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="inline-block group/badge">
       <button
         ref={buttonRef}
-        onClick={() => setOpen((v) => !v)}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
         className={`inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full ring-1 text-white text-[11px] font-bold backdrop-blur-md transition shadow-lg ${
           showLiveBadge
             ? "bg-emerald-500/85 ring-emerald-300/50 hover:bg-emerald-500/95"
@@ -341,7 +349,7 @@ export default function HomeDistanceBadge({
         </div>
       )}
 
-      {open && (
+      {open && mounted && (
         <DropdownPanel
           anchor={buttonRef.current}
           home={home}
@@ -365,13 +373,16 @@ interface DropdownProps {
 }
 
 function DropdownPanel(props: DropdownProps) {
-  // Render in portal to body — escapes any parent overflow:hidden / inline-flex layout effect
-  if (typeof window === "undefined") return null;
+  // Render in portal to body — escapes any parent overflow:hidden / inline-flex layout effect.
+  // We're guarded by `mounted` in the parent so this only renders client-side.
+  if (typeof document === "undefined") return null;
   return createPortal(<DropdownPanelInner {...props} />, document.body);
 }
 
 function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
-  // Compute fixed position: top = below button, left = pills row start (16/32/64px from viewport)
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Compute fixed position synchronously via useLayoutEffect-equivalent (useEffect is fine
+  // because we render with opacity:0 until pos is set, so no flash).
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   useEffect(() => {
     const compute = () => {
@@ -384,17 +395,17 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       let desiredLeft: number;
       let desiredTop: number;
       if (isFrame) {
-        // Frame: дропдаун строго под кнопкой (TOP-RIGHT карты)
+        // Frame: дропдаун под кнопкой (TOP-RIGHT карты)
         desiredLeft = r.left;
         desiredTop = r.bottom + 8;
       } else {
-        // Hero: жёстко в TOP-LEFT под рядом пилюль (как утвердил пользователь)
+        // Hero: anchor к левому краю ряда пилюль, top — под этим рядом
+        const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
+        const rowRect = row?.getBoundingClientRect();
         // Section padding: px-4 / sm:px-8 / lg:px-16
         const leftPad = vw >= 1024 ? 64 : vw >= 640 ? 32 : 16;
-        // Header h-16 (64) + hero pt-20 (80) + pill h-7 (28) + gap = ~180
-        // Используем bottom кнопки как опору (надёжнее чем гадать padding)
-        desiredLeft = leftPad;
-        desiredTop = r.bottom + 8;
+        desiredLeft = rowRect ? rowRect.left : leftPad;
+        desiredTop = (rowRect ? rowRect.bottom : r.bottom) + 8;
       }
 
       const maxLeft = vw - dropdownWidth - 8;
@@ -409,6 +420,27 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       window.removeEventListener("resize", compute);
     };
   }, [anchor]);
+
+  // Click outside → close. Use mousedown so we don't fight with the button's own click toggle.
+  useEffect(() => {
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (panelRef.current && panelRef.current.contains(target)) return;
+      if (anchor && anchor.contains(target)) return; // let the button toggle
+      onClose();
+    };
+    // Defer one tick so the opening click doesn't immediately close us
+    const id = window.setTimeout(() => {
+      document.addEventListener("mousedown", onDown);
+      document.addEventListener("touchstart", onDown);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [anchor, onClose]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserPlace[]>([]);
   const [searching, setSearching] = useState(false);
@@ -527,19 +559,14 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
 
   return (
     <>
-      {/* Click-outside backdrop — transparent, captures clicks */}
       <div
-        className="fixed inset-0 z-30"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <div
-        className="fixed z-50 w-[260px] sm:w-[320px] rounded-[20px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
+        ref={panelRef}
+        className="fixed z-[100] w-[260px] sm:w-[320px] rounded-[20px] text-white [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
           opacity: pos ? 1 : 0,
+          pointerEvents: pos ? "auto" : "none",
           backdropFilter: "blur(1px) saturate(2)",
           WebkitBackdropFilter: "blur(1px) saturate(2)",
           background:
@@ -642,7 +669,11 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
 
       {/* Liquid-glass border (matches HeroTiles wide variant) */}
       <style>{`
-        .hd-glass-tile { position: relative; }
+        @keyframes hd-glass-in {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .hd-glass-enter { animation: hd-glass-in 200ms ease-out both; }
         .hd-glass-tile::before {
           content: '';
           position: absolute;
