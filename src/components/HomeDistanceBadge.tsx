@@ -395,8 +395,9 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       let desiredLeft: number;
       let desiredTop: number;
       if (isFrame) {
-        // Frame: дропдаун сдвинут ЛЕВЕЕ на карту (правый край = правый край кнопки)
-        desiredLeft = r.right - dropdownWidth;
+        // Frame: на мобиле уводим ВЛЕВО (не перекрывает Спутник в правом углу
+        // iframe), на десктопе — правый край панели = правый край кнопки
+        desiredLeft = vw < 640 ? 8 : r.right - dropdownWidth;
         desiredTop = r.bottom + 8;
       } else {
         // Hero: anchor под рядом пилюль. На мобиле — по левому краю,
@@ -581,7 +582,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        className="fixed z-[100] w-[260px] sm:w-[300px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
+        className="fixed z-[100] w-[260px] sm:w-[300px] rounded-[20px] text-white [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
