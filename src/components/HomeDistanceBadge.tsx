@@ -405,9 +405,13 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
         const rowRect = row?.getBoundingClientRect();
         const leftPad = vw >= 1024 ? 64 : vw >= 640 ? 32 : 16;
-        if (rowRect) {
-          // Центрировать между левым краем ряда (= левый край «Каширское») и правым краем бейджа
-          const center = (rowRect.left + r.right) / 2;
+        if (row) {
+          // Центрировать строго между первой пилюлей («Каширское») и нашим бейджем.
+          // Берём первого ребёнка ряда как левую пилюлю, наш anchor — правый край.
+          const firstPill = row.children[0] as HTMLElement | undefined;
+          const leftEdge = firstPill?.getBoundingClientRect().left ?? (rowRect?.left ?? leftPad);
+          const rightEdge = r.right;
+          const center = (leftEdge + rightEdge) / 2;
           desiredLeft = center - dropdownWidth / 2;
         } else {
           desiredLeft = leftPad;
