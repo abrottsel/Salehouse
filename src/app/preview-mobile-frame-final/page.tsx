@@ -26,7 +26,7 @@ const VARIANTS: Record<Variant, Config> = {
   W: { label: "Панель 220px, пилюля «Дорога к мечте»", width: 220, pillTop: 48, shortPill: false },
   X: { label: "Панель 220px, пилюля короче «К мечте»", width: 220, pillTop: 48, shortPill: true },
   Y: { label: "Панель 230px, пилюля «К мечте»", width: 230, pillTop: 48, shortPill: true },
-  Z: { label: "Панель 195px, сдвиг 8px влево (2мм), пилюля БЛИЖЕ", width: 195, pillTop: 38, shortPill: false, leftNudge: 8 },
+  Z: { label: "Панель 195px, сдвиг 16px влево (~4мм)", width: 195, pillTop: 38, shortPill: false, leftNudge: 16 },
 };
 
 export default function Page() {
