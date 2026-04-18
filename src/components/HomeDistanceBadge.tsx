@@ -370,12 +370,15 @@ function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
     const compute = () => {
       if (!anchor) return;
       const r = anchor.getBoundingClientRect();
-      // Find the parent flex row (contains direction pill + badge) — its left edge
-      const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
-      const rowRect = row?.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const dropdownWidth = vw < 640 ? 260 : 320;
+      // Anchor under the button, but clamp so dropdown stays in viewport
+      const desiredLeft = r.left;
+      const maxLeft = vw - dropdownWidth - 8;
+      const clampedLeft = Math.max(8, Math.min(desiredLeft, maxLeft));
       setPos({
         top: r.bottom + 8,
-        left: rowRect ? rowRect.left : r.left,
+        left: clampedLeft,
       });
     };
     compute();
@@ -512,7 +515,7 @@ function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
       />
 
       <div
-        className="fixed z-50 w-[min(86vw,340px)] rounded-[22px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
+        className="fixed z-50 w-[260px] sm:w-[320px] rounded-[20px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
@@ -526,70 +529,70 @@ function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-4 pt-3 pb-4">
-          <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
+          <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <h3 className="text-base font-black flex items-center gap-1.5 tracking-tight">
-                <Route className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+              <h3 className="text-sm sm:text-base font-black flex items-center gap-1.5 tracking-tight">
+                <Route className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
-              <p className="text-[11px] text-white/95 mt-0.5 font-semibold leading-snug">
+              <p className="text-[10px] sm:text-[11px] text-white/95 mt-0.5 font-semibold leading-snug">
                 {home
                   ? `Сохранено: ${home.address.split(",").slice(0, 2).join(",")}`
-                  : "Покажем сколько ехать от вашего дома"}
+                  : "Сколько ехать от вашего дома"}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center -mr-1 flex-shrink-0"
+              className="w-6 h-6 rounded-full hover:bg-white/15 flex items-center justify-center -mr-0.5 flex-shrink-0"
               aria-label="Закрыть"
             >
-              <X className="w-3.5 h-3.5 text-white" />
+              <X className="w-3 h-3 text-white" />
             </button>
           </div>
 
           <button
             onClick={useGeolocation}
             disabled={geoLoading}
-            className="w-full flex items-center justify-center gap-2 h-10 sm:h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-xs sm:text-sm font-black transition shadow-lg shadow-emerald-500/40"
+            className="w-full flex items-center justify-center gap-1.5 h-9 sm:h-10 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-[11px] sm:text-xs font-black transition shadow-lg shadow-emerald-500/40"
           >
             {geoLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Определяю местоположение…
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Определяю…
               </>
             ) : (
               <>
-                <Navigation2 className="w-4 h-4" />
-                {home ? "Обновить местоположение" : "Использовать моё местоположение"}
+                <Navigation2 className="w-3.5 h-3.5" />
+                {home ? "Обновить" : "Моё местоположение"}
               </>
             )}
           </button>
-          <p className="text-[10px] text-white/85 text-center mt-1.5 leading-snug font-medium">
-            Браузер запросит разрешение. Координаты не покидают браузер.
+          <p className="text-[9px] text-white/85 text-center mt-1 leading-snug font-medium">
+            Координаты не покидают браузер
           </p>
 
           {geoError && (
-            <p className="text-[10px] text-red-200 text-center mt-1 font-semibold">
+            <p className="text-[9px] text-red-200 text-center mt-1 font-semibold">
               {geoError}
             </p>
           )}
 
-          <div className="text-center my-3">
-            <span className="text-[10px] uppercase text-white/85 tracking-[0.15em] font-black">
+          <div className="text-center my-2">
+            <span className="text-[9px] uppercase text-white/85 tracking-[0.15em] font-black">
               или укажите адрес
             </span>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/70" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/70" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Москва, ул. Тверская, 1"
-              className="w-full h-10 pl-9 pr-3 rounded-xl bg-white/15 ring-1 ring-white/30 text-xs text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-semibold"
+              placeholder="Москва, Тверская, 1"
+              className="w-full h-8 sm:h-9 pl-8 pr-2.5 rounded-lg bg-white/15 ring-1 ring-white/30 text-[11px] text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-semibold"
             />
           </div>
 
