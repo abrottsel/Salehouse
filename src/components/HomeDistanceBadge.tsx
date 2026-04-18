@@ -406,12 +406,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         const rowRect = row?.getBoundingClientRect();
         const leftPad = vw >= 1024 ? 64 : vw >= 640 ? 32 : 16;
         if (rowRect) {
-          // Центрировать между «Каширское» pill и бейджем на всех viewport
-          const firstPill = row?.querySelector("div") as HTMLElement | null;
-          const firstRect = firstPill?.getBoundingClientRect();
-          const left = firstRect?.left ?? rowRect.left;
-          const right = r.right;
-          const center = (left + right) / 2;
+          // Центрировать между левым краем ряда (= левый край «Каширское») и правым краем бейджа
+          const center = (rowRect.left + r.right) / 2;
           desiredLeft = center - dropdownWidth / 2;
         } else {
           desiredLeft = leftPad;
