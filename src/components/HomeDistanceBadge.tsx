@@ -264,9 +264,12 @@ export default function HomeDistanceBadge({
   // ── HERO / FRAME variant: pill + liquid-glass dropdown ──
   const showLiveBadge = !!home && !!route;
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   return (
-    <div className="relative inline-block group/badge">
+    <div className="inline-block group/badge">
       <button
+        ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full ring-1 text-white text-[11px] font-bold backdrop-blur-md transition shadow-lg ${
           showLiveBadge
@@ -339,6 +342,7 @@ export default function HomeDistanceBadge({
 
       {open && (
         <DropdownPanel
+          anchor={buttonRef.current}
           home={home}
           onSave={handleSavePlace}
           onClose={() => setOpen(false)}
@@ -353,12 +357,35 @@ export default function HomeDistanceBadge({
 // ─────────────────────────────────────────────────────────────────
 
 interface DropdownProps {
+  anchor: HTMLElement | null;
   home: UserPlace | null;
   onSave: (place: UserPlace) => void;
   onClose: () => void;
 }
 
-function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
+function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
+  // Compute fixed position: top = below button, left = pills row start (16/32/64px from viewport)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  useEffect(() => {
+    const compute = () => {
+      if (!anchor) return;
+      const r = anchor.getBoundingClientRect();
+      // Find the parent flex row (contains direction pill + badge) — its left edge
+      const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
+      const rowRect = row?.getBoundingClientRect();
+      setPos({
+        top: r.bottom + 8,
+        left: rowRect ? rowRect.left : r.left,
+      });
+    };
+    compute();
+    window.addEventListener("scroll", compute, true);
+    window.addEventListener("resize", compute);
+    return () => {
+      window.removeEventListener("scroll", compute, true);
+      window.removeEventListener("resize", compute);
+    };
+  }, [anchor]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserPlace[]>([]);
   const [searching, setSearching] = useState(false);
@@ -485,8 +512,11 @@ function DropdownPanel({ home, onSave, onClose }: DropdownProps) {
       />
 
       <div
-        className="absolute left-0 top-full mt-2 z-40 w-[min(78vw,320px)] sm:w-[340px] rounded-[22px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
+        className="fixed z-50 w-[min(86vw,340px)] rounded-[22px] text-white animate-in fade-in slide-in-from-top-2 duration-200 [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile"
         style={{
+          top: pos?.top ?? 0,
+          left: pos?.left ?? 0,
+          opacity: pos ? 1 : 0,
           backdropFilter: "blur(1px) saturate(2)",
           WebkitBackdropFilter: "blur(1px) saturate(2)",
           background:

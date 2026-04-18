@@ -185,7 +185,7 @@ export default function VillageHeroSwiper({
         <div className="absolute inset-0 z-20 flex flex-col pt-20 px-4 sm:px-8 lg:px-16 pb-6 lg:pb-10 pointer-events-none">
           {/* Top row: direction pill + Дорога к мечте + FavoriteHeart */}
           <div className="flex items-start justify-between gap-2 pointer-events-auto">
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <div data-hero-pills-row className="flex flex-wrap items-center gap-2 min-w-0">
               <div className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-black/40 ring-1 ring-white/25 text-white text-[11px] font-bold backdrop-blur-md">
                 <MapPin className="w-3.5 h-3.5" />
                 {direction} · {distance} км от МКАД
