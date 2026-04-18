@@ -15,7 +15,7 @@ export default function IframeMapOverlay({
   villageName: string;
 }) {
   return (
-    <div data-frame-overlay className="absolute top-28 right-3 sm:top-14 z-30 flex flex-col items-end gap-2 max-w-[calc(100%-24px)]">
+    <div data-frame-overlay className="absolute top-3 right-3 sm:top-14 z-30 flex flex-col items-end gap-2 max-w-[calc(100%-24px)]">
       <HomeDistanceBadge
         villageCoords={villageCoords}
         villageName={villageName}
