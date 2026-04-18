@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Route,
   Navigation2,
@@ -363,7 +364,13 @@ interface DropdownProps {
   onClose: () => void;
 }
 
-function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
+function DropdownPanel(props: DropdownProps) {
+  // Render in portal to body — escapes any parent overflow:hidden / inline-flex layout effect
+  if (typeof window === "undefined") return null;
+  return createPortal(<DropdownPanelInner {...props} />, document.body);
+}
+
+function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
   // Compute fixed position: top = below button, left = pills row start (16/32/64px from viewport)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   useEffect(() => {
