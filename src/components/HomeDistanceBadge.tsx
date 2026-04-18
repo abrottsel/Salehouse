@@ -574,7 +574,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     <>
       <div
         ref={panelRef}
-        className="fixed z-[100] w-[260px] sm:w-[320px] rounded-[20px] text-white [&_*]:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hd-glass-tile hd-glass-enter"
+        className="fixed z-[100] w-[280px] sm:w-[340px] rounded-[20px] text-white [&_*]:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] hd-glass-tile hd-glass-enter"
         style={{
           top: pos?.top ?? 0,
           left: pos?.left ?? 0,
@@ -592,11 +592,11 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         <div className="px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-black flex items-center gap-1.5 tracking-tight">
-                <Route className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight">
+                <Route className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-white/95 mt-0.5 font-semibold leading-snug">
+              <p className="text-xs sm:text-sm text-white mt-0.5 font-bold leading-snug">
                 {home
                   ? `Сохранено: ${home.address.split(",").slice(0, 2).join(",")}`
                   : "Сколько ехать от вашего дома"}
@@ -614,7 +614,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           <button
             onClick={useGeolocation}
             disabled={geoLoading}
-            className="w-full flex items-center justify-center gap-1.5 h-9 sm:h-10 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-[11px] sm:text-xs font-black transition shadow-lg shadow-emerald-500/40"
+            className="w-full flex items-center justify-center gap-2 h-10 sm:h-11 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm sm:text-base font-black transition shadow-lg shadow-emerald-500/40"
           >
             {geoLoading ? (
               <>
@@ -628,49 +628,49 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
               </>
             )}
           </button>
-          <p className="text-[9px] text-white/85 text-center mt-1 leading-snug font-medium">
+          <p className="text-[11px] text-white text-center mt-1.5 leading-snug font-semibold">
             Координаты не покидают браузер
           </p>
 
           {geoError && (
-            <p className="text-[9px] text-red-200 text-center mt-1 font-semibold">
+            <p className="text-xs text-red-200 text-center mt-1 font-bold">
               {geoError}
             </p>
           )}
 
-          <div className="text-center my-2">
-            <span className="text-[9px] uppercase text-white/85 tracking-[0.15em] font-black">
+          <div className="text-center my-2.5">
+            <span className="text-[11px] uppercase text-white tracking-[0.15em] font-black">
               или укажите адрес
             </span>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/70" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/85" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Москва, Тверская, 1"
-              className="w-full h-8 sm:h-9 pl-8 pr-2.5 rounded-lg bg-white/15 ring-1 ring-white/30 text-[11px] text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-semibold"
+              className="w-full h-10 sm:h-11 pl-9 pr-3 rounded-lg bg-white/15 ring-1 ring-white/40 text-sm text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 focus:bg-white/20 transition font-bold"
             />
           </div>
 
           {searching && (
-            <div className="text-[10px] text-white/85 mt-2 flex items-center gap-1.5 font-semibold">
-              <Loader2 className="w-3 h-3 animate-spin" /> Ищу адрес…
+            <div className="text-xs text-white mt-2 flex items-center gap-1.5 font-bold">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Ищу адрес…
             </div>
           )}
 
           {results.length > 0 && (
-            <ul className="mt-2 space-y-0.5 max-h-44 overflow-y-auto">
+            <ul className="mt-2 space-y-0.5 max-h-48 overflow-y-auto">
               {results.map((r) => (
                 <li key={r.id}>
                   <button
                     onClick={() => onSave(r)}
-                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white/15 text-[11px] text-white flex items-center gap-2 transition font-semibold"
+                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/20 text-sm text-white flex items-center gap-2 transition font-bold"
                   >
-                    <MapPin className="w-3 h-3 text-white/70 flex-shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-white/85 flex-shrink-0" />
                     <span className="truncate">{r.address}</span>
                   </button>
                 </li>
