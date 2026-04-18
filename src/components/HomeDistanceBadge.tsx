@@ -470,18 +470,23 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Debounced address search
+  // Debounced address search (DaData-first, Nominatim fallback)
   useEffect(() => {
-    if (query.trim().length < 3) {
+    if (query.trim().length < 2) {
       setResults([]);
       return;
     }
     const t = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`, {
-          cache: "force-cache",
-        });
+        // Try DaData first (true autocomplete, Russian-optimized)
+        let res = await fetch(`/api/dadata-suggest?q=${encodeURIComponent(query)}`);
+        if (!res.ok || (await res.clone().json())?.results?.length === 0) {
+          // Fallback to Nominatim
+          res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`, {
+            cache: "force-cache",
+          });
+        }
         if (res.ok) {
           const json = await res.json();
           if (Array.isArray(json?.results)) {
@@ -507,7 +512,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       } finally {
         setSearching(false);
       }
-    }, 400);
+    }, 180);
     return () => clearTimeout(t);
   }, [query]);
 
