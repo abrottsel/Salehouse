@@ -424,13 +424,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
-    // Close on scroll, но НЕ когда фокус внутри панели (iOS открывает
-    // клавиатуру → viewport скроллится → нельзя закрывать инпут под пальцем)
-    const onScroll = () => {
-      const active = document.activeElement;
-      if (panelRef.current && active && panelRef.current.contains(active)) return;
-      onClose();
-    };
+    // Close on scroll (никаких пересчётов и мерцаний)
+    const onScroll = () => onClose();
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", compute);
     return () => {
@@ -475,23 +470,18 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Debounced address search (DaData-first, Nominatim fallback)
+  // Debounced address search
   useEffect(() => {
-    if (query.trim().length < 2) {
+    if (query.trim().length < 3) {
       setResults([]);
       return;
     }
     const t = setTimeout(async () => {
       setSearching(true);
       try {
-        // Try DaData first (true autocomplete, Russian-optimized)
-        let res = await fetch(`/api/dadata-suggest?q=${encodeURIComponent(query)}`);
-        if (!res.ok || (await res.clone().json())?.results?.length === 0) {
-          // Fallback to Nominatim
-          res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`, {
-            cache: "force-cache",
-          });
-        }
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`, {
+          cache: "force-cache",
+        });
         if (res.ok) {
           const json = await res.json();
           if (Array.isArray(json?.results)) {
@@ -517,7 +507,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       } finally {
         setSearching(false);
       }
-    }, 180);
+    }, 400);
     return () => clearTimeout(t);
   }, [query]);
 
@@ -602,8 +592,8 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
         <div className="px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight text-emerald-300">
-                <Route className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-emerald-300 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5 tracking-tight">
+                <Route className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-emerald-300 flex-shrink-0" />
                 Дорога к мечте
               </h3>
               <p className="text-xs sm:text-sm text-white mt-0.5 font-bold leading-snug">
