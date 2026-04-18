@@ -372,12 +372,17 @@ function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
       const r = anchor.getBoundingClientRect();
       const vw = window.innerWidth;
       const dropdownWidth = vw < 640 ? 260 : 320;
-      // Anchor under the button, but clamp so dropdown stays in viewport
-      const desiredLeft = r.left;
+      // Find pills row (hero) — anchor to ITS left edge so dropdown
+      // opens directly under «Каширское · 30 км от МКАД» pill, in red zone.
+      const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
+      const rowRect = row?.getBoundingClientRect();
+      // For frame variant (over iframe map) — anchor under button itself, right side
+      const isFrame = !!anchor.closest("[data-frame-overlay]");
+      const desiredLeft = isFrame ? r.left : rowRect?.left ?? r.left;
       const maxLeft = vw - dropdownWidth - 8;
       const clampedLeft = Math.max(8, Math.min(desiredLeft, maxLeft));
       setPos({
-        top: r.bottom + 8,
+        top: (rowRect?.bottom ?? r.bottom) + 8,
         left: clampedLeft,
       });
     };
