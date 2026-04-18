@@ -372,19 +372,27 @@ function DropdownPanel({ anchor, home, onSave, onClose }: DropdownProps) {
       const r = anchor.getBoundingClientRect();
       const vw = window.innerWidth;
       const dropdownWidth = vw < 640 ? 260 : 320;
-      // Find pills row (hero) — anchor to ITS left edge so dropdown
-      // opens directly under «Каширское · 30 км от МКАД» pill, in red zone.
-      const row = anchor.closest("[data-hero-pills-row]") as HTMLElement | null;
-      const rowRect = row?.getBoundingClientRect();
-      // For frame variant (over iframe map) — anchor under button itself, right side
       const isFrame = !!anchor.closest("[data-frame-overlay]");
-      const desiredLeft = isFrame ? r.left : rowRect?.left ?? r.left;
+
+      let desiredLeft: number;
+      let desiredTop: number;
+      if (isFrame) {
+        // Frame: дропдаун строго под кнопкой (TOP-RIGHT карты)
+        desiredLeft = r.left;
+        desiredTop = r.bottom + 8;
+      } else {
+        // Hero: жёстко в TOP-LEFT под рядом пилюль (как утвердил пользователь)
+        // Section padding: px-4 / sm:px-8 / lg:px-16
+        const leftPad = vw >= 1024 ? 64 : vw >= 640 ? 32 : 16;
+        // Header h-16 (64) + hero pt-20 (80) + pill h-7 (28) + gap = ~180
+        // Используем bottom кнопки как опору (надёжнее чем гадать padding)
+        desiredLeft = leftPad;
+        desiredTop = r.bottom + 8;
+      }
+
       const maxLeft = vw - dropdownWidth - 8;
       const clampedLeft = Math.max(8, Math.min(desiredLeft, maxLeft));
-      setPos({
-        top: (rowRect?.bottom ?? r.bottom) + 8,
-        left: clampedLeft,
-      });
+      setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
     window.addEventListener("scroll", compute, true);
