@@ -81,7 +81,7 @@ export default function HowItWorks() {
                   <div className="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-600/30 ring-4 ring-[#fffaf3]">
                     {n}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white ring-2 ring-emerald-100 flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white dark:bg-stone-900 ring-2 ring-emerald-100 flex items-center justify-center">
                     <Icon className="w-3.5 h-3.5 text-emerald-600" />
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export default function HowItWorks() {
             {REVIEWS.map((r) => (
               <article
                 key={r.name}
-                className="rounded-3xl bg-white p-6 sm:p-7 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 flex flex-col"
+                className="rounded-3xl bg-white dark:bg-stone-900 p-6 sm:p-7 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] ring-1 ring-gray-100 flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div

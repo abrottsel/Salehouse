@@ -19,20 +19,20 @@ const metrics: {
 
 export default function TrustStrip() {
   return (
-    <section className="relative bg-gradient-to-b from-stone-50 via-white to-stone-50 border-y border-stone-200/70">
+    <section className="relative bg-gradient-to-b from-stone-50 dark:from-stone-950 via-white to-stone-50 dark:to-stone-950 border-y border-stone-200 dark:border-stone-800/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         {/* Metric tiles */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {metrics.map(({ value, label, Icon }) => (
             <div
               key={label}
-              className="group relative rounded-3xl bg-white ring-1 ring-stone-200/80 px-6 py-8 sm:py-10 text-center shadow-sm hover:shadow-xl hover:ring-emerald-300 transition-all duration-300"
+              className="group relative rounded-3xl bg-white dark:bg-stone-900 ring-1 ring-stone-200 dark:ring-stone-800/80 px-6 py-8 sm:py-10 text-center shadow-sm hover:shadow-xl hover:ring-emerald-300 transition-all duration-300"
             >
               <Icon className="w-6 h-6 text-emerald-500 mx-auto mb-3 opacity-80" />
               <div className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-emerald-600 leading-none tabular-nums">
                 {value}
               </div>
-              <div className="mt-3 text-sm sm:text-base font-semibold text-stone-600 uppercase tracking-wider">
+              <div className="mt-3 text-sm sm:text-base font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider">
                 {label}
               </div>
             </div>

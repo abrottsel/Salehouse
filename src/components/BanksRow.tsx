@@ -43,7 +43,7 @@ function BankPill({
 
 export default function BanksRow() {
   return (
-    <section className="py-6 lg:py-8 bg-gradient-to-b from-white to-stone-50">
+    <section className="py-6 lg:py-8 bg-gradient-to-b from-white dark:from-stone-900 to-stone-50 dark:to-stone-950">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-center gap-3 md:gap-5 flex-wrap md:flex-nowrap">
           {/* Banks left (desktop) */}

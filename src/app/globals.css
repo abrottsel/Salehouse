@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:is(.dark *), &.dark);
 
 :root {
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;

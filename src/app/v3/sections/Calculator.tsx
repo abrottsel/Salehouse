@@ -55,7 +55,7 @@ export default function Calculator() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white shadow-[0_10px_40px_-15px_rgba(16,185,129,0.25)] ring-1 ring-emerald-100/70 overflow-hidden">
+        <div className="rounded-3xl bg-white dark:bg-stone-900 shadow-[0_10px_40px_-15px_rgba(16,185,129,0.25)] ring-1 ring-emerald-100/70 overflow-hidden">
           <div className="grid lg:grid-cols-[1.2fr_1fr]">
             {/* Inputs */}
             <div className="p-6 sm:p-10 space-y-7">
