@@ -65,7 +65,16 @@ export default function Header() {
       <div className="mx-auto px-2 sm:px-4 lg:px-6 max-w-[1600px]">
         <div className={`flex items-center ${rowHeight}`}>
           {/* Logo — прижат к левому краю */}
-          <a href={logoHref} className="shrink-0 mr-4">
+          <a
+            href={logoHref}
+            className="shrink-0 mr-4"
+            onClick={(e) => {
+              if (pathname === logoHref) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "instant" });
+              }
+            }}
+          >
             <Logo />
           </a>
 
