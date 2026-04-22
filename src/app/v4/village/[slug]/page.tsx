@@ -11,7 +11,7 @@ import InteractivePlotMap from "@/components/InteractivePlotMap3";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import ShowRouteButton from "@/components/ShowRouteButton";
+import ShowRouteButton from "../../_components/ShowRouteButton";
 
 /**
  * /v4/village/[slug] — same content as /village/[slug] **plus** the

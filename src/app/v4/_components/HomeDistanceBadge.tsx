@@ -428,21 +428,39 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
-    // v4 fix: close on any scroll gesture (scroll/wheel/touchmove).
-    // iOS keyboard guard сохранён — не закрывать если фокус внутри panel.
+
+    // Close dropdown on real scroll gestures, but NOT during taps inside
+    // the panel or on the anchor button. We track where each touch
+    // started; micro-drift from a button tap (1-2px) must not close.
     const onScrollLike = () => {
       const active = document.activeElement;
       if (panelRef.current && active && panelRef.current.contains(active)) return;
       onClose();
     };
+
+    let touchStartedInside = false;
+    const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as Node | null;
+      touchStartedInside = !!(
+        (panelRef.current && target && panelRef.current.contains(target)) ||
+        (anchor && target && anchor.contains(target))
+      );
+    };
+    const onTouchMove = () => {
+      if (touchStartedInside) return;
+      onScrollLike();
+    };
+
     window.addEventListener("scroll", onScrollLike, true);
     window.addEventListener("wheel", onScrollLike, { passive: true });
-    window.addEventListener("touchmove", onScrollLike, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("resize", compute);
     return () => {
       window.removeEventListener("scroll", onScrollLike, true);
       window.removeEventListener("wheel", onScrollLike);
-      window.removeEventListener("touchmove", onScrollLike);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("resize", compute);
     };
   }, [anchor, onClose]);
@@ -635,6 +653,7 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
           </div>
 
           <button
+            type="button"
             onClick={useGeolocation}
             disabled={geoLoading}
             className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm font-black transition shadow-lg shadow-emerald-500/40"
