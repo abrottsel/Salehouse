@@ -118,6 +118,12 @@ export default async function VillagePageV4({ params }: Props) {
                 width="100%"
                 height="850"
                 allow="fullscreen"
+                // Sandbox ограничивает что может делать zemexx: JS работает,
+                // формы и попапы открываются, но iframe не может менять
+                // window.top (clickjacking-protection) и не может вытянуть
+                // cookie с zem-plus.ru.
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                referrerPolicy="no-referrer-when-downgrade"
                 className="block border-0 w-full min-h-[750px] lg:min-h-[85vh]"
                 title={`Карта участков — ${village.name}`}
               />

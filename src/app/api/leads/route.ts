@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/db";
 import type { LeadType, LeadSource } from "@prisma/client";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -163,6 +164,18 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 leads / 10 min per IP. Spam-bot shield when Cloudflare
+  // is disabled or the attacker targets the origin directly. Legit users
+  // filling one form will never hit this.
+  const ipForRL = clientIp(request);
+  const rl = rateLimit(ipForRL, "leads", 5, 600);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Слишком много заявок. Попробуйте через пару минут." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+    );
+  }
+
   let body: LeadInput = {};
   try {
     body = (await request.json()) as LeadInput;

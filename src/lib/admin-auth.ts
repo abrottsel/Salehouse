@@ -11,7 +11,15 @@ const ADMIN_PASSWORD = process.env.ADMIN_VPN_PASSWORD || "";
 const COOKIE_NAME = "admin_vpn";
 
 function sign(value: string): string {
-  const secret = process.env.DEPLOY_SECRET || "zemplus-fallback-secret";
+  const secret = process.env.DEPLOY_SECRET;
+  if (!secret || secret.length < 16) {
+    // Без секрета подпись предсказуема — это равносильно отсутствию
+    // защиты. Падаем громко, чтобы проблему увидели в логах + юзер
+    // получил 500 вместо «молчаливой» уязвимости.
+    throw new Error(
+      "DEPLOY_SECRET is not configured (or too short) — admin cookie signing is insecure without it",
+    );
+  }
   return crypto.createHmac("sha256", secret).update(value).digest("hex");
 }
 

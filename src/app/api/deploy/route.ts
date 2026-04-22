@@ -94,9 +94,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Strict regex validation BEFORE fields reach deploy.sh. Without this,
+  // a leaked DEPLOY_SECRET + a malicious payload like
+  // `sha: "--upload-pack=/tmp/evil"` could inject git/download options
+  // downstream. HMAC is the primary gate; this is defense-in-depth.
+  const REF_RE = /^[A-Za-z0-9._/-]{1,100}$/;
+  const SHA_RE = /^[0-9a-f]{7,40}$/;
+  const ACTOR_RE = /^[A-Za-z0-9._-]{1,64}$/;
   const ref = payload.ref ?? "main";
   const sha = payload.sha ?? "";
   const actor = payload.actor ?? "github-actions";
+  if (!REF_RE.test(ref) || !SHA_RE.test(sha) || !ACTOR_RE.test(actor)) {
+    console.error("[/api/deploy] invalid payload format", { ref, sha, actor });
+    return NextResponse.json(
+      { ok: false, error: "invalid_payload_format" },
+      { status: 400 },
+    );
+  }
 
   // Launch deploy.sh as a transient systemd unit. This cuts every
   // parent-child tie with the Next.js process — pm2 can reload /
