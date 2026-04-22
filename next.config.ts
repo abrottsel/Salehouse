@@ -33,6 +33,32 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "geolocation=(self), camera=(), microphone=(), payment=(), usb=()",
   },
+  {
+    // Strict CSP. Inventory сделан по src/ — если добавляется новая
+    // интеграция (новый скрипт, iframe, fetch-upstream), ЭТОТ файл тоже
+    // надо обновить, иначе браузер заблокирует и фича не поедет.
+    // 'unsafe-inline' на style-src нужен для React inline style={{}}
+    // объектов (они не eval, но CSP трактует их одинаково).
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      // 'unsafe-inline' / 'unsafe-eval' временно — Next.js 16 + React 19
+      // кладут inline <script> для hydration + runtime tag patching.
+      // Настоящий nonce через middleware — отдельный follow-up.
+      // Защита всё ещё работает: нельзя подгрузить ВНЕШНИЙ чужой JS.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-maps.yandex.ru",
+      "connect-src 'self' https://api-maps.yandex.ru https://map.zemexx.ru https://suggestions.dadata.ru",
+      "frame-src 'self' https://map.zemexx.ru https://yandex.ru",
+      "img-src 'self' data: https://images.unsplash.com https://zemexx.ru https://*.zemexx.ru https://mc.yandex.ru",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  },
 ];
 
 const nextConfig: NextConfig = {
