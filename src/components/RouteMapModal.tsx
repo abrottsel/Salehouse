@@ -17,7 +17,7 @@
  * InteractivePlotMap3.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, Route as RouteIcon, X } from "lucide-react";
 import { loadYmaps3 } from "@/lib/ymaps3";
@@ -80,12 +80,21 @@ export default function RouteMapModal({
     straight: boolean;
   } | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
+  const loadStartedRef = useRef(false);
 
   useEffect(() => setMounted(true), []);
 
   // Load ymaps3 when the modal first opens (cached by loader).
+  // Depend ONLY on `open` so setBundle() doesn't retrigger cleanup and
+  // cancel the timeout we just scheduled.
   useEffect(() => {
-    if (!open || bundle.kind !== "idle") return;
+    if (!open) {
+      loadStartedRef.current = false;
+      return;
+    }
+    if (loadStartedRef.current) return;
+    loadStartedRef.current = true;
+
     setBundle({ kind: "loading" });
     let cancelled = false;
 
@@ -119,7 +128,7 @@ export default function RouteMapModal({
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [open, bundle.kind]);
+  }, [open]);
 
   // Fetch the road geometry from our OSRM proxy; fall back to a straight
   // line between home and village if the proxy fails.
