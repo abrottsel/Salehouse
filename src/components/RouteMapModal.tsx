@@ -88,8 +88,20 @@ export default function RouteMapModal({
     if (!open || bundle.kind !== "idle") return;
     setBundle({ kind: "loading" });
     let cancelled = false;
+
+    const timeoutId = setTimeout(() => {
+      if (cancelled) return;
+      console.error("[RouteMapModal] ymaps3 load timed out after 15s");
+      setBundle({
+        kind: "blocked",
+        error:
+          "Карта не загрузилась за 15 секунд. Возможно, расширение или приватный режим блокируют api-maps.yandex.ru. Попробуйте обычное окно браузера.",
+      });
+    }, 15000);
+
     loadYmaps3()
       .then(async ({ ymaps3, reactify }) => {
+        clearTimeout(timeoutId);
         if (cancelled) return;
         const React = await import("react");
         const ReactDOM = await import("react-dom");
@@ -98,12 +110,14 @@ export default function RouteMapModal({
         setBundle({ kind: "ready", components: mod });
       })
       .catch((err: Error) => {
+        clearTimeout(timeoutId);
         if (cancelled) return;
         console.error("[RouteMapModal] ymaps3 load failed:", err);
         setBundle({ kind: "blocked", error: err.message });
       });
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [open, bundle.kind]);
 
