@@ -7,6 +7,7 @@ import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import IframeMapOverlay from "@/components/IframeMapOverlay";
+import ShowRouteButton from "@/components/ShowRouteButton";
 
 /**
  * /village/[slug] — full village detail page.
@@ -112,10 +113,16 @@ export default async function VillagePage({ params }: Props) {
                 width="100%"
                 height="850"
                 allow="fullscreen"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                referrerPolicy="no-referrer-when-downgrade"
                 className="block border-0 w-full min-h-[750px] lg:min-h-[85vh]"
                 title={`Карта участков — ${village.name}`}
               />
               <IframeMapOverlay
+                villageCoords={village.coords}
+                villageName={village.name}
+              />
+              <ShowRouteButton
                 villageCoords={village.coords}
                 villageName={village.name}
               />

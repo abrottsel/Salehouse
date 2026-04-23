@@ -428,16 +428,39 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       setPos({ top: desiredTop, left: clampedLeft });
     };
     compute();
-    // Close on scroll, но НЕ когда фокус внутри панели (iOS keyboard)
-    const onScroll = () => {
+
+    // Close dropdown on real scroll gestures, but NOT during taps inside
+    // the panel or on the anchor button. We track where each touch
+    // started; micro-drift from a button tap (1-2px) must not close.
+    const onScrollLike = () => {
       const active = document.activeElement;
       if (panelRef.current && active && panelRef.current.contains(active)) return;
       onClose();
     };
-    window.addEventListener("scroll", onScroll, true);
+
+    let touchStartedInside = false;
+    const onTouchStart = (e: TouchEvent) => {
+      const target = e.target as Node | null;
+      touchStartedInside = !!(
+        (panelRef.current && target && panelRef.current.contains(target)) ||
+        (anchor && target && anchor.contains(target))
+      );
+    };
+    const onTouchMove = () => {
+      if (touchStartedInside) return;
+      onScrollLike();
+    };
+
+    window.addEventListener("scroll", onScrollLike, true);
+    window.addEventListener("wheel", onScrollLike, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("resize", compute);
     return () => {
-      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("scroll", onScrollLike, true);
+      window.removeEventListener("wheel", onScrollLike);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("resize", compute);
     };
   }, [anchor, onClose]);
@@ -614,15 +637,23 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
               </p>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="w-6 h-6 rounded-full hover:bg-white/15 flex items-center justify-center -mr-0.5 flex-shrink-0"
+              // v4 fix: invisible 40×40 hit area (iOS-safe). Visible
+              // circle is 24×24 with the exact prod hover tint via
+              // `group-hover`. `-m-2` compensates the layout, `-mr-[10px]`
+              // = old `-mr-0.5` (2px) + 8px from `-m-2` = keeps offset.
+              className="group w-10 h-10 -m-2 -mr-[10px] flex items-center justify-center flex-shrink-0"
               aria-label="Закрыть"
             >
-              <X className="w-3 h-3 text-white" />
+              <span className="w-6 h-6 rounded-full group-hover:bg-white/15 group-active:bg-white/20 flex items-center justify-center transition-colors">
+                <X className="w-3 h-3 text-white" />
+              </span>
             </button>
           </div>
 
           <button
+            type="button"
             onClick={useGeolocation}
             disabled={geoLoading}
             className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 text-white text-sm font-black transition shadow-lg shadow-emerald-500/40"
