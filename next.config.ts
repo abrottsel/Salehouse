@@ -46,12 +46,18 @@ const securityHeaders = [
       // кладут inline <script> для hydration + runtime tag patching.
       // Настоящий nonce через middleware — отдельный follow-up.
       // Защита всё ещё работает: нельзя подгрузить ВНЕШНИЙ чужой JS.
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-maps.yandex.ru",
-      "connect-src 'self' https://api-maps.yandex.ru https://map.zemexx.ru https://suggestions.dadata.ru",
-      "frame-src 'self' https://map.zemexx.ru https://yandex.ru",
-      "img-src 'self' data: https://images.unsplash.com https://zemexx.ru https://*.zemexx.ru https://mc.yandex.ru",
-      "style-src 'self' 'unsafe-inline'",
-      "font-src 'self' data:",
+      // Yandex Maps 3.0 tile/worker/static infrastructure:
+      //   api-maps.yandex.ru — CDN script
+      //   *.maps.yandex.net — tile servers (core-renderer-tiles, vec01…)
+      //   yastatic.net — static assets / fonts
+      //   *.yandex.ru, *.yandex.net — legacy map endpoints / redirects
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-maps.yandex.ru https://yastatic.net",
+      "worker-src 'self' blob:",
+      "connect-src 'self' https://api-maps.yandex.ru https://*.maps.yandex.net https://*.yandex.net https://*.yandex.ru https://yastatic.net https://map.zemexx.ru https://suggestions.dadata.ru",
+      "frame-src 'self' https://map.zemexx.ru https://yandex.ru https://*.yandex.ru",
+      "img-src 'self' data: blob: https://images.unsplash.com https://zemexx.ru https://*.zemexx.ru https://mc.yandex.ru https://*.maps.yandex.net https://*.yandex.net https://*.yandex.ru https://yastatic.net",
+      "style-src 'self' 'unsafe-inline' https://yastatic.net",
+      "font-src 'self' data: https://yastatic.net",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
