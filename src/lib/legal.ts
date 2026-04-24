@@ -19,7 +19,7 @@ export const LEGAL = {
   phoneRaw: "+79859052555",
   email: "info@zem-plus.ru",
   telegram: "https://t.me/zemplus",
-  max: "https://max.ru/zemplus",
+  max: "https://max.ru/id503440358928_bot",
   // Даты документов
   privacyUpdatedAt: "2026-04-18",
   policyVersion: "1.0",

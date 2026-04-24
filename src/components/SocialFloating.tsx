@@ -21,7 +21,7 @@ export default function SocialFloating() {
 
       {/* MAX — official logo */}
       <a
-        href="https://max.ru/zemplus"
+        href="https://max.ru/id503440358928_bot"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="MAX Messenger"

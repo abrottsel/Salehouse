@@ -88,7 +88,7 @@ export default function Footer() {
                 Telegram
               </a>
               <a
-                href="https://max.ru/zemplus"
+                href="https://max.ru/id503440358928_bot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"

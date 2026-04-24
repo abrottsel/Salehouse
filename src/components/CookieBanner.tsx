@@ -26,11 +26,9 @@ function writeConsent(value: ConsentValue) {
       CONSENT_KEY,
       JSON.stringify({ v: CONSENT_VERSION, value, ts: Date.now() }),
     );
-    // Эмитируем событие для аналитики/компонентов, чтобы они
-    // могли подцепить только после согласия.
     window.dispatchEvent(new CustomEvent("zemplus:consent", { detail: value }));
   } catch {
-    /* ignore — consent просто не запомнится */
+    /* ignore */
   }
 }
 
@@ -38,8 +36,6 @@ export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Показываем только если юзер ещё не решил. SSR-safe: на сервере
-    // useEffect не выполняется, поэтому баннер не мигает при hydration.
     if (readConsent() === null) setVisible(true);
   }, []);
 
@@ -57,14 +53,24 @@ export default function CookieBanner() {
       className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4 pointer-events-none"
     >
       <div
-        className="mx-auto max-w-3xl pointer-events-auto rounded-2xl bg-gray-900/95 backdrop-blur-md text-white shadow-2xl ring-1 ring-white/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
+        className="mx-auto max-w-3xl pointer-events-auto rounded-2xl text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5"
+        style={{
+          backdropFilter: "blur(16px) saturate(2)",
+          background: "linear-gradient(135deg, rgba(10,25,15,0.72) 0%, rgba(5,18,10,0.60) 100%)",
+          boxShadow:
+            "inset 0 1.5px 0 rgba(255,255,255,0.18), inset 0 -0.5px 0 rgba(255,255,255,0.06), 0 8px 40px -8px rgba(0,0,0,0.45)",
+          border: "1px solid rgba(255,255,255,0.10)",
+        }}
       >
-        <p className="text-sm leading-snug flex-1">
+        <p
+          className="text-xs leading-snug flex-1"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+        >
           Мы используем cookie и обрабатываем персональные данные только с
           вашего согласия — в соответствии с{" "}
           <a
             href="/privacy"
-            className="underline underline-offset-2 hover:text-emerald-300"
+            className="underline underline-offset-2 hover:text-emerald-300 transition-colors"
           >
             Политикой конфиденциальности
           </a>{" "}
@@ -74,14 +80,29 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={() => decide("rejected")}
-            className="px-4 py-2 rounded-xl text-xs font-bold ring-1 ring-white/25 hover:bg-white/10 transition"
+            className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap"
+            style={{
+              backdropFilter: "blur(8px)",
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.18)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.7)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
           >
             Только необходимые
           </button>
           <button
             type="button"
             onClick={() => decide("accepted")}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20"
+            className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap"
+            style={{
+              background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)",
+              boxShadow: "0 4px 16px -2px rgba(22,163,74,0.45), inset 0 1px 0 rgba(255,255,255,0.20)",
+              textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 20px -2px rgba(22,163,74,0.6), inset 0 1px 0 rgba(255,255,255,0.25)")}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 4px 16px -2px rgba(22,163,74,0.45), inset 0 1px 0 rgba(255,255,255,0.20)")}
           >
             Принять всё
           </button>
