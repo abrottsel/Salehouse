@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const TOKEN = process.env.TG_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TG_CHAT_ID;
+const MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN;
 const SITE_URL = process.env.SITE_URL || 'http://147.45.68.37';
 
 if (!TOKEN) {
@@ -66,6 +67,15 @@ function notifyAdmin(text) {
   if (ADMIN_CHAT_ID) {
     bot.sendMessage(ADMIN_CHAT_ID, text, { parse_mode: 'HTML' }).catch(() => {});
   }
+}
+
+function sendMaxMessage(userId, text) {
+  if (!MAX_BOT_TOKEN) return Promise.resolve();
+  return fetch('https://platform-api.max.ru/messages', {
+    method: 'POST',
+    headers: { Authorization: MAX_BOT_TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipient: { user_id: userId }, text }),
+  }).catch(err => console.error('MAX send error:', err.message));
 }
 
 function formatPrice(n) {
@@ -676,14 +686,26 @@ bot.on('message', (msg) => {
   if (!msg.reply_to_message.from || String(msg.reply_to_message.from.id) !== String(bot.options?.selfId || TOKEN.split(':')[0])) return;
 
   const originalText = msg.reply_to_message.text || '';
-  // Extract client ID from "(ID: 123456789)"
+  const replyText = msg.text;
+  if (!replyText) return;
+
+  // Reply to MAX client
+  const maxIdMatch = originalText.match(/\[MAX_ID:\s*(\d+)\]/);
+  if (maxIdMatch) {
+    const maxUserId = Number(maxIdMatch[1]);
+    sendMaxMessage(maxUserId,
+      `💬 Ответ менеджера:\n\n${replyText}\n\n📞 Вопросы? Напишите здесь или позвоните: +7 (985) 905-25-55`,
+    ).then(() => {
+      bot.sendMessage(ADMIN_CHAT_ID, `✅ Ответ отправлен в МАКС (MAX_ID: ${maxUserId})`, { parse_mode: 'HTML' }).catch(() => {});
+    });
+    return;
+  }
+
+  // Reply to Telegram client
   const idMatch = originalText.match(/\(ID:\s*(\d+)\)/);
   if (!idMatch) return;
 
   const clientChatId = idMatch[1];
-  const replyText = msg.text;
-  if (!replyText) return;
-
   bot.sendMessage(clientChatId,
     `💬 <b>Ответ менеджера:</b>\n\n${replyText}\n\n<i>Есть ещё вопросы? Напишите здесь или позвоните: +7 (985) 905-25-55</i>`,
     { parse_mode: 'HTML' },

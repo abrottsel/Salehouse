@@ -7,6 +7,21 @@ module.exports = {
       env: {
         TG_BOT_TOKEN: '',
         TG_CHAT_ID: '',
+        MAX_BOT_TOKEN: '',
+        SITE_URL: 'http://147.45.68.37',
+      },
+      restart_delay: 5000,
+      max_restarts: 10,
+      autorestart: true,
+    },
+    {
+      name: 'zemplus-max-bot',
+      script: 'zemplus-bot-max.js',
+      cwd: __dirname,
+      env: {
+        MAX_BOT_TOKEN: '',
+        TG_BOT_TOKEN: '',
+        TG_CHAT_ID: '',
         SITE_URL: 'http://147.45.68.37',
       },
       restart_delay: 5000,
