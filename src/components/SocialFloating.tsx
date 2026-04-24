@@ -14,7 +14,7 @@ export default function SocialFloating() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Telegram"
-        className="w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-[#2AABEE]/30 hover:scale-110 active:scale-95 transition-all duration-200"
+        className="w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-[#2AABEE]/30 hover:scale-110 active:scale-95 transition-all duration-200 bg-gradient-to-br from-[#2AABEE] to-[#229ED9]"
       >
         <img src="/telegram-logo.png" alt="Telegram" className="w-full h-full object-contain" />
       </a>
