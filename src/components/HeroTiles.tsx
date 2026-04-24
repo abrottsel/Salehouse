@@ -116,10 +116,10 @@ export default function HeroTiles() {
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 flex flex-col justify-center min-h-svh">
         {/* Headline */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
             Ваш участок
             <br />
-            <span className="bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-green-200 to-emerald-200 bg-clip-text text-transparent">
               для жизни мечты
             </span>
           </h1>
@@ -151,11 +151,11 @@ export default function HeroTiles() {
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
               </div>
 
-              <div className="text-white text-sm sm:text-base font-semibold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+              <div className="text-white text-base sm:text-lg font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
                 {tile.title}
               </div>
               {tile.subtitle && (
-                <div className="text-white/70 text-[11px] sm:text-xs mt-1 leading-snug drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
+                <div className="text-white text-sm sm:text-base font-bold mt-1.5 leading-snug drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                   {tile.subtitle}
                 </div>
               )}

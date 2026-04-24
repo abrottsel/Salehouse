@@ -127,11 +127,11 @@ export default function Header() {
             <div className="md:hidden">
               <FavoritesCounter />
             </div>
-            <a href="tel:+79859052555" className="md:hidden w-9 h-9 bg-green-100 rounded-full flex items-center justify-center">
+            <a href="tel:+79859052555" className="md:hidden w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
               <Phone className="w-4 h-4 text-green-600" />
             </a>
             <button
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Меню"
             >

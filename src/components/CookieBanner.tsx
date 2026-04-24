@@ -79,7 +79,7 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={() => decide("rejected")}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 whitespace-nowrap"
+            className="min-h-11 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 whitespace-nowrap"
             style={{
               backdropFilter: "blur(8px)",
               background: "rgba(255,255,255,0.08)",
@@ -94,7 +94,7 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={() => decide("accepted")}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 whitespace-nowrap"
+            className="min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 whitespace-nowrap"
             style={{
               background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)",
               boxShadow: "0 4px 16px -2px rgba(22,163,74,0.45), inset 0 1px 0 rgba(255,255,255,0.20)",

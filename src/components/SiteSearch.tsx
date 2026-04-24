@@ -221,7 +221,7 @@ export default function SiteSearch() {
         onClick={() => setOpen(true)}
         aria-label="Поиск по сайту"
         title="Поиск (⌘K)"
-        className="w-9 h-9 rounded-full bg-gray-100 hover:bg-green-50 border border-gray-200/80 hover:border-green-200 flex items-center justify-center transition-all group"
+        className="w-11 h-11 md:w-9 md:h-9 rounded-full bg-gray-100 hover:bg-green-50 border border-gray-200/80 hover:border-green-200 flex items-center justify-center transition-all group"
       >
         <Search className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
       </button>
