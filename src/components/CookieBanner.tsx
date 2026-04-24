@@ -50,10 +50,10 @@ export default function CookieBanner() {
     <div
       role="region"
       aria-label="Cookie consent"
-      className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4 pointer-events-none"
+      className="fixed inset-x-0 bottom-0 z-[100] p-2 sm:p-3 pointer-events-none"
     >
       <div
-        className="mx-auto max-w-3xl pointer-events-auto rounded-2xl text-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5"
+        className="mx-auto max-w-2xl pointer-events-auto rounded-xl text-white p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
         style={{
           backdropFilter: "blur(16px) saturate(2)",
           background: "linear-gradient(135deg, rgba(10,25,15,0.72) 0%, rgba(5,18,10,0.60) 100%)",
@@ -63,24 +63,23 @@ export default function CookieBanner() {
         }}
       >
         <p
-          className="text-xs leading-snug flex-1"
+          className="text-[11px] leading-tight flex-1"
           style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
         >
-          Мы используем cookie и обрабатываем персональные данные только с
-          вашего согласия — в соответствии с{" "}
+          Мы используем cookie в соответствии с{" "}
           <a
             href="/privacy"
-            className="underline underline-offset-2 hover:text-emerald-300 transition-colors"
+            className="underline underline-offset-1 hover:text-emerald-300 transition-colors"
           >
             Политикой конфиденциальности
           </a>{" "}
-          (152-ФЗ). Без согласия работают только технически необходимые cookies.
+          (152-ФЗ).
         </p>
         <div className="flex gap-2 flex-shrink-0">
           <button
             type="button"
             onClick={() => decide("rejected")}
-            className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 whitespace-nowrap"
             style={{
               backdropFilter: "blur(8px)",
               background: "rgba(255,255,255,0.08)",
@@ -95,7 +94,7 @@ export default function CookieBanner() {
           <button
             type="button"
             onClick={() => decide("accepted")}
-            className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 whitespace-nowrap"
             style={{
               background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)",
               boxShadow: "0 4px 16px -2px rgba(22,163,74,0.45), inset 0 1px 0 rgba(255,255,255,0.20)",
