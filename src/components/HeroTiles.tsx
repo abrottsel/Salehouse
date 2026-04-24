@@ -151,11 +151,11 @@ export default function HeroTiles() {
                 <tile.Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
               </div>
 
-              <div className="text-white text-base sm:text-lg font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+              <div className="text-white text-sm sm:text-base font-semibold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
                 {tile.title}
               </div>
               {tile.subtitle && (
-                <div className="text-white text-sm sm:text-base font-bold mt-1.5 leading-snug drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                <div className="text-white/70 text-[11px] sm:text-xs mt-1 leading-snug drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
                   {tile.subtitle}
                 </div>
               )}
