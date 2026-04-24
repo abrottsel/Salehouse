@@ -222,7 +222,7 @@ export default function AIChatWidget() {
               pulseVisible ? "animate-ping" : ""
             }`}
           />
-          <span className="relative flex items-center gap-2 bg-gradient-to-br from-green-500 to-emerald-600 text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/40 hover:shadow-green-500/60 hover:scale-105 active:scale-95 transition-all">
+          <span className="relative flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-emerald-600 text-white h-11 w-11 sm:w-auto sm:px-5 rounded-2xl sm:rounded-full shadow-2xl shadow-green-600/40 hover:shadow-green-500/60 hover:scale-105 active:scale-95 transition-all">
             <span className="relative">
               <MessageCircle className="w-5 h-5" />
               {unread && (
