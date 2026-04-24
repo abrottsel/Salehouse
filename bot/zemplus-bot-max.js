@@ -5,10 +5,37 @@ const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TG_CHAT_ID;
 
 const MAX_API = 'https://platform-api.max.ru';
-const BOT_USER_ID = 262876217; // ЗемПлюс bot user_id
+const BOT_USER_ID = 262876217;
+const SITE_URL = process.env.SITE_URL || 'http://147.45.68.37';
 
 if (!MAX_TOKEN) { console.error('MAX_BOT_TOKEN is not set'); process.exit(1); }
 if (!TG_BOT_TOKEN || !ADMIN_CHAT_ID) { console.error('TG_BOT_TOKEN / TG_CHAT_ID not set'); process.exit(1); }
+
+// ---- Village data ----
+const villages = [
+  { name: 'Фаворит', direction: 'Каширское шоссе', distance: 30, priceFrom: 490000, areaFrom: 6, areaTo: 20 },
+  { name: 'Лесной Остров', direction: 'Каширское шоссе', distance: 36, priceFrom: 625000, areaFrom: 6, areaTo: 15 },
+  { name: 'Новое Сонино', direction: 'Каширское шоссе', distance: 37, priceFrom: 355000, areaFrom: 6, areaTo: 25 },
+  { name: 'Дачная Практика-2', direction: 'Каширское шоссе', distance: 42, priceFrom: 180000, areaFrom: 6, areaTo: 30 },
+  { name: 'Регата', direction: 'Симферопольское шоссе', distance: 45, priceFrom: 190000, areaFrom: 6, areaTo: 20 },
+  { name: 'Есенино', direction: 'Симферопольское шоссе', distance: 50, priceFrom: 220000, areaFrom: 8, areaTo: 25 },
+  { name: 'Каретный Ряд', direction: 'Дмитровское шоссе', distance: 42, priceFrom: 350000, areaFrom: 6, areaTo: 15 },
+  { name: 'Триумфальный', direction: 'Дмитровское шоссе', distance: 48, priceFrom: 250000, areaFrom: 8, areaTo: 20 },
+];
+
+// ---- Session store ----
+const sessions = new Map();
+
+function getSession(userId) {
+  if (!sessions.has(userId)) {
+    sessions.set(userId, {});
+  }
+  return sessions.get(userId);
+}
+
+function clearSession(userId) {
+  sessions.set(userId, {});
+}
 
 // ---- MAX API ----
 async function maxGet(path) {
@@ -29,20 +56,43 @@ async function maxPost(path, body) {
   return res.json();
 }
 
-function sendToMax(userId, text) {
-  return maxPost('/messages', { recipient: { user_id: userId }, text });
+function sendToMax(userId, text, keyboard = null) {
+  const payload = { recipient: { user_id: userId }, text };
+  if (keyboard) {
+    payload.attachments = [keyboard];
+  }
+  return maxPost('/messages', payload);
 }
 
-// ---- TG admin (one-way POST, no polling — polling handled by zemplus-bot.js) ----
-function notifyTgAdmin(text) {
-  return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: 'HTML' }),
-  }).then(r => r.json()).catch(err => console.error('TG notify error:', err.message));
+// ---- Inline keyboard builder (MAX format) ----
+function mainMenuKeyboard() {
+  return {
+    type: 'inline_keyboard',
+    buttons: [
+      [
+        { text: '🏠 Подобрать участок', callback_data: 'select_plot' },
+        { text: '💰 Цены и рассрочка', callback_data: 'prices' },
+      ],
+      [
+        { text: '📍 Посёлки и направления', callback_data: 'villages' },
+        { text: '🏢 Ипотека от 6.5%', callback_data: 'mortgage' },
+      ],
+      [
+        { text: '📋 Как купить участок', callback_data: 'how_to_buy' },
+        { text: '❓ Частые вопросы', callback_data: 'faq' },
+      ],
+      [
+        { text: '✏️ Написать вопрос', callback_data: 'write_question' },
+      ],
+    ],
+  };
 }
 
 // ---- Helpers ----
+function formatPrice(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 function timestamp() {
   return new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
 }
@@ -53,34 +103,410 @@ function senderLabel(sender) {
   return `${name}${un}`;
 }
 
-// ---- Update handler ----
-async function handleUpdate(update) {
-  if (update.update_type !== 'message_created') return;
-  const msg = update.message;
-  if (!msg) return;
-
-  const userId = msg.sender?.user_id;
-  if (!userId || userId === BOT_USER_ID) return; // skip own messages
-
-  const text = (msg.body?.text || '').trim();
-  if (!text) return;
-
-  const label = senderLabel(msg.sender);
-
-  await notifyTgAdmin(
-    `📱 <b>Сообщение из МАКС</b>\n\n` +
-    `👤 ${label} [MAX_ID: ${userId}]\n` +
-    `📅 ${timestamp()}\n\n` +
-    `💬 ${text}`,
-  );
-
-  await sendToMax(
-    userId,
-    '✅ Сообщение получено! Менеджер ответит в ближайшее время.\n📞 +7 (985) 905-25-55',
-  ).catch(err => console.error('MAX reply error:', err.message));
+function notifyTgAdmin(text) {
+  return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: 'HTML' }),
+  }).catch(err => console.error('TG notify error:', err.message));
 }
 
-// ---- Long polling loop ----
+// ---- Update handler ----
+async function handleUpdate(update) {
+  if (update.update_type === 'message_created') {
+    const msg = update.message;
+    if (!msg || !msg.sender) return;
+
+    const userId = msg.sender.user_id;
+    if (userId === BOT_USER_ID) return;
+
+    const text = (msg.body?.text || '').trim();
+    if (!text) return;
+
+    // Check if this is a callback (callback_data trigger from button press)
+    if (msg.body?.callback_data) {
+      return handleCallback(userId, msg.body.callback_data);
+    }
+
+    // Regular text message
+    const session = getSession(userId);
+    const label = senderLabel(msg.sender);
+
+    // ---- Booking flow: waiting for name ----
+    if (session.booking && session.booking.step === 'name') {
+      session.booking.name = text;
+      session.booking.step = 'phone';
+      await sendToMax(userId, '📞 Ваш номер телефона?');
+      return;
+    }
+
+    // ---- Booking flow: waiting for phone ----
+    if (session.booking && session.booking.step === 'phone') {
+      session.booking.phone = text;
+      await notifyTgAdmin(
+        `📱 <b>Новая заявка на просмотр (MAX)</b>\n\n` +
+        `👤 Имя: ${session.booking.name}\n` +
+        `📞 Телефон: ${session.booking.phone}\n` +
+        `👤 MAX: ${label} [MAX_ID: ${userId}]\n` +
+        `📅 Дата: ${timestamp()}\n` +
+        `📍 Источник: MAX мессенджер`,
+      );
+      await sendToMax(userId, '✅ Заявка принята! Менеджер свяжется с вами в ближайшее время.\n📞 Наш телефон: +7 (985) 905-25-55', mainMenuKeyboard());
+      clearSession(userId);
+      return;
+    }
+
+    // ---- Write question mode ----
+    if (session.mode === 'write_question') {
+      await notifyTgAdmin(
+        `❓ <b>Вопрос от клиента (MAX)</b>\n\n` +
+        `👤 ${label} [MAX_ID: ${userId}]\n` +
+        `📅 ${timestamp()}\n\n` +
+        `💬 ${text}`,
+      );
+      await sendToMax(userId, '✅ Спасибо! Ваш вопрос передан менеджеру. Ответим в ближайшее время.');
+      clearSession(userId);
+      return;
+    }
+
+    // ---- Unrecognized text: forward to admin ----
+    await notifyTgAdmin(
+      `💬 <b>Сообщение от клиента (MAX)</b>\n\n` +
+      `👤 ${label} [MAX_ID: ${userId}]\n` +
+      `📅 ${timestamp()}\n\n` +
+      `📝 ${text}`,
+    );
+    await sendToMax(userId, 'Спасибо за сообщение! Я передал его менеджеру. А пока могу помочь с частыми вопросами:', mainMenuKeyboard());
+  }
+}
+
+// ---- Callback handler (button presses) ----
+async function handleCallback(userId, data) {
+  const session = getSession(userId);
+
+  // ---- Main menu ----
+  if (data === 'menu') {
+    clearSession(userId);
+    await sendToMax(userId, '👋 Добрый день! Я — ассистент ЗемПлюс.\nПомогу подобрать земельный участок в Подмосковье.\n\nВыберите интересующий раздел:', mainMenuKeyboard());
+    return;
+  }
+
+  // ==== SELECT PLOT FUNNEL ====
+  if (data === 'select_plot') {
+    session.funnel = { step: 'direction' };
+    await sendToMax(userId, '🚗 Какое направление вас интересует?', {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: 'Каширское шоссе', callback_data: 'dir_kashir' },
+          { text: 'Симферопольское шоссе', callback_data: 'dir_simfer' },
+        ],
+        [
+          { text: 'Дмитровское шоссе', callback_data: 'dir_dmitrov' },
+          { text: 'Новорижское шоссе', callback_data: 'dir_novorig' },
+        ],
+        [
+          { text: 'Любое направление', callback_data: 'dir_any' },
+        ],
+      ],
+    });
+    return;
+  }
+
+  // ---- Direction selected ----
+  if (data.startsWith('dir_')) {
+    const dirMap = {
+      dir_kashir: 'Каширское шоссе',
+      dir_simfer: 'Симферопольское шоссе',
+      dir_dmitrov: 'Дмитровское шоссе',
+      dir_novorig: 'Новорижское шоссе',
+      dir_any: 'any',
+    };
+    session.funnel = session.funnel || {};
+    session.funnel.direction = dirMap[data] || 'any';
+    session.funnel.step = 'budget';
+    await sendToMax(userId, '💵 Какой бюджет за сотку?', {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: 'до 300 000 ₽', callback_data: 'price_300' },
+          { text: '300–500 000 ₽', callback_data: 'price_500' },
+        ],
+        [
+          { text: '500 000 – 1 млн ₽', callback_data: 'price_1m' },
+          { text: 'от 1 млн ₽', callback_data: 'price_1m_plus' },
+        ],
+      ],
+    });
+    return;
+  }
+
+  // ---- Budget selected ----
+  if (data.startsWith('price_')) {
+    const budgetMap = {
+      price_300: { min: 0, max: 300000 },
+      price_500: { min: 300000, max: 500000 },
+      price_1m: { min: 500000, max: 1000000 },
+      price_1m_plus: { min: 1000000, max: Infinity },
+    };
+    session.funnel = session.funnel || {};
+    session.funnel.budget = budgetMap[data] || { min: 0, max: Infinity };
+    session.funnel.step = 'area';
+    await sendToMax(userId, '📐 Какая площадь участка?', {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '6–8 соток', callback_data: 'area_6_8' },
+          { text: '8–12 соток', callback_data: 'area_8_12' },
+        ],
+        [
+          { text: '12–20 соток', callback_data: 'area_12_20' },
+          { text: 'от 20 соток', callback_data: 'area_20_plus' },
+        ],
+      ],
+    });
+    return;
+  }
+
+  // ---- Area selected — show results ----
+  if (data.startsWith('area_')) {
+    const areaMap = {
+      area_6_8: { min: 6, max: 8 },
+      area_8_12: { min: 8, max: 12 },
+      area_12_20: { min: 12, max: 20 },
+      area_20_plus: { min: 20, max: 100 },
+    };
+    const area = areaMap[data] || { min: 6, max: 100 };
+    session.funnel = session.funnel || {};
+    const { direction, budget } = session.funnel;
+    const budgetRange = budget || { min: 0, max: Infinity };
+
+    let results = villages.filter((v) => {
+      if (direction && direction !== 'any' && v.direction !== direction) return false;
+      if (v.priceFrom > budgetRange.max) return false;
+      if (budgetRange.min > 0 && v.priceFrom < budgetRange.min * 0.5) return false;
+      if (v.areaTo < area.min) return false;
+      if (v.areaFrom > area.max) return false;
+      return true;
+    });
+
+    if (results.length === 0) {
+      results = villages.filter((v) => {
+        if (direction && direction !== 'any' && v.direction !== direction) return false;
+        return true;
+      });
+    }
+
+    results = results.slice(0, 3);
+
+    if (results.length === 0) {
+      await sendToMax(userId, 'К сожалению, точных совпадений не найдено. Наш менеджер поможет подобрать подходящий вариант!\n\n📞 Записаться на бесплатный просмотр?', {
+        type: 'inline_keyboard',
+        buttons: [
+          [
+            { text: '✅ Да', callback_data: 'book_yes' },
+            { text: '◀️ В меню', callback_data: 'menu' },
+          ],
+        ],
+      });
+      return;
+    }
+
+    let text = '🏠 Подходящие посёлки:\n\n';
+    results.forEach((v, i) => {
+      text += `${i + 1}. ${v.name}\n`;
+      text += `   🚗 ${v.direction}, ${v.distance} км от МКАД\n`;
+      text += `   💰 от ${formatPrice(v.priceFrom)} ₽/сотка\n`;
+      text += `   📐 ${v.areaFrom}–${v.areaTo} соток\n\n`;
+    });
+    text += `📞 Записаться на бесплатный просмотр?`;
+
+    await sendToMax(userId, text, {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '✅ Да', callback_data: 'book_yes' },
+          { text: '◀️ В меню', callback_data: 'menu' },
+        ],
+      ],
+    });
+    return;
+  }
+
+  // ==== BOOKING FLOW ====
+  if (data === 'book_yes' || data === 'book_viewing') {
+    session.booking = { step: 'name' };
+    session.funnel = null;
+    await sendToMax(userId, '📝 Как вас зовут?');
+    return;
+  }
+
+  // ==== PRICES ====
+  if (data === 'prices') {
+    clearSession(userId);
+    const text =
+      '💰 Цены на участки ЗемПлюс\n\n' +
+      '📊 Стоимость за сотку:\n' +
+      '• Каширское шоссе — от 180 000 ₽\n' +
+      '• Симферопольское шоссе — от 190 000 ₽\n' +
+      '• Дмитровское шоссе — от 250 000 ₽\n' +
+      '• Новорижское шоссе — от 350 000 ₽\n\n' +
+      '💳 Рассрочка:\n' +
+      '• До 12 месяцев без переплат\n' +
+      '• Первый взнос от 50 000 ₽\n' +
+      '• Без справок и одобрений\n\n' +
+      '🏢 Ипотека от 6.5% — нажмите кнопку ниже';
+    await sendToMax(userId, text, {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '🏢 Подробнее об ипотеке', callback_data: 'mortgage' },
+          { text: '🏠 Подобрать участок', callback_data: 'select_plot' },
+        ],
+        [{ text: '◀️ Главное меню', callback_data: 'menu' }],
+      ],
+    });
+    return;
+  }
+
+  // ==== VILLAGES ====
+  if (data === 'villages') {
+    clearSession(userId);
+    const text =
+      '📍 Наши посёлки в Подмосковье\n\n' +
+      'Мы работаем в 4 направлениях:\n\n' +
+      '🚗 Каширское шоссе (30-50 км от МКАД)\n' +
+      'Фаворит, Лесной Остров, Новое Сонино, Дачная Практика-2 и др.\n\n' +
+      '🚗 Симферопольское шоссе (35-60 км)\n' +
+      'Регата, Есенино, Ильинское и др.\n\n' +
+      '🚗 Дмитровское шоссе (40-55 км)\n' +
+      'Каретный Ряд, Триумфальный и др.\n\n' +
+      '🚗 Новорижское шоссе (45-70 км)\n' +
+      'Премиальные посёлки с лесом\n\n' +
+      'Всего 31 посёлок, 2800+ участков';
+    await sendToMax(userId, text, {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '🏠 Подобрать участок', callback_data: 'select_plot' },
+          { text: '📞 Записаться на просмотр', callback_data: 'book_viewing' },
+        ],
+        [{ text: '◀️ Главное меню', callback_data: 'menu' }],
+      ],
+    });
+    return;
+  }
+
+  // ==== MORTGAGE ====
+  if (data === 'mortgage') {
+    clearSession(userId);
+    const text =
+      '🏢 Ипотека на земельный участок\n\n' +
+      'Работаем с 6 ведущими банками:\n\n' +
+      '• ВТБ — от 6.5%\n' +
+      '• Сбер — от 7.0%\n' +
+      '• Альфа-Банк — от 6.9%\n' +
+      '• Газпромбанк — от 7.2%\n' +
+      '• Россельхозбанк — от 6.8%\n' +
+      '• Т-Банк — от 7.5%\n\n' +
+      '📋 Что нужно:\n' +
+      '• Паспорт РФ\n' +
+      '• Справка о доходах (или по форме банка)\n' +
+      '• Первый взнос от 15%\n\n' +
+      '⏱️ Одобрение за 1-3 дня';
+    await sendToMax(userId, text, {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '💰 Рассчитать платёж', callback_data: 'prices' },
+          { text: '📞 Консультация по ипотеке', callback_data: 'book_viewing' },
+        ],
+        [{ text: '◀️ Главное меню', callback_data: 'menu' }],
+      ],
+    });
+    return;
+  }
+
+  // ==== HOW TO BUY ====
+  if (data === 'how_to_buy') {
+    clearSession(userId);
+    const text =
+      '📋 6 шагов до вашего участка\n\n' +
+      '1️⃣ Звонок или заявка (5 мин)\n' +
+      'Оставьте заявку — мы подберём варианты\n\n' +
+      '2️⃣ Бесплатный просмотр (1-2 часа)\n' +
+      'Покажем посёлки, инфраструктуру, участки\n\n' +
+      '3️⃣ Выбор участка\n' +
+      'Поможем выбрать лучший по расположению и цене\n\n' +
+      '4️⃣ Бронирование (1 день)\n' +
+      'Фиксируем цену, вносим минимальный залог\n\n' +
+      '5️⃣ Оформление документов (5-7 дней)\n' +
+      'Договор, проверка юр. чистоты, регистрация\n\n' +
+      '6️⃣ Получение документов\n' +
+      'Выписка из ЕГРН — участок ваш!\n\n' +
+      '⚖️ 100% юридическая чистота гарантирована по договору';
+    await sendToMax(userId, text, {
+      type: 'inline_keyboard',
+      buttons: [
+        [
+          { text: '📞 Записаться на просмотр', callback_data: 'book_viewing' },
+          { text: '🏠 Подобрать участок', callback_data: 'select_plot' },
+        ],
+        [{ text: '◀️ Главное меню', callback_data: 'menu' }],
+      ],
+    });
+    return;
+  }
+
+  // ==== FAQ ====
+  if (data === 'faq') {
+    clearSession(userId);
+    await sendToMax(userId, '❓ Частые вопросы\n\nВыберите интересующий вопрос:', {
+      type: 'inline_keyboard',
+      buttons: [
+        [{ text: 'Какая категория земли?', callback_data: 'faq_category' }],
+        [{ text: 'Можно ли прописаться?', callback_data: 'faq_propiska' }],
+        [{ text: 'Есть ли коммуникации?', callback_data: 'faq_comm' }],
+        [{ text: 'Какие документы нужны?', callback_data: 'faq_docs' }],
+        [{ text: 'Есть ли рассрочка?', callback_data: 'faq_rassrochka' }],
+        [{ text: '◀️ Главное меню', callback_data: 'menu' }],
+      ],
+    });
+    return;
+  }
+
+  // FAQ answers
+  if (data === 'faq_category') {
+    await sendToMax(userId, '📋 Все участки — ИЖС (индивидуальное жилищное строительство) или СНТ (садоводческое некоммерческое товарищество).\n\nЭто позволяет строить дома, коттеджи, хозпостройки.\n\n✅ Все участки чистые, без обременений.');
+    return;
+  }
+  if (data === 'faq_propiska') {
+    await sendToMax(userId, '✅ Да! Прописаться можно на участке ИЖС (если это основное место жительства).\n\nДля СНТ нужно проверить устав товарищества — обычно прописка недопустима.');
+    return;
+  }
+  if (data === 'faq_comm') {
+    await sendToMax(userId, '🔌 В большинстве посёлков есть:\n• Центральное водоснабжение или скважины\n• Электричество (380В)\n• Газ (магистральный или баллонный)\n• Асфальтированные дороги\n\nПроверяем наличие коммуникаций для каждого участка.');
+    return;
+  }
+  if (data === 'faq_docs') {
+    await sendToMax(userId, '📄 Для покупки нужны:\n• Паспорт РФ\n• Для физлиц — ИНН (опционально)\n• Для бизнеса — учредительные документы\n\nОстальные документы подготавливаются при оформлении. Мы помогаем со всем процессом.');
+    return;
+  }
+  if (data === 'faq_rassrochka') {
+    await sendToMax(userId, '💳 Да! Предлагаем:\n• Рассрочку до 12 месяцев без переплат\n• Первый взнос от 50 000 ₽\n• Ипотеку от 6 ведущих банков (от 6.5%)\n\nПодробнее — нажмите кнопку "Цены и рассрочка" в меню.');
+    return;
+  }
+
+  // ==== Write question ====
+  if (data === 'write_question') {
+    clearSession(userId);
+    session.mode = 'write_question';
+    await sendToMax(userId, '✏️ Напишите ваш вопрос — я передам его менеджеру:');
+    return;
+  }
+}
+
+// ---- Long polling ----
 let marker = null;
 
 async function poll() {
