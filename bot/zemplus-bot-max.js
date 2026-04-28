@@ -150,13 +150,37 @@ async function maxPost(p, body) {
   return res.json();
 }
 
+// Why: MAX API требует buttons обёрнуты в `payload`, и каждая callback-кнопка
+// имеет {type:'callback', text, payload:'data'} вместо {text, callback_data:'data'}.
+// Преобразуем «удобный» внутренний формат в API-формат на лету.
+function normalizeKeyboard(kb) {
+  if (!kb || kb.type !== 'inline_keyboard') return kb;
+  // Уже в новом формате (есть payload-обёртка) — не трогаем
+  if (kb.payload && Array.isArray(kb.payload.buttons)) return kb;
+  // Старый формат с buttons на верхнем уровне — нормализуем
+  const buttons = (kb.buttons || []).map(row =>
+    row.map(btn => {
+      if (btn.url) {
+        return { type: 'link', text: btn.text, url: btn.url };
+      }
+      // По умолчанию callback
+      return {
+        type: 'callback',
+        text: btn.text,
+        payload: btn.callback_data || btn.payload || '',
+      };
+    }),
+  );
+  return { type: 'inline_keyboard', payload: { buttons } };
+}
+
 function sendToMax(userId, text, keyboard = null) {
   // Why: MAX API ждёт user_id в query string, не в body recipient.
   // Старый формат `recipient: {user_id}` возвращал HTTP 400 / "Unknown recipient".
   // См. https://dev.max.ru/docs-api/methods/POST/messages
   const payload = { text, notify: true };
   if (keyboard) {
-    payload.attachments = [keyboard];
+    payload.attachments = [normalizeKeyboard(keyboard)];
   }
   return maxPost(`/messages?user_id=${encodeURIComponent(userId)}`, payload);
 }
@@ -210,6 +234,20 @@ function notifyTgAdmin(text) {
 
 // ---- Update handler ----
 async function handleUpdate(update) {
+  // message_callback — нажатие inline-кнопки. Юзер сидит в update.callback.user.user_id,
+  // нажатые данные — в update.callback.payload (это то что мы клали в кнопку).
+  if (update.update_type === 'message_callback') {
+    const cb = update.callback;
+    if (!cb || !cb.user) return;
+    const userId = cb.user.user_id;
+    if (botUserId != null && userId === botUserId) return;
+    if (cb.user.is_bot === true) return;
+    if (rateLimited(userId)) return;
+    const data = cb.payload || '';
+    if (!data) return;
+    return handleCallback(userId, data);
+  }
+
   if (update.update_type !== 'message_created') return;
 
   const msg = update.message;
@@ -641,8 +679,9 @@ async function poll() {
   while (true) {
     try {
       const p = marker
-        ? `/updates?timeout=25&marker=${marker}`
-        : '/updates?timeout=25';
+        // types= нужен чтобы получать ОБА типа: message_created и message_callback (нажатия кнопок)
+        ? `/updates?timeout=25&marker=${marker}&types=message_created,message_callback`
+        : '/updates?timeout=25&types=message_created,message_callback';
       const data = await maxGet(p);
       for (const update of data.updates || []) {
         try {
