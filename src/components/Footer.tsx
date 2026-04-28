@@ -106,6 +106,10 @@ export default function Footer() {
               Политика конфиденциальности
             </Link>
             <span className="text-gray-700">·</span>
+            <Link href="/oferta" className="hover:text-white transition-colors">
+              Оферта на бронирование
+            </Link>
+            <span className="text-gray-700">·</span>
             <Link href="/contacts" className="hover:text-white transition-colors">
               Контакты и реквизиты
             </Link>

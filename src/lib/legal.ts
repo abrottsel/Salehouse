@@ -23,4 +23,6 @@ export const LEGAL = {
   // Даты документов
   privacyUpdatedAt: "2026-04-18",
   policyVersion: "1.0",
+  ofertaUpdatedAt: "2026-04-29",
+  ofertaVersion: "1.0",
 } as const;
