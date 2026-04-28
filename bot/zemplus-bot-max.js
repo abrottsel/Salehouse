@@ -1,15 +1,60 @@
 'use strict';
 
+/*
+ * ZemPlus MAX bot — переписан 2026-04-28 после spam-инцидента.
+ *
+ * Why these fixes (по пунктам):
+ *
+ * 1. Динамическое определение BOT_USER_ID через GET /me на старте.
+ *    Старый код хардкодил 262876217, реальный id бота — 276091335. Из-за этого
+ *    проверка `userId === BOT_USER_ID` никогда не срабатывала, бот реагировал
+ *    на собственные исходящие сообщения, эхо-петля росла каждый цикл, каждое
+ *    "новое" сообщение форвардилось в TG-чат админа → сотни уведомлений в минуту.
+ *    Теперь bootstrap-вызов /me; если он падает — exit(1), без узнанного id
+ *    стартовать нельзя.
+ *
+ * 2. Persist marker на диск (bot/.max-marker).
+ *    Без этого после рестарта бот переигрывает всю очередь обновлений MAX
+ *    (включая собственные эхо-сообщения) и петля воскресает. Записываем
+ *    атомарно через tmp+rename, читаем при старте.
+ *
+ * 3. Handler на /start и /menu как отдельный кейс.
+ *    Раньше команда падала в catch-all и форвардилась админу — теперь
+ *    показывает главное меню как обычный 'menu' callback.
+ *
+ * 4. УБРАН catch-all forward в TG для нераспознанного текста.
+ *    Это был основной источник спама: любая строка вне известных режимов
+ *    шла админу. Теперь нераспознанный текст → ответ "не понял, выберите
+ *    из меню" + клавиатура. Форвард в TG остаётся только для booking-flow
+ *    (контактные данные) и режима write_question.
+ *
+ * 5. Дополнительная echo-loop защита: msg.sender?.is_bot.
+ *    Пояс + подтяжки. Если MAX в payload передаёт is_bot: true — игнорим
+ *    сразу, даже если по какой-то причине user_id совпадение не отработало.
+ *
+ * 6. Rate limiter per-user (Map<userId, timestamps[]>).
+ *    Если от одного пользователя >5 событий за 10 секунд — игнорим
+ *    остальное окно. Safety net: если что-то ещё пойдёт не так и петля
+ *    каким-то путём начнётся — она не сможет разрастись.
+ */
+
+const fs = require('fs');
+const path = require('path');
+
 const MAX_TOKEN = process.env.MAX_BOT_TOKEN;
 const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TG_CHAT_ID;
 
 const MAX_API = 'https://platform-api.max.ru';
-const BOT_USER_ID = 262876217;
 const SITE_URL = process.env.SITE_URL || 'http://147.45.68.37';
+
+const MARKER_PATH = path.join(__dirname, '.max-marker');
 
 if (!MAX_TOKEN) { console.error('MAX_BOT_TOKEN is not set'); process.exit(1); }
 if (!TG_BOT_TOKEN || !ADMIN_CHAT_ID) { console.error('TG_BOT_TOKEN / TG_CHAT_ID not set'); process.exit(1); }
+
+// Bot user id — определяется при старте через /me, до этого null.
+let botUserId = null;
 
 // ---- Village data ----
 const villages = [
@@ -37,22 +82,71 @@ function clearSession(userId) {
   sessions.set(userId, {});
 }
 
+// ---- Rate limiter (fix #6) ----
+const rateBuckets = new Map(); // userId -> number[] (timestamps ms)
+const RATE_WINDOW_MS = 10_000;
+const RATE_MAX = 5;
+
+function rateLimited(userId) {
+  const now = Date.now();
+  const arr = rateBuckets.get(userId) || [];
+  // drop old
+  const fresh = arr.filter(t => now - t < RATE_WINDOW_MS);
+  fresh.push(now);
+  rateBuckets.set(userId, fresh);
+  if (fresh.length > RATE_MAX) {
+    console.warn(`[rate-limit] user ${userId}: ${fresh.length} events in ${RATE_WINDOW_MS}ms — dropping`);
+    return true;
+  }
+  return false;
+}
+
+// ---- Marker persistence (fix #2) ----
+function loadMarker() {
+  try {
+    if (fs.existsSync(MARKER_PATH)) {
+      const raw = fs.readFileSync(MARKER_PATH, 'utf8').trim();
+      if (raw) {
+        const n = Number(raw);
+        if (Number.isFinite(n)) {
+          console.log(`[marker] loaded from disk: ${n}`);
+          return n;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[marker] load error:', e.message);
+  }
+  return null;
+}
+
+function saveMarker(value) {
+  if (value == null) return;
+  try {
+    const tmp = MARKER_PATH + '.tmp';
+    fs.writeFileSync(tmp, String(value));
+    fs.renameSync(tmp, MARKER_PATH);
+  } catch (e) {
+    console.error('[marker] save error:', e.message);
+  }
+}
+
 // ---- MAX API ----
-async function maxGet(path) {
-  const res = await fetch(`${MAX_API}${path}`, {
+async function maxGet(p) {
+  const res = await fetch(`${MAX_API}${p}`, {
     headers: { Authorization: MAX_TOKEN },
   });
-  if (!res.ok) throw new Error(`MAX GET ${path}: HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`MAX GET ${p}: HTTP ${res.status}`);
   return res.json();
 }
 
-async function maxPost(path, body) {
-  const res = await fetch(`${MAX_API}${path}`, {
+async function maxPost(p, body) {
+  const res = await fetch(`${MAX_API}${p}`, {
     method: 'POST',
     headers: { Authorization: MAX_TOKEN, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`MAX POST ${path}: HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`MAX POST ${p}: HTTP ${res.status}`);
   return res.json();
 }
 
@@ -113,71 +207,82 @@ function notifyTgAdmin(text) {
 
 // ---- Update handler ----
 async function handleUpdate(update) {
-  if (update.update_type === 'message_created') {
-    const msg = update.message;
-    if (!msg || !msg.sender) return;
+  if (update.update_type !== 'message_created') return;
 
-    const userId = msg.sender.user_id;
-    if (userId === BOT_USER_ID) return;
+  const msg = update.message;
+  if (!msg || !msg.sender) return;
 
-    const text = (msg.body?.text || '').trim();
-    if (!text) return;
+  const userId = msg.sender.user_id;
 
-    // Check if this is a callback (callback_data trigger from button press)
-    if (msg.body?.callback_data) {
-      return handleCallback(userId, msg.body.callback_data);
-    }
+  // fix #1 + #5: never react to our own messages or any bot
+  if (botUserId != null && userId === botUserId) return;
+  if (msg.sender.is_bot === true) return;
 
-    // Regular text message
-    const session = getSession(userId);
-    const label = senderLabel(msg.sender);
+  // fix #6: rate limit per user
+  if (rateLimited(userId)) return;
 
-    // ---- Booking flow: waiting for name ----
-    if (session.booking && session.booking.step === 'name') {
-      session.booking.name = text;
-      session.booking.step = 'phone';
-      await sendToMax(userId, '📞 Ваш номер телефона?');
-      return;
-    }
+  const text = (msg.body?.text || '').trim();
 
-    // ---- Booking flow: waiting for phone ----
-    if (session.booking && session.booking.step === 'phone') {
-      session.booking.phone = text;
-      await notifyTgAdmin(
-        `📱 <b>Новая заявка на просмотр (MAX)</b>\n\n` +
-        `👤 Имя: ${session.booking.name}\n` +
-        `📞 Телефон: ${session.booking.phone}\n` +
-        `👤 MAX: ${label} [MAX_ID: ${userId}]\n` +
-        `📅 Дата: ${timestamp()}\n` +
-        `📍 Источник: MAX мессенджер`,
-      );
-      await sendToMax(userId, '✅ Заявка принята! Менеджер свяжется с вами в ближайшее время.\n📞 Наш телефон: +7 (985) 905-25-55', mainMenuKeyboard());
-      clearSession(userId);
-      return;
-    }
+  // Check if this is a callback (callback_data trigger from button press)
+  if (msg.body?.callback_data) {
+    return handleCallback(userId, msg.body.callback_data);
+  }
 
-    // ---- Write question mode ----
-    if (session.mode === 'write_question') {
-      await notifyTgAdmin(
-        `❓ <b>Вопрос от клиента (MAX)</b>\n\n` +
-        `👤 ${label} [MAX_ID: ${userId}]\n` +
-        `📅 ${timestamp()}\n\n` +
-        `💬 ${text}`,
-      );
-      await sendToMax(userId, '✅ Спасибо! Ваш вопрос передан менеджеру. Ответим в ближайшее время.');
-      clearSession(userId);
-      return;
-    }
+  if (!text) return;
 
-    // ---- Unrecognized text: forward to admin ----
+  // fix #3: /start, /menu commands → main menu (не падают в catch-all)
+  const lower = text.toLowerCase();
+  if (lower === '/start' || lower === '/menu' || lower === 'start' || lower === 'menu') {
+    return handleCallback(userId, 'menu');
+  }
+
+  // Regular text message
+  const session = getSession(userId);
+  const label = senderLabel(msg.sender);
+
+  // ---- Booking flow: waiting for name ----
+  if (session.booking && session.booking.step === 'name') {
+    session.booking.name = text;
+    session.booking.step = 'phone';
+    await sendToMax(userId, '📞 Ваш номер телефона?');
+    return;
+  }
+
+  // ---- Booking flow: waiting for phone ----
+  if (session.booking && session.booking.step === 'phone') {
+    session.booking.phone = text;
     await notifyTgAdmin(
-      `💬 <b>Сообщение от клиента (MAX)</b>\n\n` +
+      `📱 <b>Новая заявка на просмотр (MAX)</b>\n\n` +
+      `👤 Имя: ${session.booking.name}\n` +
+      `📞 Телефон: ${session.booking.phone}\n` +
+      `👤 MAX: ${label} [MAX_ID: ${userId}]\n` +
+      `📅 Дата: ${timestamp()}\n` +
+      `📍 Источник: MAX мессенджер`,
+    );
+    await sendToMax(userId, '✅ Заявка принята! Менеджер свяжется с вами в ближайшее время.\n📞 Наш телефон: +7 (985) 905-25-55', mainMenuKeyboard());
+    clearSession(userId);
+    return;
+  }
+
+  // ---- Write question mode ----
+  if (session.mode === 'write_question') {
+    await notifyTgAdmin(
+      `❓ <b>Вопрос от клиента (MAX)</b>\n\n` +
       `👤 ${label} [MAX_ID: ${userId}]\n` +
       `📅 ${timestamp()}\n\n` +
-      `📝 ${text}`,
+      `💬 ${text}`,
     );
-    await sendToMax(userId, 'Спасибо за сообщение! Я передал его менеджеру. А пока могу помочь с частыми вопросами:', mainMenuKeyboard());
+    await sendToMax(userId, '✅ Спасибо! Ваш вопрос передан менеджеру. Ответим в ближайшее время.', mainMenuKeyboard());
+    clearSession(userId);
+    return;
   }
+
+  // ---- Unrecognized text (fix #4): NO forward to TG, only reply with menu ----
+  await sendToMax(
+    userId,
+    'Не понял сообщение 🤔 Выберите интересующий пункт из меню:',
+    mainMenuKeyboard(),
+  );
 }
 
 // ---- Callback handler (button presses) ----
@@ -509,18 +614,44 @@ async function handleCallback(userId, data) {
 // ---- Long polling ----
 let marker = null;
 
+async function bootstrap() {
+  // fix #1: resolve our own user_id from /me
+  try {
+    const me = await maxGet('/me');
+    if (!me || typeof me.user_id !== 'number') {
+      throw new Error(`/me returned no user_id: ${JSON.stringify(me)}`);
+    }
+    botUserId = me.user_id;
+    console.log(`[bootstrap] bot user_id = ${botUserId}, name = ${me.name || me.first_name || '?'}`);
+  } catch (err) {
+    console.error('[bootstrap] /me failed:', err.message);
+    process.exit(1);
+  }
+
+  // fix #2: load marker from disk
+  marker = loadMarker();
+}
+
 async function poll() {
+  await bootstrap();
   console.log('MAX bot started, polling...');
   while (true) {
     try {
-      const path = marker
+      const p = marker
         ? `/updates?timeout=25&marker=${marker}`
         : '/updates?timeout=25';
-      const data = await maxGet(path);
+      const data = await maxGet(p);
       for (const update of data.updates || []) {
-        await handleUpdate(update);
+        try {
+          await handleUpdate(update);
+        } catch (innerErr) {
+          console.error('handleUpdate error:', innerErr.message);
+        }
       }
-      if (data.marker != null) marker = data.marker;
+      if (data.marker != null) {
+        marker = data.marker;
+        saveMarker(marker); // fix #2: persist after each successful poll
+      }
     } catch (err) {
       console.error('MAX poll error:', err.message);
       await new Promise(r => setTimeout(r, 5000));
