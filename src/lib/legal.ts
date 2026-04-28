@@ -21,8 +21,8 @@ export const LEGAL = {
   telegram: "https://t.me/zemplus",
   max: "https://max.ru/id503440358928_bot",
   // Даты документов
-  privacyUpdatedAt: "2026-04-18",
-  policyVersion: "1.0",
+  privacyUpdatedAt: "2026-04-30",
+  policyVersion: "1.1",
   ofertaUpdatedAt: "2026-04-29",
   ofertaVersion: "1.0",
 } as const;
