@@ -113,6 +113,9 @@ export default function Footer() {
           <div className="text-gray-600 leading-relaxed">
             {LEGAL.shortName} · ИНН {LEGAL.inn} · ОГРНИП {LEGAL.ogrn}
           </div>
+          <div className="text-gray-500 leading-relaxed max-w-3xl mx-auto px-4">
+            Сайт носит информационный характер и не является публичной офертой; окончательные условия — в договоре.
+          </div>
           <div>
             &copy; {new Date().getFullYear()} {LEGAL.brand}. Все права защищены.
           </div>

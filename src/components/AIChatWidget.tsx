@@ -417,7 +417,15 @@ export default function AIChatWidget() {
                 )}
               </button>
               <p className="text-[10px] text-gray-400 text-center">
-                Нажимая кнопку, вы соглашаетесь с политикой обработки данных
+                Нажимая кнопку, вы соглашаетесь с{" "}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 underline"
+                >
+                  политикой обработки персональных данных
+                </a>
               </p>
             </form>
           )}

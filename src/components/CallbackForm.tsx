@@ -119,7 +119,7 @@ export default function CallbackForm({
         </button>
       </div>
 
-      {!compact && (
+      {!compact ? (
         <label className="mt-3 flex items-start gap-2 text-[11px] text-white/60 cursor-pointer select-none">
           <input
             type="checkbox"
@@ -139,6 +139,18 @@ export default function CallbackForm({
             </a>
           </span>
         </label>
+      ) : (
+        <p className="mt-2 text-[10px] text-gray-500 leading-snug">
+          Нажимая кнопку, вы соглашаетесь с{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-600 hover:text-emerald-700 underline"
+          >
+            политикой обработки персональных данных
+          </a>
+        </p>
       )}
 
       {error && (

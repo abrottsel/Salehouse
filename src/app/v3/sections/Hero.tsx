@@ -79,26 +79,38 @@ export default function Hero() {
               <span>Заявка принята — перезвоним в течение 15 минут</span>
             </div>
           ) : (
-            <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3 max-w-xl">
-              <div className="flex-1 min-w-0">
-                <PhoneInput value={phone} onChange={setPhone} required />
-              </div>
-              <button
-                type="submit"
-                disabled={!valid || status === "loading"}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98] text-white font-bold shadow-[0_10px_40px_-10px_rgba(16,185,129,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base whitespace-nowrap"
-              >
-                {status === "loading" ? (
-                  "Отправка..."
-                ) : (
-                  <>
-                    <PhoneCall className="w-5 h-5" />
-                    Подобрать за 15 минут
-                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </button>
-            </form>
+            <div className="max-w-xl">
+              <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 min-w-0">
+                  <PhoneInput value={phone} onChange={setPhone} required />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!valid || status === "loading"}
+                  className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98] text-white font-bold shadow-[0_10px_40px_-10px_rgba(16,185,129,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-base whitespace-nowrap"
+                >
+                  {status === "loading" ? (
+                    "Отправка..."
+                  ) : (
+                    <>
+                      <PhoneCall className="w-5 h-5" />
+                      Подобрать за 15 минут
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              </form>
+              <p className="mt-3 text-[11px] text-white/50 leading-snug">
+                Нажимая кнопку, вы соглашаетесь с{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-emerald-300 hover:text-emerald-200 underline"
+                >
+                  политикой обработки персональных данных
+                </Link>
+              </p>
+            </div>
           )}
 
           {/* Trust row under CTA */}
