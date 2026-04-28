@@ -69,13 +69,28 @@ function notifyAdmin(text) {
   }
 }
 
-function sendMaxMessage(userId, text) {
-  if (!MAX_BOT_TOKEN) return Promise.resolve();
-  return fetch('https://platform-api.max.ru/messages', {
-    method: 'POST',
-    headers: { Authorization: MAX_BOT_TOKEN, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recipient: { user_id: userId }, text }),
-  }).catch(err => console.error('MAX send error:', err.message));
+// Why: MAX API ждёт user_id в query string, body содержит только {text, notify}.
+// Старый формат `{recipient: {user_id}, text}` возвращает HTTP 400 / "Unknown recipient",
+// fetch не считает HTTP 400 за ошибку — поэтому ответ админа в TG молча терялся.
+async function sendMaxMessage(userId, text) {
+  if (!MAX_BOT_TOKEN) return { ok: false, error: 'MAX_BOT_TOKEN not set' };
+  try {
+    const res = await fetch(
+      `https://platform-api.max.ru/messages?user_id=${encodeURIComponent(userId)}`,
+      {
+        method: 'POST',
+        headers: { Authorization: MAX_BOT_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, notify: true }),
+      },
+    );
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return { ok: false, error: `HTTP ${res.status} ${body.slice(0, 200)}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 }
 
 function formatPrice(n) {
@@ -695,8 +710,12 @@ bot.on('message', (msg) => {
     const maxUserId = Number(maxIdMatch[1]);
     sendMaxMessage(maxUserId,
       `💬 Ответ менеджера:\n\n${replyText}\n\n📞 Вопросы? Напишите здесь или позвоните: +7 (985) 905-25-55`,
-    ).then(() => {
-      bot.sendMessage(ADMIN_CHAT_ID, `✅ Ответ отправлен в МАКС (MAX_ID: ${maxUserId})`, { parse_mode: 'HTML' }).catch(() => {});
+    ).then((result) => {
+      if (result.ok) {
+        bot.sendMessage(ADMIN_CHAT_ID, `✅ Ответ отправлен в МАКС (MAX_ID: ${maxUserId})`, { parse_mode: 'HTML' }).catch(() => {});
+      } else {
+        bot.sendMessage(ADMIN_CHAT_ID, `❌ Не удалось отправить в МАКС (MAX_ID: ${maxUserId}): ${result.error}`, { parse_mode: 'HTML' }).catch(() => {});
+      }
     });
     return;
   }
