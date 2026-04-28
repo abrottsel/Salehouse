@@ -151,11 +151,14 @@ async function maxPost(p, body) {
 }
 
 function sendToMax(userId, text, keyboard = null) {
-  const payload = { recipient: { user_id: userId }, text };
+  // Why: MAX API ждёт user_id в query string, не в body recipient.
+  // Старый формат `recipient: {user_id}` возвращал HTTP 400 / "Unknown recipient".
+  // См. https://dev.max.ru/docs-api/methods/POST/messages
+  const payload = { text, notify: true };
   if (keyboard) {
     payload.attachments = [keyboard];
   }
-  return maxPost('/messages', payload);
+  return maxPost(`/messages?user_id=${encodeURIComponent(userId)}`, payload);
 }
 
 // ---- Inline keyboard builder (MAX format) ----
