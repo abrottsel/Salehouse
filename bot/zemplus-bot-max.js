@@ -645,8 +645,12 @@ async function handleCallback(userId, data) {
 
   // ==== Write question ====
   if (data === 'write_question') {
-    clearSession(userId);
-    session.mode = 'write_question';
+    // Why: clearSession() заменяет объект в Map целиком, но локальная переменная
+    // `session` (из getSession() выше) указывает на ПРЕЖНИЙ объект. Установка
+    // session.mode после clearSession не попадает в Map → следующее сообщение
+    // юзера не видит mode='write_question' и падает в catch-all «Не понял».
+    // Атомарно записываем новый объект сразу с нужным mode.
+    sessions.set(userId, { mode: 'write_question' });
     await sendToMax(userId, '✏️ Напишите ваш вопрос — я передам его менеджеру:');
     return;
   }
