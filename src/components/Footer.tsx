@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, MessageCircle } from "lucide-react";
+import { Phone, Mail, MessageCircle, Copy, Check } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 
 const FOOTER_EMAIL = "info@zem.plus";
@@ -10,8 +10,9 @@ const FOOTER_EMAIL = "info@zem.plus";
 export default function Footer() {
   const [emailCopied, setEmailCopied] = useState(false);
 
-  const handleEmailClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleCopyEmail = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(FOOTER_EMAIL);
@@ -21,7 +22,6 @@ export default function Footer() {
     }
     setEmailCopied(true);
     window.setTimeout(() => setEmailCopied(false), 1500);
-    window.location.href = `mailto:${FOOTER_EMAIL}`;
   };
 
   return (
@@ -90,14 +90,28 @@ export default function Footer() {
                 <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
                 +7 (985) 905-25-55
               </a>
-              <a
-                href={`mailto:${FOOTER_EMAIL}`}
-                onClick={handleEmailClick}
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <Mail className="w-4 h-4 shrink-0 text-red-400" />
-                {emailCopied ? "✓ Скопировано" : FOOTER_EMAIL}
-              </a>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`mailto:${FOOTER_EMAIL}`}
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <Mail className="w-4 h-4 shrink-0 text-red-400" />
+                  {FOOTER_EMAIL}
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
+                  title={emailCopied ? "Скопировано" : "Скопировать"}
+                  className="text-gray-400 hover:text-white transition-colors p-1 -m-1"
+                >
+                  {emailCopied ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
               <a
                 href="https://t.me/zemplus"
                 target="_blank"

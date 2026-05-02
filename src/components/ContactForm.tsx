@@ -10,6 +10,8 @@ import {
   MessageCircle,
   MapPin,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import PhoneInput from "./PhoneInput";
 import CallbackForm from "./CallbackForm";
@@ -92,8 +94,9 @@ export default function ContactForm() {
   const [error, setError] = useState("");
   const [emailCopied, setEmailCopied] = useState(false);
 
-  const handleEmailClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleCopyEmail = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(EMAIL_ADDRESS);
@@ -103,8 +106,6 @@ export default function ContactForm() {
     }
     setEmailCopied(true);
     window.setTimeout(() => setEmailCopied(false), 1500);
-    // still try to open the user's mail client for those that have one
-    window.location.href = `mailto:${EMAIL_ADDRESS}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -181,18 +182,30 @@ export default function ContactForm() {
                   key={title}
                   href={href}
                   {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  {...(email ? { onClick: handleEmailClick } : {})}
                   className="flex items-center gap-3.5 p-3.5 rounded-xl bg-white/5 ring-1 ring-white/10 hover:bg-white/10 transition-all duration-200 group"
                 >
                   <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform">
                     <Icon className="w-4.5 h-4.5 text-white" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-white text-sm truncate">{title}</div>
-                    <div className="text-xs text-white/50">
-                      {email && emailCopied ? "✓ Скопировано" : sub}
-                    </div>
+                    <div className="text-xs text-white/50">{sub}</div>
                   </div>
+                  {email && (
+                    <button
+                      type="button"
+                      onClick={handleCopyEmail}
+                      aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
+                      title={emailCopied ? "Скопировано" : "Скопировать"}
+                      className="ml-auto shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      {emailCopied ? (
+                        <Check className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </a>
               ))}
             </div>
