@@ -32,7 +32,21 @@ const leadTypes: { value: LeadType; label: string }[] = [
   { value: "CALLBACK", label: "Обратный звонок" },
 ];
 
-const contactCards = [
+const EMAIL_ADDRESS = "info@zem.plus";
+
+type ContactCard = {
+  href: string;
+  Icon: typeof Phone;
+  title: string;
+  sub: string;
+  gradient: string;
+  bg: string;
+  ring: string;
+  external?: boolean;
+  email?: boolean;
+};
+
+const contactCards: ContactCard[] = [
   {
     href: "tel:+79859052555",
     Icon: Phone,
@@ -43,13 +57,14 @@ const contactCards = [
     ring: "ring-green-200/60",
   },
   {
-    href: "mailto:info@zem.plus",
+    href: `mailto:${EMAIL_ADDRESS}`,
     Icon: Mail,
-    title: "info@zem.plus",
+    title: EMAIL_ADDRESS,
     sub: "Написать на почту",
     gradient: "from-emerald-500 to-teal-600",
     bg: "bg-emerald-50 hover:bg-emerald-100",
     ring: "ring-emerald-200/60",
+    email: true,
   },
   {
     href: "https://t.me/zemplus_bot",
@@ -75,6 +90,22 @@ export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  const handleEmailClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(EMAIL_ADDRESS);
+      }
+    } catch {
+      // clipboard might be unavailable (insecure context, permissions) — silently ignore
+    }
+    setEmailCopied(true);
+    window.setTimeout(() => setEmailCopied(false), 1500);
+    // still try to open the user's mail client for those that have one
+    window.location.href = `mailto:${EMAIL_ADDRESS}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,11 +176,12 @@ export default function ContactForm() {
 
             {/* Contact cards */}
             <div className="space-y-2.5 mb-5">
-              {contactCards.map(({ href, Icon, title, sub, external }) => (
+              {contactCards.map(({ href, Icon, title, sub, external, email }) => (
                 <a
                   key={title}
                   href={href}
                   {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  {...(email ? { onClick: handleEmailClick } : {})}
                   className="flex items-center gap-3.5 p-3.5 rounded-xl bg-white/5 ring-1 ring-white/10 hover:bg-white/10 transition-all duration-200 group"
                 >
                   <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform">
@@ -157,7 +189,9 @@ export default function ContactForm() {
                   </div>
                   <div className="min-w-0">
                     <div className="font-bold text-white text-sm truncate">{title}</div>
-                    <div className="text-xs text-white/50">{sub}</div>
+                    <div className="text-xs text-white/50">
+                      {email && emailCopied ? "✓ Скопировано" : sub}
+                    </div>
                   </div>
                 </a>
               ))}
