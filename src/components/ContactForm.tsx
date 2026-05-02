@@ -43,9 +43,9 @@ const contactCards = [
     ring: "ring-green-200/60",
   },
   {
-    href: "mailto:info@zem-plus.ru",
+    href: "mailto:info@zem.plus",
     Icon: Mail,
-    title: "info@zem-plus.ru",
+    title: "info@zem.plus",
     sub: "Написать на почту",
     gradient: "from-emerald-500 to-teal-600",
     bg: "bg-emerald-50 hover:bg-emerald-100",

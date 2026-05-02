@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "ZemPlus/1.0 (https://zem-plus.ru)" },
+      headers: { "User-Agent": "ZemPlus/1.0 (https://zem.plus)" },
       signal: AbortSignal.timeout(7000),
       cache: "no-store",
     });

@@ -7,7 +7,7 @@ import { LEGAL } from "@/lib/legal";
 export const metadata: Metadata = {
   title: `Политика конфиденциальности — ${LEGAL.brand}`,
   description:
-    "Политика обработки персональных данных пользователей сайта земплюс.рф в соответствии с 152-ФЗ.",
+    "Политика обработки персональных данных пользователей сайта zem.plus в соответствии с 152-ФЗ.",
   robots: { index: true, follow: true },
 };
 

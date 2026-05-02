@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Продажа земельных участков в Подмосковье. Готовые посёлки с газом, электричеством, асфальтом и охраной. Рассрочка без переплат. Юридическая чистота гарантирована.",
   keywords:
     "земельные участки, подмосковье, купить участок, ИЖС, коттеджный посёлок, участок для строительства дома, ЗемПлюс",
-  metadataBase: new URL("https://xn--e1adndpn4g.xn--p1ai"),
+  metadataBase: new URL("https://zem.plus"),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -49,8 +49,8 @@ export default function RootLayout({
     "@type": "Organization",
     name: "ЗемПлюс",
     legalName: "ИП Бротцель Антон Валерьевич",
-    url: "https://xn--e1adndpn4g.xn--p1ai",
-    logo: "https://xn--e1adndpn4g.xn--p1ai/favicon.svg",
+    url: "https://zem.plus",
+    logo: "https://zem.plus/favicon.svg",
     description:
       "Продажа земельных участков в Подмосковье в готовых коттеджных посёлках. Оператор персональных данных по 152-ФЗ.",
     identifier: [
@@ -62,13 +62,13 @@ export default function RootLayout({
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+7-985-905-25-55",
-      email: "info@zem-plus.ru",
+      email: "info@zem.plus",
       contactType: "sales",
       availableLanguage: "ru",
       areaServed: "RU",
     },
     sameAs: ["https://t.me/zemplus_bot", "https://max.ru/id503440358928_bot"],
-    privacyPolicy: "https://xn--e1adndpn4g.xn--p1ai/privacy",
+    privacyPolicy: "https://zem.plus/privacy",
   };
 
   return (

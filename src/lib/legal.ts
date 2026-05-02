@@ -6,7 +6,7 @@
 
 export const LEGAL = {
   brand: "ЗемПлюс",
-  domain: "земплюс.рф",
+  domain: "zem.plus",
   // Юридическое
   type: "ИП", // ИП | ООО
   fullName: "Индивидуальный предприниматель Бротцель Антон Викторович",
@@ -17,7 +17,7 @@ export const LEGAL = {
   // Контакты
   phone: "+7 (985) 905-25-55",
   phoneRaw: "+79859052555",
-  email: "info@zem-plus.ru",
+  email: "info@zem.plus",
   telegram: "https://t.me/zemplus",
   max: "https://max.ru/id503440358928_bot",
   // Даты документов

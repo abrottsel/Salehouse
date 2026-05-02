@@ -70,11 +70,11 @@ export default function Footer() {
                 +7 (985) 905-25-55
               </a>
               <a
-                href="mailto:info@zem-plus.ru"
+                href="mailto:info@zem.plus"
                 className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                info@zem-plus.ru
+                info@zem.plus
               </a>
               <a
                 href="https://t.me/zemplus"
