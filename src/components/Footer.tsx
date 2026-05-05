@@ -2,10 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, MessageCircle, Copy, Check } from "lucide-react";
+import { Phone, Mail, Copy, Check } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 
-const FOOTER_EMAIL = "info@zem.plus";
+const FOOTER_EMAIL = LEGAL.email;
+const PHONE_RAW = LEGAL.phoneRaw;
+const PHONE_FMT = LEGAL.phone;
+const TG_URL = LEGAL.telegram;
+const MAX_URL = LEGAL.max;
+const YEAR = new Date().getFullYear();
+const LEGAL_LINE = `© ${YEAR} ${LEGAL.shortName} · ИНН ${LEGAL.inn} · ОГРНИП ${LEGAL.ogrn}`;
+
+function TgIcon() {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+    </svg>
+  );
+}
 
 export default function Footer() {
   const [emailCopied, setEmailCopied] = useState(false);
@@ -18,92 +32,66 @@ export default function Footer() {
         await navigator.clipboard.writeText(FOOTER_EMAIL);
       }
     } catch {
-      // clipboard might be unavailable — silently ignore
+      // clipboard might be unavailable in insecure context — silently ignore
     }
     setEmailCopied(true);
     window.setTimeout(() => setEmailCopied(false), 1500);
   };
 
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <svg viewBox="0 0 44 40" className="w-9 h-8" fill="none">
+    <footer className="bg-gray-100 px-4 py-6">
+      <div className="max-w-[1920px] mx-auto">
+        <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10">
+          {/* Тонкая emerald→teal градиентная полоса сверху */}
+          <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
+
+          {/* Главная строка: логотип · навигация · контакты */}
+          <div className="px-5 sm:px-6 py-5 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+            {/* Brand */}
+            <div className="flex items-center gap-2 shrink-0">
+              <svg viewBox="0 0 44 40" className="w-7 h-[26px]" fill="none" aria-hidden="true">
                 <path d="M22 2L2 18h6v20h28V18h6L22 2z" fill="#22c55e" />
                 <rect x="14" y="22" width="16" height="4" rx="2" fill="white" />
                 <rect x="20" y="16" width="4" height="16" rx="2" fill="white" />
               </svg>
-              <span className="text-xl font-extrabold text-white tracking-tight">ЗемПлюс</span>
+              <span className="font-extrabold tracking-tight text-lg text-white">
+                Зем<span className="text-emerald-400">+</span>Плюс
+              </span>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              ЗемПлюс — продажа земельных участков в Подмосковье.
-              Проверенные посёлки с готовыми коммуникациями.
-            </p>
-          </div>
 
-          {/* Navigation */}
-          <div>
-            <h4 className="font-semibold mb-4">Навигация</h4>
-            <ul className="space-y-2 text-sm">
-              {[
-                { href: "#advantages", label: "Преимущества" },
-                { href: "#catalog", label: "Посёлки" },
-                { href: "#infrastructure", label: "Инфраструктура" },
-                { href: "#calculator", label: "Ипотека" },
-                { href: "#reviews", label: "Отзывы" },
-                { href: "#steps", label: "Как купить" },
-              ].map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+            {/* Nav */}
+            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:flex-1 md:justify-center">
+              <a href="#catalog" className="hover:text-white transition-colors">Посёлки</a>
+              <a href="#calculator" className="hover:text-white transition-colors">Ипотека</a>
+              <a href="#steps" className="hover:text-white transition-colors">Как купить</a>
+              <a href="#contacts" className="hover:text-white transition-colors">Контакты</a>
+            </nav>
 
-          {/* Directions */}
-          <div>
-            <h4 className="font-semibold mb-4">Направления</h4>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>Каширское шоссе</li>
-              <li>Симферопольское шоссе</li>
-              <li>Дмитровское шоссе</li>
-              <li>Новорижское шоссе</li>
-            </ul>
-          </div>
-
-          {/* Contacts */}
-          <div>
-            <h4 className="font-semibold mb-4">Контакты</h4>
-            <div className="space-y-3 text-sm">
+            {/* Contacts */}
+            <div className="flex items-center gap-3 sm:gap-4 text-sm">
               <a
-                href="tel:+79859052555"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                href={`tel:${PHONE_RAW}`}
+                className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors"
               >
                 <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
-                +7 (985) 905-25-55
+                <span className="hidden sm:inline">{PHONE_FMT}</span>
               </a>
-              <div className="flex items-center gap-2">
+
+              {/* Email + copy */}
+              <div className="flex items-center gap-1">
                 <a
                   href={`mailto:${FOOTER_EMAIL}`}
-                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                  aria-label={`Написать на ${FOOTER_EMAIL}`}
+                  className="text-red-400 hover:text-red-300 transition-colors"
                 >
-                  <Mail className="w-4 h-4 shrink-0 text-red-400" />
-                  {FOOTER_EMAIL}
+                  <Mail className="w-4 h-4" />
                 </a>
                 <button
                   type="button"
                   onClick={handleCopyEmail}
                   aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
-                  title={emailCopied ? "Скопировано" : "Скопировать"}
-                  className="text-gray-400 hover:text-white transition-colors p-1 -m-1"
+                  title={emailCopied ? "Скопировано" : `Скопировать ${FOOTER_EMAIL}`}
+                  className="text-gray-500 hover:text-gray-300 transition-colors p-0.5 -m-0.5"
                 >
                   {emailCopied ? (
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -112,52 +100,44 @@ export default function Footer() {
                   )}
                 </button>
               </div>
+
               <a
-                href="https://t.me/zemplus"
+                href={TG_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                aria-label="Telegram"
+                className="text-sky-400 hover:text-sky-300 transition-colors"
               >
-                <svg className="w-4 h-4 shrink-0 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                </svg>
-                Telegram
+                <TgIcon />
               </a>
+
               <a
-                href="https://max.ru/id503440358928_bot"
+                href={MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                aria-label="MAX"
+                className="shrink-0"
               >
-                <img src="/max-logo.png" alt="MAX" className="w-4 h-4 shrink-0 rounded-sm" />
-                MAX
+                <img src="/max-logo.png" alt="MAX" className="w-4 h-4 rounded-sm" />
               </a>
             </div>
           </div>
-        </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-800 space-y-3 text-center text-xs text-gray-500">
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Политика конфиденциальности
-            </Link>
-            <span className="text-gray-700">·</span>
-            <Link href="/oferta" className="hover:text-white transition-colors">
-              Оферта на бронирование
-            </Link>
-            <span className="text-gray-700">·</span>
-            <Link href="/contacts" className="hover:text-white transition-colors">
-              Контакты и реквизиты
-            </Link>
+          {/* Тонкая legal-полоска: реквизиты · ссылки · disclaimer */}
+          <div className="px-5 sm:px-6 pb-4 -mt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-gray-500">
+            <span>{LEGAL_LINE}</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <Link href="/privacy" className="hover:text-gray-300 transition-colors">Политика</Link>
+              <span className="opacity-40">·</span>
+              <Link href="/oferta" className="hover:text-gray-300 transition-colors">Оферта</Link>
+              <span className="opacity-40">·</span>
+              <Link href="/contacts" className="hover:text-gray-300 transition-colors">Реквизиты</Link>
+            </div>
           </div>
-          <div className="text-gray-600 leading-relaxed">
-            {LEGAL.shortName} · ИНН {LEGAL.inn} · ОГРНИП {LEGAL.ogrn}
-          </div>
-          <div className="text-gray-500 leading-relaxed max-w-3xl mx-auto px-4">
+
+          {/* Disclaimer */}
+          <div className="px-5 sm:px-6 pb-4 text-[10px] text-gray-600 leading-relaxed">
             Сайт носит информационный характер и не является публичной офертой; окончательные условия — в договоре.
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} {LEGAL.brand}. Все права защищены.
           </div>
         </div>
       </div>
