@@ -67,22 +67,22 @@ export default function Footer() {
               <a href="#contacts" className="hover:text-white transition-colors">Контакты</a>
             </nav>
 
-            {/* Contacts */}
-            <div className="flex items-center gap-3 sm:gap-4 text-sm">
+            {/* Contacts — mobile-first: ≥40px tap targets, разгружаем spacing */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5 text-sm min-w-0">
               <a
                 href={`tel:${PHONE_RAW}`}
-                className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors min-h-[44px] -my-2 py-2"
               >
                 <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
                 <span className="hidden sm:inline">{PHONE_FMT}</span>
               </a>
 
-              {/* Email + copy */}
-              <div className="flex items-center gap-1">
+              {/* Email + copy — на мобиле раздаём gap, на десктопе плотнее */}
+              <div className="flex items-center gap-2 sm:gap-1">
                 <a
                   href={`mailto:${FOOTER_EMAIL}`}
                   aria-label={`Написать на ${FOOTER_EMAIL}`}
-                  className="text-red-400 hover:text-red-300 transition-colors"
+                  className="text-red-400 hover:text-red-300 transition-colors p-3 -m-3 inline-flex items-center justify-center"
                 >
                   <Mail className="w-4 h-4" />
                 </a>
@@ -91,7 +91,7 @@ export default function Footer() {
                   onClick={handleCopyEmail}
                   aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
                   title={emailCopied ? "Скопировано" : `Скопировать ${FOOTER_EMAIL}`}
-                  className="text-gray-500 hover:text-gray-300 transition-colors p-0.5 -m-0.5"
+                  className="text-gray-500 hover:text-gray-300 transition-colors p-3 -m-3 inline-flex items-center justify-center min-w-[40px] min-h-[40px]"
                 >
                   {emailCopied ? (
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -106,7 +106,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Telegram"
-                className="text-sky-400 hover:text-sky-300 transition-colors"
+                className="text-sky-400 hover:text-sky-300 transition-colors p-3 -m-3 inline-flex items-center justify-center"
               >
                 <TgIcon />
               </a>
@@ -116,7 +116,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="MAX"
-                className="shrink-0"
+                className="shrink-0 p-3 -m-3 inline-flex items-center justify-center"
               >
                 <img src="/max-logo.png" alt="MAX" className="w-4 h-4 rounded-sm" />
               </a>

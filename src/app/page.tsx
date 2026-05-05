@@ -6,7 +6,7 @@ import Advantages from "@/components/Advantages";
 import Steps from "@/components/Steps";
 import FAQ from "@/components/FAQ";
 import Reviews from "@/components/Reviews";
-import ContactForm from "@/components/ContactForm";
+import QuizSection from "@/components/QuizSection";
 import Footer from "@/components/Footer";
 import GlassSections from "@/components/GlassSections";
 import { villages } from "@/lib/data";
@@ -58,7 +58,7 @@ export default async function Home() {
 
         <Advantages />
         <MortgageCalculator />
-        <ContactForm />
+        <QuizSection />
       </main>
       <Footer />
     </>
