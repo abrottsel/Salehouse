@@ -334,7 +334,7 @@ bot.on('callback_query', (query) => {
       '\u2022 До 12 месяцев без переплат\n' +
       '\u2022 Первый взнос от 50 000 \u20BD\n' +
       '\u2022 Без справок и одобрений\n\n' +
-      '\u{1F3E6} Ипотека от 6.5% — /mortgage\n\n' +
+      '\u{1F3E6} Ипотека от 6.5% — нажмите кнопку ниже\n\n' +
       `\u{1F517} Смотреть все цены на сайте: ${SITE_URL}`;
     bot.sendMessage(chatId, text, {
       parse_mode: 'HTML',
@@ -399,13 +399,13 @@ bot.on('callback_query', (query) => {
       '\u2022 Справка о доходах (или по форме банка)\n' +
       '\u2022 Первый взнос от 15%\n\n' +
       '\u23F1 Одобрение за 1-3 дня\n\n' +
-      `\u{1F517} Рассчитать платёж: ${SITE_URL}/v2/mortgage`;
+      `\u{1F517} Рассчитать платёж: ${SITE_URL}/#calculator`;
     bot.sendMessage(chatId, text, {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '\u{1F4B0} Рассчитать платёж', url: `${SITE_URL}/v2/mortgage` },
+            { text: '\u{1F4B0} Рассчитать платёж', url: `${SITE_URL}/#calculator` },
             { text: '\u{1F4DE} Консультация по ипотеке', callback_data: 'book_viewing' },
           ],
           [{ text: '\u25C0\uFE0F Главное меню', callback_data: 'menu' }],
@@ -433,7 +433,7 @@ bot.on('callback_query', (query) => {
       '6\uFE0F\u20E3 <b>Получение документов</b>\n' +
       'Выписка из ЕГРН — участок ваш!\n\n' +
       '\u2696\uFE0F 100% юридическая чистота гарантирована по договору\n\n' +
-      `\u{1F517} Подробнее: ${SITE_URL}/v2/how-to-buy`;
+      `\u{1F517} Подробнее: ${SITE_URL}`;
     bot.sendMessage(chatId, text, {
       parse_mode: 'HTML',
       reply_markup: {
@@ -601,13 +601,13 @@ bot.onText(/\/mortgage/, (msg) => {
     '\u2022 Справка о доходах (или по форме банка)\n' +
     '\u2022 Первый взнос от 15%\n\n' +
     '\u23F1 Одобрение за 1-3 дня\n\n' +
-    `\u{1F517} Рассчитать платёж: ${SITE_URL}/v2/mortgage`;
+    `\u{1F517} Рассчитать платёж: ${SITE_URL}/#calculator`;
   bot.sendMessage(chatId, text, {
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
         [
-          { text: '\u{1F4B0} Рассчитать платёж', url: `${SITE_URL}/v2/mortgage` },
+          { text: '\u{1F4B0} Рассчитать платёж', url: `${SITE_URL}/#calculator` },
           { text: '\u{1F4DE} Консультация по ипотеке', callback_data: 'book_viewing' },
         ],
         [{ text: '\u25C0\uFE0F Главное меню', callback_data: 'menu' }],
