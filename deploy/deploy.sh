@@ -53,8 +53,10 @@ fi
 
 notify_tg() {
     local text=$1
-    local token=${TG_BOT_TOKEN:-}
-    local chat=${TG_CHAT_ID:-}
+    # System alerts go to @zemplus_alerts_bot. Fall back to legacy
+    # @zemplus_bot creds if alerts not configured (warm transition).
+    local token=${ALERT_BOT_TOKEN:-${TG_BOT_TOKEN:-}}
+    local chat=${ALERT_CHAT_ID:-${TG_CHAT_ID:-}}
     if [ -z "$token" ] || [ -z "$chat" ]; then
         return 0
     fi
@@ -69,7 +71,7 @@ on_failure() {
     local step=$1
     local dur=$(( $(date +%s) - START_TS ))
     log "✗ FAILED at: $step ($dur s)"
-    notify_tg "❌ <b>Deploy failed</b>
+    notify_tg "🌐 <b>САЙТ · Deploy failed</b>
 Шаг: ${step}
 Ref: <code>${DEPLOY_REF}</code>
 SHA: <code>${DEPLOY_SHA:0:7}</code>
@@ -198,7 +200,7 @@ DISK=$(df -h / | awk 'NR==2 {print $5" used"}')
 log "✓ Deploy complete in ${DURATION}s — HTTP $HTTP — mem $MEM — disk $DISK"
 pm2 status "$APP_NAME"
 
-notify_tg "✅ <b>Deploy готов</b>
+notify_tg "🌐 <b>САЙТ · Deploy готов</b>
 Ref: <code>${DEPLOY_REF}</code>
 SHA: <code>${DEPLOY_SHA:0:7}</code>
 Кто: ${DEPLOY_ACTOR}

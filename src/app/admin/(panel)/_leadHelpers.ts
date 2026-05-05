@@ -7,6 +7,7 @@ export const LEAD_STATUS_LABELS: Record<string, string> = {
   QUALIFIED: "Квалифицирован",
   WON: "Сделка",
   LOST: "Слив",
+  TEST: "Тест",
 };
 
 export const LEAD_STATUS_COLORS: Record<string, string> = {
@@ -16,6 +17,7 @@ export const LEAD_STATUS_COLORS: Record<string, string> = {
   QUALIFIED: "bg-indigo-100 text-indigo-800 ring-indigo-200",
   WON: "bg-emerald-100 text-emerald-800 ring-emerald-200",
   LOST: "bg-gray-200 text-gray-700 ring-gray-300",
+  TEST: "bg-zinc-100 text-zinc-600 ring-zinc-300",
 };
 
 export const LEAD_TYPE_LABELS: Record<string, string> = {
@@ -41,6 +43,7 @@ export const ALL_STATUSES: LeadStatus[] = [
   "QUALIFIED",
   "WON",
   "LOST",
+  "TEST",
 ];
 
 export const ALL_TYPES: LeadType[] = [

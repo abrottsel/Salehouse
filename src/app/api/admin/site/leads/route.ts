@@ -13,6 +13,7 @@ const VALID_STATUSES: LeadStatus[] = [
   "QUALIFIED",
   "WON",
   "LOST",
+  "TEST",
 ];
 
 const VALID_TYPES: LeadType[] = [

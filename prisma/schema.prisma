@@ -32,6 +32,7 @@ enum LeadStatus {
   QUALIFIED
   WON
   LOST
+  TEST
 }
 
 enum LeadSource {
