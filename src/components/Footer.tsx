@@ -63,7 +63,7 @@ export default function Footer() {
             <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:flex-1 md:justify-center">
               <a href="#catalog" className="hover:text-white transition-colors">Посёлки</a>
               <a href="#calculator" className="hover:text-white transition-colors">Ипотека</a>
-              <a href="#steps" className="hover:text-white transition-colors">Как купить</a>
+              <a href="#steps-block" className="hover:text-white transition-colors">Как купить</a>
               <a href="#contacts" className="hover:text-white transition-colors">Контакты</a>
             </nav>
 
