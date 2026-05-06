@@ -79,7 +79,7 @@ const items: Item[] = [
   {
     Icon: BadgePercent,
     title: "Рассрочка 0%",
-    description: "До 12 месяцев без переплат. Первый взнос от 50 000 ₽.",
+    description: "До 12 месяцев без переплат. Первый взнос — 30% от стоимости участка.",
     bg: "bg-violet-50",
     ring: "ring-violet-200/70",
     iconBg: "bg-violet-500",
