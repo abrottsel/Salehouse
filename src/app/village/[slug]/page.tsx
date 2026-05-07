@@ -3,7 +3,7 @@ import { villages } from "@/lib/data";
 import VillageHeroSwiper from "@/components/VillageHeroSwiper";
 import VillageAdvantages from "@/components/VillageAdvantages";
 import InteractivePlotMap from "@/components/InteractivePlotMap3";
-import ContactForm from "@/components/ContactForm";
+import QuizSection from "@/components/QuizSection";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import IframeMapOverlay from "@/components/IframeMapOverlay";
@@ -142,10 +142,8 @@ export default async function VillagePage({ params }: Props) {
           </section>
         ) : null}
 
-        {/* 4. Contact form */}
-        <div id="contact-form">
-          <ContactForm />
-        </div>
+        {/* 4. Quiz — подбор участка */}
+        <QuizSection />
       </main>
       <Footer />
     </>
