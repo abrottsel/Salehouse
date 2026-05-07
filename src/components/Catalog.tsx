@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronUp,
   RotateCcw,
-  Check,
   TreePine,
   LayoutGrid,
   Wallet,
@@ -19,7 +18,6 @@ import {
 import { villages } from "@/lib/data";
 import FavoriteHeart from "./FavoriteHeart";
 import CardPhotoSwiper from "./CardPhotoSwiper";
-import RangeSlider from "./RangeSlider";
 import HomeDistanceBadge from "./HomeDistanceBadge";
 
 interface VillageStats {
@@ -35,7 +33,6 @@ interface CatalogProps {
 const directions = [
   "Все",
   "Каширское шоссе",
-  "Симферопольское шоссе",
   "Дмитровское шоссе",
   "Новорижское шоссе",
 ];
@@ -55,6 +52,20 @@ const PRICE_MAX =
 
 const AREA_MIN = Math.floor(Math.min(...villages.map((v) => v.areaFrom)));
 const AREA_MAX = Math.ceil(Math.max(...villages.map((v) => v.areaTo)));
+
+const PRICE_PRESETS = [
+  { label: "до 1 млн",  min: PRICE_MIN,   max: 1_000_000 },
+  { label: "1–2 млн",   min: 1_000_000,   max: 2_000_000 },
+  { label: "2–3 млн",   min: 2_000_000,   max: 3_000_000 },
+  { label: "3+ млн",    min: 3_000_000,   max: PRICE_MAX  },
+] as const;
+
+const AREA_PRESETS = [
+  { label: "5–7 сот.",   min: 5,  max: 7        },
+  { label: "7–10 сот.",  min: 7,  max: 10       },
+  { label: "10–15 сот.", min: 10, max: 15       },
+  { label: "15+ сот.",   min: 15, max: AREA_MAX },
+] as const;
 
 /* ─── headline stats — auto-computed from data ─── */
 const STAT_VILLAGES = villages.length;
@@ -165,141 +176,7 @@ function FilterChip({
   );
 }
 
-/* ─────────────────────── range filter w/ inputs ─────────────────────── */
-
-interface RangeFilterProps {
-  label: string;
-  suffix: string;
-  min: number;
-  max: number;
-  step: number;
-  value: [number, number];
-  onChange: (v: [number, number]) => void;
-  /** how to render a number in the input field */
-  format?: (n: number) => string;
-  /** how to parse a string back into a number */
-  parse?: (s: string) => number;
-}
-
-function RangeFilter({
-  label,
-  suffix,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-  format = (n) => String(n),
-  parse = (s) => Number(s.replace(/\s/g, "").replace(",", ".")),
-}: RangeFilterProps) {
-  const [minDraft, setMinDraft] = useState<string>(format(value[0]));
-  const [maxDraft, setMaxDraft] = useState<string>(format(value[1]));
-
-  // Sync drafts when external value changes (e.g. slider, reset)
-  React.useEffect(() => {
-    setMinDraft(format(value[0]));
-    setMaxDraft(format(value[1]));
-  }, [value, format]);
-
-  const commitMin = () => {
-    const parsed = parse(minDraft);
-    if (!isFinite(parsed)) {
-      setMinDraft(format(value[0]));
-      return;
-    }
-    const clamped = Math.max(min, Math.min(parsed, value[1] - step));
-    onChange([clamped, value[1]]);
-    setMinDraft(format(clamped));
-  };
-
-  const commitMax = () => {
-    const parsed = parse(maxDraft);
-    if (!isFinite(parsed)) {
-      setMaxDraft(format(value[1]));
-      return;
-    }
-    const clamped = Math.min(max, Math.max(parsed, value[0] + step));
-    onChange([value[0], clamped]);
-    setMaxDraft(format(clamped));
-  };
-
-  return (
-    <div className="p-4 w-full sm:w-[340px]">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
-        {label}
-      </div>
-
-      <div className="flex items-center gap-2 mb-4">
-        <NumberField
-          aria-label="От"
-          prefix="от"
-          suffix={suffix}
-          value={minDraft}
-          onChange={setMinDraft}
-          onCommit={commitMin}
-        />
-        <div className="text-gray-300 shrink-0 text-xs">—</div>
-        <NumberField
-          aria-label="До"
-          prefix="до"
-          suffix={suffix}
-          value={maxDraft}
-          onChange={setMaxDraft}
-          onCommit={commitMax}
-        />
-      </div>
-
-      <RangeSlider
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={onChange}
-      />
-    </div>
-  );
-}
-
-function NumberField({
-  prefix,
-  suffix,
-  value,
-  onChange,
-  onCommit,
-  ...rest
-}: {
-  prefix: string;
-  suffix: string;
-  value: string;
-  onChange: (v: string) => void;
-  onCommit: () => void;
-} & React.AriaAttributes) {
-  return (
-    <label
-      className="flex-1 min-w-0 flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 focus-within:border-green-500 focus-within:bg-white transition-colors cursor-text"
-      {...rest}
-    >
-      <span className="text-[10px] uppercase tracking-wider text-gray-400 shrink-0">
-        {prefix}
-      </span>
-      <input
-        type="text"
-        inputMode="decimal"
-        size={1}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onCommit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            (e.target as HTMLInputElement).blur();
-          }
-        }}
-        className="flex-1 min-w-0 w-full bg-transparent outline-none text-sm font-semibold text-gray-900 text-right tabular-nums"
-      />
-      <span className="text-[10px] text-gray-400 shrink-0">{suffix}</span>
-    </label>
-  );
-}
+/* ─────────── V9 — no dropdown components needed ─── */
 
 export default function Catalog({ liveStats }: CatalogProps = {}) {
   const [activeDirection, setActiveDirection] = useState("Все");
@@ -312,6 +189,8 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
     AREA_MAX,
   ]);
   const [expanded, setExpanded] = useState(false);
+  const [activePrice, setActivePrice] = useState<string | null>(null);
+  const [activeArea, setActiveArea] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return villages.filter((v) => {
@@ -329,25 +208,33 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
   const visible = expanded ? filtered : filtered.slice(0, INITIAL_VISIBLE);
   const hiddenCount = filtered.length - INITIAL_VISIBLE;
 
-  const isPriceFiltered =
-    priceRange[0] !== PRICE_MIN || priceRange[1] !== PRICE_MAX;
-  const isAreaFiltered =
-    areaRange[0] !== AREA_MIN || areaRange[1] !== AREA_MAX;
   const isAnyFilterActive =
-    activeDirection !== "Все" || isPriceFiltered || isAreaFiltered;
+    activeDirection !== "Все" || activePrice !== null || activeArea !== null;
 
   const handleDirectionChange = (dir: string) => {
     setActiveDirection(dir);
     setExpanded(false);
   };
 
-  const handlePriceChange = (v: [number, number]) => {
-    setPriceRange(v);
+  const handlePricePreset = (p: (typeof PRICE_PRESETS)[number]) => {
+    if (activePrice === p.label) {
+      setActivePrice(null);
+      setPriceRange([PRICE_MIN, PRICE_MAX]);
+    } else {
+      setActivePrice(p.label);
+      setPriceRange([p.min, p.max]);
+    }
     setExpanded(false);
   };
 
-  const handleAreaChange = (v: [number, number]) => {
-    setAreaRange(v);
+  const handleAreaPreset = (a: (typeof AREA_PRESETS)[number]) => {
+    if (activeArea === a.label) {
+      setActiveArea(null);
+      setAreaRange([AREA_MIN, AREA_MAX]);
+    } else {
+      setActiveArea(a.label);
+      setAreaRange([a.min, a.max]);
+    }
     setExpanded(false);
   };
 
@@ -355,11 +242,13 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
     setActiveDirection("Все");
     setPriceRange([PRICE_MIN, PRICE_MAX]);
     setAreaRange([AREA_MIN, AREA_MAX]);
+    setActivePrice(null);
+    setActiveArea(null);
     setExpanded(false);
   };
 
   return (
-    <section id="catalog" className="py-10 lg:py-14 bg-gray-50 scroll-mt-16">
+    <section id="catalog" className="pt-8 lg:pt-12 pb-4 bg-gray-50 scroll-mt-16">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Catalog hero — dynamic stats strip */}
         <div className="text-center mb-6">
@@ -419,107 +308,96 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
           </div>
         </div>
 
-        {/* Filters: compact chip bar (Cian/Avito style) */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-          <FilterChip
-            label="Направление"
-            value={activeDirection !== "Все" ? activeDirection : null}
-            placeholder="Любое"
-            active={activeDirection !== "Все"}
-          >
-            {(close) => (
-              <div className="py-1 min-w-[220px]">
-                {directions.map((dir) => {
-                  const selected = activeDirection === dir;
-                  return (
-                    <button
-                      key={dir}
-                      onClick={() => {
-                        handleDirectionChange(dir);
-                        close();
-                      }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
-                        selected
-                          ? "bg-green-50 text-green-700 font-semibold"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span>{dir}</span>
-                      {selected && <Check className="w-4 h-4 text-green-600" />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </FilterChip>
+        {/* ── V9 Иконки: направления / цена / площадь ─────────── */}
+        <div className="mb-6 bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm divide-y divide-gray-100">
 
-          <FilterChip
-            label="Цена"
-            value={
-              isPriceFiltered
-                ? `${formatPrice(priceRange[0])} — ${formatPrice(priceRange[1])}`
-                : null
-            }
-            placeholder="Любая"
-            active={isPriceFiltered}
-          >
-            {() => (
-              <RangeFilter
-                label="Цена за сотку"
-                suffix="₽"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                step={PRICE_STEP}
-                value={priceRange}
-                onChange={handlePriceChange}
-                format={(n) => n.toLocaleString("ru-RU")}
-                parse={(s) => Number(s.replace(/\s/g, ""))}
-              />
-            )}
-          </FilterChip>
-
-          <FilterChip
-            label="Площадь"
-            value={
-              isAreaFiltered
-                ? `${areaRange[0]} — ${areaRange[1]} соток`
-                : null
-            }
-            placeholder="Любая"
-            active={isAreaFiltered}
-          >
-            {() => (
-              <RangeFilter
-                label="Площадь участка"
-                suffix="соток"
-                min={AREA_MIN}
-                max={AREA_MAX}
-                step={AREA_STEP}
-                value={areaRange}
-                onChange={handleAreaChange}
-              />
-            )}
-          </FilterChip>
-
-          {isAnyFilterActive && (
-            <button
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1.5 px-3 h-10 rounded-full text-xs font-semibold text-gray-500 hover:text-green-700 hover:bg-green-50 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Сбросить
-            </button>
-          )}
-
-          <div className="basis-full md:basis-auto md:ml-2 flex justify-center">
-            <div className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-600/20 ring-1 ring-green-400/40">
-              <span className="text-base font-extrabold tabular-nums leading-none">
-                {filtered.length}
-              </span>
-              <span className="text-sm font-semibold leading-none">
-                {plural(filtered.length, "посёлок", "посёлка", "посёлков")}
-              </span>
+          {/* Ряд 1: направления + счётчик */}
+          <div className="flex items-center gap-1.5 px-3 py-2.5">
+            <span className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center shadow-sm shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+            </span>
+            {directions.map((dir) => (
+              <button
+                key={dir}
+                type="button"
+                onClick={() => handleDirectionChange(dir)}
+                className={`flex-1 h-8 rounded-xl text-[11px] font-bold text-center transition-all ${
+                  activeDirection === dir
+                    ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                {dir === "Все" ? "Все" : dir.replace(" шоссе", "")}
+              </button>
+            ))}
+            <div className="h-8 px-3 shrink-0 rounded-xl bg-emerald-500 text-white text-[11px] font-extrabold flex items-center ml-2 shadow-sm tabular-nums">
+              {filtered.length}
             </div>
+          </div>
+
+          {/* Ряд 2: цена + площадь (mobile = стек, lg = ряд) */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-0 px-3 py-2.5 lg:gap-1.5">
+
+            {/* Группа цены */}
+            <div className="flex flex-1 items-center gap-1.5">
+              <span className="w-6 h-6 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm shrink-0">
+                <Wallet className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+              </span>
+              <div className="flex flex-1 items-center gap-1">
+                {PRICE_PRESETS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => handlePricePreset(p)}
+                    className={`flex-1 h-8 rounded-lg text-[11px] font-bold text-center whitespace-nowrap transition-all ${
+                      activePrice === p.label
+                        ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-px h-5 bg-gray-200 shrink-0 hidden lg:block" />
+
+            {/* Группа площади + кнопка сброса */}
+            <div className="flex flex-1 items-center gap-1.5 mt-1.5 lg:mt-0">
+              <span className="w-6 h-6 rounded-lg bg-sky-500 flex items-center justify-center shadow-sm shrink-0">
+                <Ruler className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+              </span>
+              <div className="flex flex-1 items-center gap-1">
+                {AREA_PRESETS.map((a) => (
+                  <button
+                    key={a.label}
+                    type="button"
+                    onClick={() => handleAreaPreset(a)}
+                    className={`flex-1 h-8 rounded-lg text-[11px] font-bold text-center whitespace-nowrap transition-all ${
+                      activeArea === a.label
+                        ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={resetFilters}
+                title="Сбросить фильтры"
+                className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+                  isAnyFilterActive
+                    ? "text-gray-400 hover:text-emerald-700 hover:bg-gray-50"
+                    : "text-gray-200 pointer-events-none"
+                }`}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
         </div>
 

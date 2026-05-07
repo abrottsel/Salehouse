@@ -234,15 +234,15 @@ export default function QuizSection() {
   const s = useQuizState(QUESTIONS);
 
   return (
-    <section id="contacts" className="px-4 py-10 sm:py-14 bg-gray-50">
-      <div className="mx-auto max-w-7xl">
+    <section id="contacts" className="bg-gray-50 pb-4">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className="relative overflow-hidden rounded-2xl bg-cover bg-center min-h-[640px]"
+          className="relative overflow-hidden rounded-2xl bg-cover bg-center"
           style={{ backgroundImage: "url(/hero-v2.jpg)" }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/65" />
 
-          <div className="relative z-10 flex items-center justify-center px-3 py-10 sm:px-6 sm:py-14 min-h-[640px]">
+          <div className="relative z-10 flex items-center justify-center px-3 py-6 sm:px-6 sm:py-8">
             <div
               className="quiz-v12-glass relative overflow-hidden rounded-2xl w-full max-w-5xl px-5 py-6 sm:px-8 sm:py-8"
               style={GLASS_STYLE}
@@ -257,7 +257,7 @@ export default function QuizSection() {
                         <Sparkles className="w-3.5 h-3.5" /> Тёплый подбор
                       </p>
                       <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
-                        Расскажите о мечте — подберём 3 участка под вас
+                        Расскажите о мечте — подберём 3 идеальных участка
                       </h3>
                     </div>
 

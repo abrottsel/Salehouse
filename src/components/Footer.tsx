@@ -39,8 +39,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-100 px-4 py-6">
-      <div className="max-w-[1920px] mx-auto">
+    <footer className="bg-gray-50 pb-4 pt-4">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />

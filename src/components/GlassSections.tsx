@@ -57,77 +57,82 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
   const activeCard = cards.find((c) => c.id === activeId);
 
   return (
-    <section
-      className="relative py-6 lg:py-8 bg-cover bg-center bg-no-repeat overflow-hidden"
-      style={{ backgroundImage: "url(/hero-home.jpg)" }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+    <section className="bg-gray-50 pb-4">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
+        <div
+          className="relative overflow-hidden rounded-2xl bg-cover bg-center"
+          style={{ backgroundImage: "url(/hero-home.jpg)" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
 
-      <div className="relative z-10 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Three cards in a row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {cards.map((card) => {
-            const Icon = iconMap[card.icon];
-            const isActive = activeId === card.id;
-            return (
-              <button
-                key={card.id}
-                id={card.id}
-                type="button"
-                onClick={() => toggle(card.id)}
-                className={`glass-section-card overflow-hidden rounded-[20px] text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
-                  isActive
-                    ? "shadow-2xl ring-2 ring-white/30"
-                    : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                }`}
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            {/* Three cards in a row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {cards.map((card) => {
+                const Icon = iconMap[card.icon];
+                const isActive = activeId === card.id;
+                return (
+                  <button
+                    key={card.id}
+                    id={card.id}
+                    type="button"
+                    onClick={() => toggle(card.id)}
+                    className={`glass-section-card overflow-hidden rounded-2xl text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
+                      isActive
+                        ? "shadow-2xl ring-2 ring-white/30"
+                        : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                    }`}
+                    style={{
+                      backgroundImage: card.photo ? `url(${card.photo})` : undefined,
+                      boxShadow: isActive
+                        ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)"
+                        : "inset 0 1px 0 rgba(255,255,255,0.3), 0 12px 40px -8px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    {card.photo && <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-black/50" />}
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
+                    <div className="relative z-10 flex items-center gap-3 p-5 lg:p-6">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
+                        <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-base font-black text-white leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                          {card.title}
+                        </div>
+                        <div className="text-xs text-white/60 mt-0.5">{card.subtitle}</div>
+                      </div>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
+                          isActive ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Expanded content — full width below all cards */}
+            {activeCard && (
+              <div
+                ref={contentRef}
+                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300"
                 style={{
-                  backgroundImage: card.photo ? `url(${card.photo})` : undefined,
-                  boxShadow: isActive
-                    ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.3), 0 12px 40px -8px rgba(0,0,0,0.3)",
+                  backdropFilter: "blur(8px) saturate(1.6)",
+                  WebkitBackdropFilter: "blur(8px) saturate(1.6)",
+                  background: "linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)",
                 }}
               >
-                {card.photo && <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-black/50" />}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
-                <div className="relative z-10 flex items-center gap-3 p-5 lg:p-6">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
-                    <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-base font-black text-white leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-                      {card.title}
-                    </div>
-                    <div className="text-xs text-white/60 mt-0.5">{card.subtitle}</div>
-                  </div>
-                  <ChevronDown
-                    className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
-                      isActive ? "rotate-180" : ""
-                    }`}
-                  />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
+                <div className="p-5 lg:p-8">
+                  {activeCard.children}
                 </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Expanded content — full width below all cards */}
-        {activeCard && (
-          <div
-            ref={contentRef}
-            className="mt-4 glass-section-card rounded-[20px] overflow-hidden transition-all duration-300"
-            style={{
-              backdropFilter: "blur(8px) saturate(1.6)",
-              WebkitBackdropFilter: "blur(8px) saturate(1.6)",
-              background: "linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)",
-            }}
-          >
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
-            <div className="p-5 lg:p-8">
-              {activeCard.children}
-            </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <style>{`
