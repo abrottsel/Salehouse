@@ -103,6 +103,37 @@ type LeadForTelegram = {
   receivedAt?: string | null;
 };
 
+/* ─── Quiz answer pretty-printing ─────────────────────────────────── */
+
+const QUIZ_LABELS: Record<string, Record<string, string>> = {
+  area:      { "5-7": "5–7 соток", "7-10": "7–10 соток", "10-15": "10–15 соток", any: "Любая" },
+  budget:    { "<1m": "до 1 млн ₽", "1-2m": "1–2 млн ₽", "2-3m": "2–3 млн ₽", "3m+": "3+ млн ₽" },
+  direction: { north: "Север", south: "Юг", east: "Восток", any: "Любое" },
+  goal:      { live: "Жить постоянно", dacha: "Дача", invest: "Инвестиции", build: "Строить дом" },
+  timing:    { now: "Готов сейчас", month: "В этом месяце", season: "В этом сезоне", look: "Просто смотрю" },
+};
+
+const QUIZ_ICONS: Record<string, string> = {
+  area: "📐", budget: "💰", direction: "🧭", goal: "🎯", timing: "📅",
+};
+
+function formatQuizAnswers(raw: string): string | null {
+  // Expect: "[QUIZ_LEAD · homepage]\n{...json...}"
+  const match = raw.match(/^\[QUIZ_LEAD[^\]]*\]\s*\n?([\s\S]+)$/);
+  if (!match) return null;
+  try {
+    const answers = JSON.parse(match[1]) as Record<string, string>;
+    const rows = Object.entries(answers).map(([key, val]) => {
+      const icon = QUIZ_ICONS[key] ?? "•";
+      const label = QUIZ_LABELS[key]?.[val] ?? val;
+      return `  ${icon} ${label}`;
+    });
+    return rows.length ? rows.join("\n") : null;
+  } catch {
+    return null;
+  }
+}
+
 async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error?: string }> {
   const token = process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID;
@@ -132,7 +163,16 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
   if (email) lines.push(`✉️ <b>Email:</b> ${escapeHtml(email)}`);
   lines.push(`🏷 <b>Тип:</b> ${escapeHtml(typeLabel)}`);
   if (villageSlug) lines.push(`🏡 <b>Посёлок:</b> <code>${escapeHtml(villageSlug)}</code>`);
-  if (message) lines.push(`💬 <b>Комментарий:</b>\n${escapeHtml(message)}`);
+
+  if (message) {
+    const quizFormatted = formatQuizAnswers(message);
+    if (quizFormatted) {
+      lines.push(`📋 <b>Ответы квиза:</b>\n${quizFormatted}`);
+    } else {
+      lines.push(`💬 <b>Комментарий:</b>\n${escapeHtml(message)}`);
+    }
+  }
+
   if (source) lines.push(`🔗 <b>Источник:</b> ${escapeHtml(source)}`);
   if (lead.id) lines.push(`🆔 <code>${escapeHtml(lead.id)}</code>`);
   if (receivedAt) lines.push(`🕒 ${escapeHtml(receivedAt)}`);
