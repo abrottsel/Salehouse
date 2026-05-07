@@ -199,6 +199,7 @@ function Slider({ label, value, min, max, step, current, onChange, minLabel, max
       <input
         type="range" min={min} max={max} step={step} value={current}
         onChange={(e) => onChange(Number(e.target.value))}
+        style={{ touchAction: "pan-y" }}
         className="w-full h-1.5 bg-emerald-200/50 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-emerald-600 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
       />
       <div className="flex justify-between text-[10px] text-emerald-800/40 mt-1 font-medium">

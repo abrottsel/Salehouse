@@ -39,7 +39,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-50 pb-4 pt-4">
+    <footer className="bg-gray-50 pb-4">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
@@ -67,8 +67,8 @@ export default function Footer() {
               <a href="#contacts" className="hover:text-white transition-colors">Контакты</a>
             </nav>
 
-            {/* Contacts — mobile-first: ≥40px tap targets, разгружаем spacing */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5 text-sm min-w-0">
+            {/* Contacts — mobile-first: ≥40px tap targets */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4 text-sm min-w-0">
               <a
                 href={`tel:${PHONE_RAW}`}
                 className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors min-h-[44px] -my-2 py-2"
@@ -77,12 +77,12 @@ export default function Footer() {
                 <span className="hidden sm:inline">{PHONE_FMT}</span>
               </a>
 
-              {/* Email + copy — на мобиле раздаём gap, на десктопе плотнее */}
-              <div className="flex items-center gap-2 sm:gap-1">
+              {/* Email + copy */}
+              <div className="flex items-center gap-1">
                 <a
                   href={`mailto:${FOOTER_EMAIL}`}
                   aria-label={`Написать на ${FOOTER_EMAIL}`}
-                  className="text-red-400 hover:text-red-300 transition-colors p-3 -m-3 inline-flex items-center justify-center"
+                  className="text-red-400 hover:text-red-300 transition-colors p-2 inline-flex items-center justify-center"
                 >
                   <Mail className="w-4 h-4" />
                 </a>
@@ -91,7 +91,7 @@ export default function Footer() {
                   onClick={handleCopyEmail}
                   aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
                   title={emailCopied ? "Скопировано" : `Скопировать ${FOOTER_EMAIL}`}
-                  className="text-gray-500 hover:text-gray-300 transition-colors p-3 -m-3 inline-flex items-center justify-center min-w-[40px] min-h-[40px]"
+                  className="text-gray-500 hover:text-gray-300 transition-colors p-2 inline-flex items-center justify-center min-w-[40px] min-h-[40px]"
                 >
                   {emailCopied ? (
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -106,7 +106,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Telegram"
-                className="text-sky-400 hover:text-sky-300 transition-colors p-3 -m-3 inline-flex items-center justify-center"
+                className="text-sky-400 hover:text-sky-300 transition-colors p-2 inline-flex items-center justify-center"
               >
                 <TgIcon />
               </a>
@@ -116,7 +116,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="MAX"
-                className="shrink-0 p-3 -m-3 inline-flex items-center justify-center"
+                className="shrink-0 p-2 inline-flex items-center justify-center"
               >
                 <img src="/max-logo.png" alt="MAX" className="w-4 h-4 rounded-sm" />
               </a>
