@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, Copy, Check } from "lucide-react";
+import { Phone, Mail, Check } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 
 const FOOTER_EMAIL = LEGAL.email;
@@ -21,26 +21,32 @@ function TgIcon() {
   );
 }
 
-export default function Footer() {
+export default function Footer({ slim = false }: { slim?: boolean } = {}) {
   const [emailCopied, setEmailCopied] = useState(false);
 
-  const handleCopyEmail = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  /**
+   * Tap on email → opens mailto in user's mail app AND silently copies the
+   * address to clipboard. If the system has no mailto handler, the address
+   * is already in the clipboard ready to paste anywhere.
+   * Brief check icon confirms the silent copy happened.
+   */
+  const handleEmailClick = async () => {
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(FOOTER_EMAIL);
+        setEmailCopied(true);
+        window.setTimeout(() => setEmailCopied(false), 1500);
       }
     } catch {
-      // clipboard might be unavailable in insecure context — silently ignore
+      // clipboard might be unavailable (insecure context) — fall through to
+      // native mailto-only behaviour, no UI change needed
     }
-    setEmailCopied(true);
-    window.setTimeout(() => setEmailCopied(false), 1500);
+    // Do NOT preventDefault — mailto: must still navigate
   };
 
   return (
-    <footer className="bg-gray-50 pb-4">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className={slim ? "pb-4" : "bg-gray-50 pb-4"}>
+      <div className={`max-w-[1920px] mx-auto ${slim ? "px-2 sm:px-3 lg:px-4" : "px-4 sm:px-6 lg:px-8"}`}>
         <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
@@ -64,42 +70,41 @@ export default function Footer() {
               <a href="#catalog" className="hover:text-white transition-colors">Посёлки</a>
               <a href="#calculator" className="hover:text-white transition-colors">Ипотека</a>
               <a href="#steps-block" className="hover:text-white transition-colors">Как купить</a>
-              <a href="#contacts" className="hover:text-white transition-colors">Контакты</a>
+              <Link href="/contacts" className="hover:text-white transition-colors">Контакты</Link>
             </nav>
 
             {/* Contacts — mobile-first: ≥40px tap targets */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4 text-sm min-w-0">
+            <div className="flex flex-wrap items-center gap-x-1 gap-y-1 sm:gap-x-2 text-sm min-w-0">
               <a
                 href={`tel:${PHONE_RAW}`}
-                className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors min-h-[44px] -my-2 py-2"
+                className="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors min-h-[44px] -my-2 py-2 pr-1"
               >
                 <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
                 <span className="hidden sm:inline">{PHONE_FMT}</span>
               </a>
 
-              {/* Email + copy */}
-              <div className="flex items-center gap-1">
-                <a
-                  href={`mailto:${FOOTER_EMAIL}`}
-                  aria-label={`Написать на ${FOOTER_EMAIL}`}
-                  className="text-red-400 hover:text-red-300 transition-colors p-2 inline-flex items-center justify-center"
-                >
+              {/* Email — tap opens mail, silently copies to clipboard as fallback */}
+              <a
+                href={`mailto:${FOOTER_EMAIL}`}
+                onClick={handleEmailClick}
+                aria-label={
+                  emailCopied
+                    ? `Скопировано: ${FOOTER_EMAIL}`
+                    : `Написать на ${FOOTER_EMAIL}`
+                }
+                title={
+                  emailCopied
+                    ? "Скопировано в буфер"
+                    : `Написать · ${FOOTER_EMAIL}`
+                }
+                className="text-red-400 hover:text-red-300 transition-colors p-2 inline-flex items-center justify-center"
+              >
+                {emailCopied ? (
+                  <Check className="w-4 h-4 text-emerald-400" />
+                ) : (
                   <Mail className="w-4 h-4" />
-                </a>
-                <button
-                  type="button"
-                  onClick={handleCopyEmail}
-                  aria-label={emailCopied ? "Скопировано" : "Скопировать email"}
-                  title={emailCopied ? "Скопировано" : `Скопировать ${FOOTER_EMAIL}`}
-                  className="text-gray-500 hover:text-gray-300 transition-colors p-2 inline-flex items-center justify-center min-w-[40px] min-h-[40px]"
-                >
-                  {emailCopied ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
+                )}
+              </a>
 
               <a
                 href={TG_URL}

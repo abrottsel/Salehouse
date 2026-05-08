@@ -143,9 +143,9 @@ export default async function VillagePage({ params }: Props) {
         ) : null}
 
         {/* 4. Quiz — подбор участка */}
-        <QuizSection />
+        <QuizSection slim />
       </main>
-      <Footer />
+      <Footer slim />
     </>
   );
 }

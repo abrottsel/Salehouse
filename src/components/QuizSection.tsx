@@ -230,12 +230,12 @@ function SuccessGlass({ name, phone }: { name: string; phone: string }) {
 // ─────────────────────────────────────────────────────────────────────
 // QuizSection (V12) — production
 
-export default function QuizSection() {
+export default function QuizSection({ slim = false }: { slim?: boolean } = {}) {
   const s = useQuizState(QUESTIONS);
 
   return (
-    <section id="contacts" className="bg-gray-50 pb-4">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="contacts" className={slim ? "pb-4" : "bg-gray-50 pb-4"}>
+      <div className={`max-w-[1920px] mx-auto ${slim ? "px-2 sm:px-3 lg:px-4" : "px-4 sm:px-6 lg:px-8"}`}>
         <div
           className="relative overflow-hidden rounded-2xl bg-cover bg-center"
           style={{ backgroundImage: "url(/hero-v2.jpg)" }}

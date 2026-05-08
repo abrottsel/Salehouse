@@ -22,7 +22,7 @@ const navLinksMain = [
   { href: "#catalog", label: "Посёлки", Icon: TreePine },
   { href: "#calculator", label: "Ипотека", Icon: Calculator },
   { href: "#steps-block", label: "Как купить", Icon: ListChecks },
-  { href: "#contacts", label: "Контакты", Icon: PhoneCall },
+  { href: "/contacts", label: "Контакты", Icon: PhoneCall },
 ];
 
 const navLinksV2 = [
