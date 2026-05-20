@@ -15,18 +15,14 @@
   --font-sans: var(--font-inter);
 }
 
-/* scroll-behavior: smooth убран везде — конфликтует с инерционным скроллом
-   в Telegram/iOS WebView. Используем behavior: "instant" в JS. */
-
+/* scroll-behavior: smooth убран — конфликтует с инерционным скроллом в TG/iOS WebView */
 html {
-  /* Явно отменяем любой scroll-behavior чтобы Tailwind scroll-smooth не просочился */
   scroll-behavior: auto !important;
 }
 
 body {
   font-family: var(--font-sans);
-  /* Разрешаем нативный pan-y — критично для плавного скролла в TG WebView */
-  touch-action: pan-y;
+  touch-action: pan-y; /* критично для плавного скролла в TG WebView */
 }
 
 /* Custom range slider */

@@ -41,9 +41,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // schema.org Organization — явный сигнал для Apple/Google что это
-  // легитимный оператор ПД, а не фишинг. Включает ОГРНИП/ИНН (identifier
-  // для РФ-резидентов), контакты, права и privacy policy.
+  // schema.org Organization — легитимный сигнал для Apple/Google, включает ОГРНИП/ИНН
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -74,11 +72,11 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable}`}>
       <head>
-        {/* Замораживаем высоту viewport один раз при загрузке.
-            Telegram/iOS WebView прячет/показывает хромовую панель во время скролла,
-            из-за чего svh/vh пересчитывается → layout reflow → страница прыгает.
-            window.innerHeight захватывается ДО любого скролла и больше не меняется. */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var h=window.innerHeight;document.documentElement.style.setProperty('--app-height',h+'px');})();` }} />
+        {/* Замораживаем высоту viewport один раз при загрузке — защита от прыжков в TG/iOS WebView */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){
+  var h = window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', h + 'px');
+})();` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}

@@ -52,11 +52,7 @@ export default function Header() {
   };
   const rawNavLinks = isV2 ? navLinksV2 : navLinksMain;
   const navLinks = rawNavLinks.map((l) => ({ ...l, href: rewriteHref(l.href) }));
-  const ctaHref = isV2
-    ? "#callback"
-    : isHome
-      ? "#contacts"
-      : "#contacts"; // stays in-page on village pages (form is present)
+  const ctaHref = isV2 ? "#callback" : "#contacts";
   const logoHref = isV2 ? "/v2" : "/";
   const rowHeight = isV2 ? "h-12" : "h-14";
 
@@ -82,8 +78,7 @@ export default function Header() {
             <Logo />
           </a>
 
-          {/* Desktop Nav */}
-          {/* Desktop Nav — V27: ghost pill на активном, голый текст на остальных */}
+          {/* Desktop Nav — ghost pill на активном, голый текст на остальных */}
           <nav className="hidden lg:flex items-center flex-1 justify-center min-w-0">
             <div className="flex items-center gap-1">
               {navLinks.map((link) => {
