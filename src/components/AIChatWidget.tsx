@@ -265,7 +265,7 @@ export default function AIChatWidget() {
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white px-4 py-5 space-y-3"
+            className="flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-gray-50 to-white px-4 py-5 space-y-3"
           >
             {messages.map((msg, i) => (
               <div

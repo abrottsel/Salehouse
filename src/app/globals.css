@@ -12,9 +12,8 @@
   --font-sans: var(--font-inter);
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* scroll-behavior: smooth убран — дублирует Tailwind scroll-smooth в layout.tsx
+   и вызывает конфликт с инерционным скроллом в Telegram/iOS WebView */
 
 body {
   font-family: var(--font-sans);
