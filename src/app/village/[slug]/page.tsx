@@ -107,7 +107,7 @@ export default async function VillagePage({ params }: Props) {
         {/* 3. Interactive plot map — either our ymaps3 widget or an
             external iframe for villages that don't have a mapUuid */}
         {village.iframeMapUrl ? (
-          <section id="plots-map" className="px-2 sm:px-3 lg:px-4 pb-6">
+          <section id="plots-map" className="px-3 sm:px-4 lg:px-6 pb-6">
             <div className="max-w-[1920px] mx-auto overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-lg">
               <IframeDisclosureBanner villageName={village.name} />
               <div className="relative">
@@ -133,7 +133,7 @@ export default async function VillagePage({ params }: Props) {
             </div>
           </section>
         ) : village.mapUuid ? (
-          <section id="plots-map" className="px-2 sm:px-3 lg:px-4 pb-6">
+          <section id="plots-map" className="px-3 sm:px-4 lg:px-6 pb-6">
             <InteractivePlotMap
               villageUuid={village.mapUuid}
               villageName={village.name}

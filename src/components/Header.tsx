@@ -58,13 +58,17 @@ export default function Header() {
       ? "#contacts"
       : "#contacts"; // stays in-page on village pages (form is present)
   const logoHref = isV2 ? "/v2" : "/";
-  const rowHeight = isV2 ? "h-12" : "h-16";
+  const rowHeight = isV2 ? "h-12" : "h-14";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-2.5">
+      <div className="bg-white shadow-md rounded-2xl sm:rounded-3xl overflow-hidden">
+      {/* Зелёная градиентная полоска сверху — как в подвале */}
+      <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
+
       <div className="mx-auto px-2 sm:px-4 lg:px-6 max-w-[1600px]">
         <div className={`flex items-center ${rowHeight}`}>
-          {/* Logo — прижат к левому краю */}
+          {/* Logo */}
           <a
             href={logoHref}
             className="shrink-0 mr-4"
@@ -78,20 +82,28 @@ export default function Header() {
             <Logo />
           </a>
 
-          {/* Desktop Nav — pill container, icon-only on lg, text on xl+ */}
+          {/* Desktop Nav */}
+          {/* Desktop Nav — V27: ghost pill на активном, голый текст на остальных */}
           <nav className="hidden lg:flex items-center flex-1 justify-center min-w-0">
-            <div className="flex items-center bg-gray-100/80 rounded-full p-1 gap-0.5 border border-gray-200/80">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  title={link.label}
-                  className="group flex items-center gap-1 xl:gap-1.5 px-2 xl:px-2.5 py-1.5 text-xs font-semibold text-gray-700 rounded-full hover:bg-white hover:text-green-700 hover:shadow-sm transition-all duration-200 whitespace-nowrap"
-                >
-                  <link.Icon className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                  <span className="hidden xl:inline">{link.label}</span>
-                </a>
-              ))}
+            <div className="flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = !isHome && (pathname === link.href || pathname.startsWith(link.href + "/"));
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className={[
+                      "px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150",
+                      "border-[1.5px]",
+                      isActive
+                        ? "border-emerald-500 text-emerald-600 font-semibold"
+                        : "border-transparent text-gray-500 hover:text-green-700 hover:bg-green-50",
+                    ].join(" ")}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
             </div>
           </nav>
 
@@ -113,10 +125,8 @@ export default function Header() {
               href={ctaHref}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs shadow-sm shadow-green-600/25 whitespace-nowrap"
             >
-              <span className="2xl:hidden">Посмотреть вживую</span>
-              <span className="hidden 2xl:inline">Посмотреть вживую</span>
+              Посмотреть вживую
             </a>
-
           </div>
 
           {/* Mobile toggle */}
@@ -177,6 +187,7 @@ export default function Header() {
           </div>
         </div>
       )}
+      </div>
     </header>
   );
 }

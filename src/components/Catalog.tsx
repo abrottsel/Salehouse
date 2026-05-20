@@ -249,7 +249,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
 
   return (
     <section id="catalog" className="pt-8 lg:pt-12 pb-4 bg-gray-50 scroll-mt-16">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Catalog hero — dynamic stats strip */}
         <div className="text-center mb-6">
           {/* Uppercase pill */}

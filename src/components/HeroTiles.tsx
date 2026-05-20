@@ -102,9 +102,11 @@ const tiles: HeroTile[] = [
 
 export default function HeroTiles() {
   return (
+    // Outer wrapper: клирит фиксированный хедер (~70px) + боковые отступы как у блоков ниже
+    <div className="px-3 sm:px-4 lg:px-6 pt-[82px] sm:pt-[84px] pb-3 sm:pb-4">
     <section
-      className="relative min-h-svh overflow-hidden flex bg-slate-950 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url(/hero-home.jpg)" }}
+      className="relative overflow-hidden flex bg-slate-950 bg-cover bg-center bg-no-repeat rounded-2xl sm:rounded-3xl"
+      style={{ backgroundImage: "url(/hero-home.jpg)", minHeight: "calc(100svh - 82px)" }}
     >
       {/* Dark overlay — readable text without killing the photo */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/65" />
@@ -113,7 +115,7 @@ export default function HeroTiles() {
       <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 flex flex-col justify-center min-h-svh">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 flex flex-col justify-center" style={{ minHeight: "calc(100svh - 82px)" }}>
         {/* Headline */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
@@ -165,58 +167,7 @@ export default function HeroTiles() {
           ))}
         </div>
       </div>
-      {/* Rainbow border for liquid glass tiles */}
-      <style>{`
-        .hero-glass-tile,
-        .hero-glass-tile-wide {
-          position: relative;
-        }
-        .hero-glass-tile::before {
-          content: '';
-          position: absolute;
-          inset: -1.5px;
-          border-radius: inherit;
-          padding: 1.5px;
-          background: conic-gradient(
-            from 0deg,
-            rgba(255,0,0,0.35),
-            rgba(255,165,0,0.35),
-            rgba(255,255,0,0.25),
-            rgba(0,255,0,0.25),
-            rgba(0,200,255,0.35),
-            rgba(100,100,255,0.35),
-            rgba(200,0,255,0.35),
-            rgba(255,0,0,0.35)
-          );
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
-        }
-        .hero-glass-tile-wide::before {
-          content: '';
-          position: absolute;
-          inset: -3px;
-          border-radius: inherit;
-          padding: 3px;
-          background: conic-gradient(
-            from 45deg,
-            rgba(255,255,255,0.85),
-            rgba(180,255,180,0.7),
-            rgba(255,255,255,0.6),
-            rgba(180,220,255,0.7),
-            rgba(255,255,255,0.85),
-            rgba(255,200,180,0.7),
-            rgba(255,255,255,0.6),
-            rgba(200,180,255,0.7),
-            rgba(255,255,255,0.85)
-          );
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
-        }
-      `}</style>
     </section>
+    </div>
   );
 }

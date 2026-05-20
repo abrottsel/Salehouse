@@ -48,7 +48,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "ЗемПлюс",
-    legalName: "ИП Бротцель Антон Валерьевич",
+    legalName: "ИП Бротцель Антон Викторович",
     url: "https://prozemplus.ru",
     logo: "https://prozemplus.ru/favicon.svg",
     description:

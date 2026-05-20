@@ -58,7 +58,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
 
   return (
     <section className="bg-gray-50 pb-4">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
         <div
           className="relative overflow-hidden rounded-2xl bg-cover bg-center"

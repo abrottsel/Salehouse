@@ -59,3 +59,54 @@ input[type="range"]::-moz-range-thumb {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ─── Hero tile glass borders & hover ─────────────────────────── */
+.hero-glass-tile,
+.hero-glass-tile-wide {
+  position: relative;
+}
+.hero-glass-tile::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,0,0,0.35),
+    rgba(255,165,0,0.35),
+    rgba(255,255,0,0.25),
+    rgba(0,255,0,0.25),
+    rgba(0,200,255,0.35),
+    rgba(100,100,255,0.35),
+    rgba(200,0,255,0.35),
+    rgba(255,0,0,0.35)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.hero-glass-tile-wide::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(
+    from 45deg,
+    rgba(255,255,255,0.85),
+    rgba(180,255,180,0.7),
+    rgba(255,255,255,0.6),
+    rgba(180,220,255,0.7),
+    rgba(255,255,255,0.85),
+    rgba(255,200,180,0.7),
+    rgba(255,255,255,0.6),
+    rgba(200,180,255,0.7),
+    rgba(255,255,255,0.85)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
