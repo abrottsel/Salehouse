@@ -97,12 +97,12 @@ export default function Footer({ slim = false }: { slim?: boolean } = {}) {
                     ? "Скопировано в буфер"
                     : `Написать · ${FOOTER_EMAIL}`
                 }
-                className="text-red-400 hover:text-red-300 transition-colors p-2 inline-flex items-center justify-center"
+                className="text-red-400 hover:text-red-300 transition-colors p-1.5 inline-flex items-center justify-center"
               >
                 {emailCopied ? (
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <Check className="w-5 h-5 text-emerald-400" />
                 ) : (
-                  <Mail className="w-4 h-4" />
+                  <Mail className="w-5 h-5" />
                 )}
               </a>
 
@@ -111,19 +111,19 @@ export default function Footer({ slim = false }: { slim?: boolean } = {}) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Telegram"
-                className="text-sky-400 hover:text-sky-300 transition-colors p-2 inline-flex items-center justify-center"
+                className="p-1.5 inline-flex items-center justify-center hover:opacity-80 transition-opacity"
               >
-                <TgIcon />
+                <img src="/telegram-logo.png" alt="Telegram" className="w-5 h-5 rounded-md bg-gradient-to-br from-[#2AABEE] to-[#229ED9]" />
               </a>
 
               <a
                 href={MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="MAX"
-                className="shrink-0 p-2 inline-flex items-center justify-center"
+                aria-label="MAX Messenger"
+                className="p-1.5 inline-flex items-center justify-center hover:opacity-80 transition-opacity"
               >
-                <img src="/max-logo.png" alt="MAX" className="w-4 h-4 rounded-sm" />
+                <img src="/max-logo.png" alt="MAX" className="w-5 h-5 rounded-md" />
               </a>
             </div>
           </div>
