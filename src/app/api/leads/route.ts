@@ -135,7 +135,9 @@ function formatQuizAnswers(raw: string): string | null {
 }
 
 async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error?: string }> {
-  const token = process.env.TG_BOT_TOKEN;
+  // Лиды идут через @prozemplus_bot (PROZEM_BOT_TOKEN) в личку Антону.
+  // Фоллбэк на TG_BOT_TOKEN если PROZEM_BOT_TOKEN ещё не прописан в env.
+  const token = process.env.PROZEM_BOT_TOKEN ?? process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID;
   if (!token || !chatId) {
     return { ok: false, error: "TG credentials not configured" };

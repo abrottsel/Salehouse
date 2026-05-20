@@ -69,9 +69,9 @@ const contactCards: ContactCard[] = [
     email: true,
   },
   {
-    href: "https://t.me/zemplus_bot",
+    href: "https://t.me/prozemplus_bot",
     Icon: MessageCircle,
-    title: "@zemplus",
+    title: "prozemplus",
     sub: "Telegram — ответим быстро",
     gradient: "from-sky-500 to-blue-600",
     bg: "bg-sky-50 hover:bg-sky-100",

@@ -18,7 +18,8 @@ export const LEGAL = {
   phone: "+7 (985) 905-25-55",
   phoneRaw: "+79859052555",
   email: "info@zem.plus",
-  telegram: "https://t.me/zemplus_bot",
+  telegram: "https://t.me/prozemplus_bot",
+  telegramHandle: "prozemplus",
   max: "https://max.ru/id503440358928_bot",
   // Даты документов
   privacyUpdatedAt: "2026-04-30",

@@ -67,7 +67,7 @@ export default function RootLayout({
       availableLanguage: "ru",
       areaServed: "RU",
     },
-    sameAs: ["https://t.me/zemplus_bot", "https://max.ru/id503440358928_bot"],
+    sameAs: ["https://t.me/prozemplus_bot", "https://max.ru/id503440358928_bot"],
     privacyPolicy: "https://prozemplus.ru/privacy",
   };
 

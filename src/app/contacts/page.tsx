@@ -188,7 +188,7 @@ export default function ContactsPage() {
                 icon={Send}
                 iconBg="bg-[#2AABEE]"
                 eyebrow="Telegram"
-                title="@zemplus"
+                title="prozemplus"
                 hint="Бот для подбора участка"
               />
               <ContactCard
