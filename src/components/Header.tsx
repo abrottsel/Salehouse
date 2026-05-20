@@ -61,7 +61,7 @@ export default function Header() {
   const rowHeight = isV2 ? "h-12" : "h-14";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-2.5 will-change-transform">
+    <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-2.5">
       <div className="bg-white shadow-md rounded-2xl sm:rounded-3xl overflow-hidden">
       {/* Зелёная градиентная полоска сверху — как в подвале */}
       <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
