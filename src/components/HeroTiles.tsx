@@ -106,7 +106,7 @@ export default function HeroTiles() {
     <div className="px-3 sm:px-4 lg:px-6 pt-[82px] sm:pt-[84px] pb-3 sm:pb-4">
     <section
       className="relative overflow-hidden flex bg-slate-950 bg-cover bg-center bg-no-repeat rounded-2xl sm:rounded-3xl"
-      style={{ backgroundImage: "url(/hero-home.jpg)", minHeight: "calc(100svh - 82px)" }}
+      style={{ backgroundImage: "url(/hero-home.jpg)", minHeight: "calc(var(--app-height, 100svh) - 82px)" }}
     >
       {/* Dark overlay — readable text without killing the photo */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/65" />
@@ -115,7 +115,7 @@ export default function HeroTiles() {
       <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 flex flex-col justify-center" style={{ minHeight: "calc(100svh - 82px)" }}>
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 flex flex-col justify-center" style={{ minHeight: "calc(var(--app-height, 100svh) - 82px)" }}>
         {/* Headline */}
         <div className="mb-6 sm:mb-8 lg:mb-10">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">

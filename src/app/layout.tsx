@@ -74,6 +74,11 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable}`}>
       <head>
+        {/* Замораживаем высоту viewport один раз при загрузке.
+            Telegram/iOS WebView прячет/показывает хромовую панель во время скролла,
+            из-за чего svh/vh пересчитывается → layout reflow → страница прыгает.
+            window.innerHeight захватывается ДО любого скролла и больше не меняется. */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var h=window.innerHeight;document.documentElement.style.setProperty('--app-height',h+'px');})();` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}

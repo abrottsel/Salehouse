@@ -4,6 +4,9 @@
 
 :root {
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  /* Замороженная высота viewport — устанавливается JS в layout.tsx один раз при загрузке.
+     Защищает от прыжков при анимации хромовой панели Telegram/iOS WebView. */
+  --app-height: 100svh;
 }
 
 @theme inline {
