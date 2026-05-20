@@ -451,13 +451,13 @@ function DropdownPanelInner({ anchor, home, onSave, onClose }: DropdownProps) {
       onScrollLike();
     };
 
-    window.addEventListener("scroll", onScrollLike, true);
+    window.addEventListener("scroll", onScrollLike, { passive: true });
     window.addEventListener("wheel", onScrollLike, { passive: true });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("resize", compute);
     return () => {
-      window.removeEventListener("scroll", onScrollLike, true);
+      window.removeEventListener("scroll", onScrollLike);
       window.removeEventListener("wheel", onScrollLike);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
