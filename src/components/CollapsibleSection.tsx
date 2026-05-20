@@ -45,7 +45,7 @@ export default function CollapsibleSection({
         // Scroll into view after the expand animation starts.
         requestAnimationFrame(() => {
           rootRef.current?.scrollIntoView({
-            behavior: "smooth",
+            behavior: "instant",
             block: "start",
           });
         });

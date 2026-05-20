@@ -72,7 +72,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ru" className={`${inter.variable} scroll-smooth`}>
+    <html lang="ru" className={`${inter.variable}`}>
       <head>
         <script
           type="application/ld+json"

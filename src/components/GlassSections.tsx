@@ -30,7 +30,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
       const next = prev === id ? null : id;
       if (next) {
         requestAnimationFrame(() => {
-          contentRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          contentRef.current?.scrollIntoView({ behavior: "instant", block: "nearest" });
         });
       }
       return next;
@@ -45,7 +45,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
       if (match) {
         setActiveId(match.id);
         requestAnimationFrame(() => {
-          contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          contentRef.current?.scrollIntoView({ behavior: "instant", block: "start" });
         });
       }
     };
