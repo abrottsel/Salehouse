@@ -46,7 +46,7 @@ const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TG_CHAT_ID;
 
 const MAX_API = 'https://platform-api.max.ru';
-const SITE_URL = process.env.SITE_URL || 'https://zem.plus';
+const SITE_URL = process.env.SITE_URL || 'https://prozemplus.ru';
 
 const MARKER_PATH = path.join(__dirname, '.max-marker');
 

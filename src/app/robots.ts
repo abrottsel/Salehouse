@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/admin/", "/preview", "/preview-"],
       },
     ],
-    sitemap: "https://zem.plus/sitemap.xml",
-    host: "https://zem.plus",
+    sitemap: "https://prozemplus.ru/sitemap.xml",
+    host: "https://prozemplus.ru",
   };
 }

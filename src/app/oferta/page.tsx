@@ -7,7 +7,7 @@ import { LEGAL } from "@/lib/legal";
 export const metadata: Metadata = {
   title: `Оферта на бронирование земельного участка — ${LEGAL.brand}`,
   description:
-    "Публичная оферта на услугу бронирования земельного участка через сервис Zemexx на сайте zem.plus.",
+    "Публичная оферта на услугу бронирования земельного участка через сервис Zemexx на сайте prozemplus.ru.",
   robots: { index: true, follow: true },
 };
 

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE = "https://zem.plus";
+const BASE = "https://prozemplus.ru";
 
 function getVillages(): string[] {
   try {
