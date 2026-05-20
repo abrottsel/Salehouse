@@ -20,10 +20,10 @@ const villages = [
   { name: 'Лесной Остров', direction: 'Каширское шоссе', distance: 36, priceFrom: 625000, areaFrom: 6, areaTo: 15 },
   { name: 'Новое Сонино', direction: 'Каширское шоссе', distance: 37, priceFrom: 355000, areaFrom: 6, areaTo: 25 },
   { name: 'Дачная Практика-2', direction: 'Каширское шоссе', distance: 42, priceFrom: 180000, areaFrom: 6, areaTo: 30 },
-  { name: 'Регата', direction: 'Симферопольское шоссе', distance: 45, priceFrom: 190000, areaFrom: 6, areaTo: 20 },
-  { name: 'Есенино', direction: 'Симферопольское шоссе', distance: 50, priceFrom: 220000, areaFrom: 8, areaTo: 25 },
   { name: 'Каретный Ряд', direction: 'Дмитровское шоссе', distance: 42, priceFrom: 350000, areaFrom: 6, areaTo: 15 },
   { name: 'Триумфальный', direction: 'Дмитровское шоссе', distance: 48, priceFrom: 250000, areaFrom: 8, areaTo: 20 },
+  { name: 'Сосновый Бор', direction: 'Новорижское шоссе', distance: 55, priceFrom: 450000, areaFrom: 8, areaTo: 25 },
+  { name: 'Лесная Поляна', direction: 'Новорижское шоссе', distance: 60, priceFrom: 520000, areaFrom: 10, areaTo: 30 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -168,11 +168,9 @@ function sendVillages(chatId) {
   const text =
     '\u{1F4CD} <b>Наши посёлки в Подмосковье</b>\n\n' +
     '\u{1F697} <b>Каширское шоссе</b> (30–50 км от МКАД)\n' +
-    'Фаворит, Лесной Остров, Новое Сонино, Дачная Практика-2\n\n' +
-    '\u{1F697} <b>Симферопольское шоссе</b> (35–60 км)\n' +
-    'Регата, Есенино, Ильинское\n\n' +
+    'Фаворит, Лесной Остров, Новое Сонино, Дачная Практика-2 и др.\n\n' +
     '\u{1F697} <b>Дмитровское шоссе</b> (40–55 км)\n' +
-    'Каретный Ряд, Триумфальный\n\n' +
+    'Каретный Ряд, Триумфальный и др.\n\n' +
     '\u{1F697} <b>Новорижское шоссе</b> (45–70 км)\n' +
     'Премиальные посёлки с лесом\n\n' +
     'Всего 31 посёлок, 2800+ участков\n\n' +
@@ -196,7 +194,6 @@ function sendPrices(chatId) {
     '\u{1F4B0} <b>Цены на участки ПроЗемплюс</b>\n\n' +
     '\u{1F4CA} Стоимость за сотку:\n' +
     '• Каширское шоссе — от 180 000 ₽\n' +
-    '• Симферопольское шоссе — от 190 000 ₽\n' +
     '• Дмитровское шоссе — от 250 000 ₽\n' +
     '• Новорижское шоссе — от 350 000 ₽\n\n' +
     '\u{1F4B3} <b>Рассрочка:</b>\n' +
@@ -311,13 +308,12 @@ bot.on('callback_query', (query) => {
         inline_keyboard: [
           [
             { text: 'Каширское шоссе', callback_data: 'dir_kashir' },
-            { text: 'Симферопольское шоссе', callback_data: 'dir_simfer' },
+            { text: 'Дмитровское шоссе', callback_data: 'dir_dmitrov' },
           ],
           [
-            { text: 'Дмитровское шоссе', callback_data: 'dir_dmitrov' },
             { text: 'Новорижское шоссе', callback_data: 'dir_novorig' },
+            { text: 'Любое направление', callback_data: 'dir_any' },
           ],
-          [{ text: 'Любое направление', callback_data: 'dir_any' }],
         ],
       },
     });
@@ -327,7 +323,6 @@ bot.on('callback_query', (query) => {
   if (data.startsWith('dir_')) {
     const dirMap = {
       dir_kashir: 'Каширское шоссе',
-      dir_simfer: 'Симферопольское шоссе',
       dir_dmitrov: 'Дмитровское шоссе',
       dir_novorig: 'Новорижское шоссе',
       dir_any: 'any',
