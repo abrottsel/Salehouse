@@ -173,10 +173,11 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
           type="button"
           onClick={collapse}
           aria-label="Свернуть раздел"
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-gray-900/90 hover:bg-gray-900 text-white text-sm font-semibold pl-4 pr-3 py-2.5 shadow-2xl ring-1 ring-white/15 backdrop-blur-md transition-colors"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.75rem)" }}
+          className="fixed left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-gray-900 hover:bg-black active:scale-95 text-white text-sm font-semibold px-5 py-3.5 shadow-2xl ring-1 ring-white/20 transition-all"
         >
           <ChevronDown className="w-4 h-4 rotate-180" />
-          Свернуть «{activeCard.title}»
+          Свернуть
           <X className="w-4 h-4 opacity-70" />
         </button>
       )}
