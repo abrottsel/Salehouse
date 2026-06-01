@@ -10,9 +10,6 @@ import {
   Calculator,
   ListChecks,
   PhoneCall,
-  ShieldCheck,
-  Landmark,
-  HelpCircle,
 } from "lucide-react";
 import Logo from "./Logo";
 import FavoritesCounter from "./FavoritesCounter";
@@ -25,19 +22,14 @@ const navLinksMain = [
   { href: "/contacts", label: "Контакты", Icon: PhoneCall },
 ];
 
-const navLinksV2 = [
-  { href: "/v2#catalog", label: "Посёлки", Icon: TreePine },
-  { href: "/v2/about", label: "О нас", Icon: ShieldCheck },
-  { href: "/v2/mortgage", label: "Ипотека", Icon: Landmark },
-  { href: "/v2/how-to-buy", label: "Как купить", Icon: ListChecks },
-  { href: "/v2/faq", label: "Вопросы", Icon: HelpCircle },
-];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname() || "";
   const isV2 = pathname.startsWith("/v2");
-  const isHome = pathname === "/";
+  // /v2 — клон главной с доработками: шапка ведёт себя как на главной
+  // (якоря работают на месте, та же навигация и высота).
+  const isHome = pathname === "/" || isV2;
   // Inner pages (e.g. /village/[slug]) don't contain the catalog /
   // calculator / steps-block anchors, so nav links that target those
   // hash fragments need a leading "/" to jump back to the home page.
@@ -45,16 +37,14 @@ export default function Header() {
   // contact form is rendered there too — keep it hash-only.
   const rewriteHref = (href: string) => {
     if (!href.startsWith("#")) return href;
-    if (isV2) return href;
     if (isHome) return href;
     if (href === "#contacts") return href;
     return `/${href}`;
   };
-  const rawNavLinks = isV2 ? navLinksV2 : navLinksMain;
-  const navLinks = rawNavLinks.map((l) => ({ ...l, href: rewriteHref(l.href) }));
-  const ctaHref = isV2 ? "#callback" : "#contacts";
+  const navLinks = navLinksMain.map((l) => ({ ...l, href: rewriteHref(l.href) }));
+  const ctaHref = "#contacts";
   const logoHref = isV2 ? "/v2" : "/";
-  const rowHeight = isV2 ? "h-12" : "h-14";
+  const rowHeight = "h-14";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-2.5">
