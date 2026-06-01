@@ -28,23 +28,7 @@ interface CardDef {
 
 export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [showFloating, setShowFloating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // Плавающая «Свернуть» видна только пока раскрытый блок на экране.
-  useEffect(() => {
-    if (!activeId || !contentRef.current) {
-      setShowFloating(false);
-      return;
-    }
-    const el = contentRef.current;
-    const io = new IntersectionObserver(
-      ([entry]) => setShowFloating(entry.isIntersecting),
-      { threshold: 0 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [activeId]);
 
   const toggle = (id: string) => {
     setActiveId((prev) => {
@@ -159,21 +143,21 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
 
-                {/* Top bar with explicit close */}
-                <div className="relative z-10 flex items-center justify-between gap-3 px-5 lg:px-8 pt-4">
+                {/* Top bar — ВСЯ шапка кликабельна на сворачивание (не только кнопка) */}
+                <button
+                  type="button"
+                  onClick={collapse}
+                  aria-label="Свернуть раздел"
+                  className="relative z-10 w-full flex items-center justify-between gap-3 px-5 lg:px-8 pt-4 pb-1 text-left"
+                >
                   <span className="text-sm font-bold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
                     {activeCard.title}
                   </span>
-                  <button
-                    type="button"
-                    onClick={collapse}
-                    aria-label="Свернуть"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/25 text-white text-[13px] font-semibold px-3 py-1.5 transition-colors"
-                  >
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-[13px] font-semibold px-3 py-1.5">
                     Свернуть
                     <X className="w-4 h-4" />
-                  </button>
-                </div>
+                  </span>
+                </button>
 
                 <div className="p-5 lg:p-8 pt-3">{activeCard.children}</div>
               </div>
@@ -182,8 +166,9 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
         </div>
       </div>
 
-      {/* v2 — плавающая «Свернуть»: видна всегда пока читаешь раскрытый блок */}
-      {activeCard && showFloating && (
+      {/* v2 — плавающая «Свернуть»: видна ВСЕГДА пока раздел открыт (на мобиле
+          при скролле вниз не пропадает) */}
+      {activeCard && (
         <button
           type="button"
           onClick={collapse}
