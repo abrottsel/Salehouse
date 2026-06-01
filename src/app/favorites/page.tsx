@@ -13,7 +13,7 @@ export default function FavoritesPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50 pt-20 pb-20">
+      <main className="min-h-screen bg-gray-50 dark:bg-transparent pt-20 pb-20">
         <FavoritesContent />
       </main>
       <Footer />

@@ -72,7 +72,7 @@ export default async function VillagePage({ params }: Props) {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-white dark:bg-[#0b0f14] dark:text-gray-100">
         {/* 1. Full-screen hero photo carousel */}
         <VillageHeroSwiper
           slug={village.slug}
@@ -108,7 +108,7 @@ export default async function VillagePage({ params }: Props) {
             external iframe for villages that don't have a mapUuid */}
         {village.iframeMapUrl ? (
           <section id="plots-map" className="px-3 sm:px-4 lg:px-6 pb-6">
-            <div className="max-w-[1920px] mx-auto overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-lg">
+            <div className="max-w-[1920px] mx-auto overflow-hidden rounded-2xl ring-1 ring-black/5 dark:ring-white/10 shadow-lg">
               <IframeDisclosureBanner villageName={village.name} />
               <div className="relative">
                 <iframe

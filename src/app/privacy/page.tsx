@@ -15,10 +15,10 @@ export default function PrivacyPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 prose prose-gray prose-sm sm:prose-base">
+      <main className="min-h-screen bg-white dark:bg-stone-950">
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 prose prose-gray dark:prose-invert prose-sm sm:prose-base">
           <h1>Политика конфиденциальности</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-stone-400">
             Редакция от {LEGAL.privacyUpdatedAt}, версия {LEGAL.policyVersion}
           </p>
 
@@ -205,7 +205,7 @@ export default function PrivacyPage() {
           </p>
 
           <p className="mt-8">
-            <Link href="/" className="text-emerald-600 hover:underline">
+            <Link href="/" className="text-emerald-600 dark:text-emerald-400 hover:underline">
               ← На главную
             </Link>
           </p>

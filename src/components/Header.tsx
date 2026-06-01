@@ -98,7 +98,7 @@ export default function Header() {
 
           {/* Phone + CTA */}
           <div className="hidden md:flex items-center gap-1 shrink-0 ml-2 lg:ml-4">
-            {isV2 && theme && (
+            {theme && (
               <button
                 type="button"
                 onClick={theme.toggle}
@@ -129,7 +129,7 @@ export default function Header() {
 
           {/* Mobile toggle */}
           <div className="lg:hidden ml-auto flex items-center gap-1">
-            {isV2 && theme && (
+            {theme && (
               <button
                 type="button"
                 onClick={theme.toggle}

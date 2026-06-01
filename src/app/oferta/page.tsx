@@ -15,15 +15,15 @@ export default function OfertaPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 prose prose-gray prose-sm sm:prose-base">
+      <main className="min-h-screen bg-white dark:bg-stone-950">
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 prose prose-gray dark:prose-invert prose-sm sm:prose-base">
           <h1>Публичная оферта на бронирование земельного участка</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-stone-400">
             Редакция от {LEGAL.ofertaUpdatedAt}, версия {LEGAL.ofertaVersion}
           </p>
 
-          <p className="bg-amber-50 border-l-4 border-amber-300 px-4 py-3 not-prose text-sm text-stone-700 my-6 rounded-r">
-            <strong className="text-stone-900">Важно.</strong> Настоящая Оферта
+          <p className="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-300 dark:border-amber-600 px-4 py-3 not-prose text-sm text-stone-700 dark:text-stone-300 my-6 rounded-r">
+            <strong className="text-stone-900 dark:text-stone-100">Важно.</strong> Настоящая Оферта
             регулирует только услугу <strong>бронирования</strong> участка через
             интерактивную карту, размещённую на сайте. Сама купля-продажа
             земельного участка оформляется отдельным договором с продавцом
@@ -250,7 +250,7 @@ export default function OfertaPage() {
           </p>
 
           <hr />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-stone-500">
             Редакция от {LEGAL.ofertaUpdatedAt}, версия {LEGAL.ofertaVersion}.
             Документ соответствует ст. 435–438 Гражданского кодекса РФ и
             Федеральному закону от 27.07.2006 № 152-ФЗ.

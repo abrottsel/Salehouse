@@ -6,6 +6,7 @@ import { FavoritesProvider } from "@/components/FavoritesProvider";
 import ScrollToTop from "@/components/ScrollToTop";
 import SocialFloating from "@/components/SocialFloating";
 import CookieBanner from "@/components/CookieBanner";
+import { ThemeWrapper } from "@/components/v2/ThemeWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -76,20 +77,25 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `(function(){
   var h = window.innerHeight;
   document.documentElement.style.setProperty('--app-height', h + 'px');
+  if (localStorage.getItem('v2-theme') !== 'light') {
+    document.documentElement.classList.add('dark');
+  }
 })();` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
         />
       </head>
-      <body className="min-h-screen bg-white text-gray-900 font-sans antialiased">
-        <FavoritesProvider>
-          {children}
-          <AIChatWidget />
-          <ScrollToTop />
-          <SocialFloating />
-          <CookieBanner />
-        </FavoritesProvider>
+      <body className="min-h-screen bg-white dark:bg-[#0b0f14] text-gray-900 dark:text-gray-100 font-sans antialiased">
+        <ThemeWrapper>
+          <FavoritesProvider>
+            {children}
+            <AIChatWidget />
+            <ScrollToTop />
+            <SocialFloating />
+            <CookieBanner />
+          </FavoritesProvider>
+        </ThemeWrapper>
       </body>
     </html>
   );

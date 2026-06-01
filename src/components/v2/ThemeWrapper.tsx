@@ -8,22 +8,31 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("v2-theme");
-    if (saved === "light") setDark(false);
+    const isDark = saved !== "light";
+    setDark(isDark);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, []);
 
   const toggle = () => {
     setDark((prev) => {
       const next = !prev;
       localStorage.setItem("v2-theme", next ? "dark" : "light");
+      if (next) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
       return next;
     });
   };
 
   return (
     <ThemeContext.Provider value={{ dark, toggle }}>
-      <div className={dark ? "dark bg-[#0b0f14] text-gray-100 min-h-screen" : "bg-white text-gray-900 min-h-screen"}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }

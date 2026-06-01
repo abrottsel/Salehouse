@@ -43,20 +43,20 @@ export default function ContactsPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-50 dark:bg-transparent">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12">
           {/* Hero */}
           <section className="mb-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 text-[11px] font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               О компании
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-gray-900 mb-3 tracking-tight">
+            <h1 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">
               {LEGAL.brand} — земельные участки
               <br className="hidden sm:block" />{" "}
               <span className="text-emerald-700">в Подмосковье под ключ</span>
             </h1>
-            <p className="text-gray-600 text-base sm:text-lg max-w-3xl">
+            <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg max-w-3xl">
               Помогаем выбрать и купить участок: подбираем по бюджету и
               направлению, проверяем документы, сопровождаем сделку и оформление
               ипотеки.
@@ -96,9 +96,9 @@ export default function ContactsPage() {
           </section>
 
           {/* About */}
-          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6 sm:p-8 mb-8">
-            <h2 className="text-2xl font-black text-gray-900 mb-4">О нас</h2>
-            <div className="prose prose-sm sm:prose-base max-w-none text-gray-700 leading-relaxed space-y-4">
+          <section className="rounded-2xl bg-white dark:bg-white/5 shadow-sm dark:shadow-none ring-1 ring-gray-200 dark:ring-white/10 p-6 sm:p-8 mb-8">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">О нас</h2>
+            <div className="prose prose-sm sm:prose-base max-w-none text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
               <p>
                 <strong>{LEGAL.brand}</strong> — официальный партнёр{" "}
                 <span className="font-semibold">ООО «ЗЕМЭКС»</span> по продаже
@@ -122,7 +122,7 @@ export default function ContactsPage() {
 
           {/* Advantages */}
           <section className="mb-12">
-            <h2 className="text-2xl font-black text-gray-900 mb-5">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-5">
               Почему выбирают нас
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -161,8 +161,8 @@ export default function ContactsPage() {
 
           {/* Contacts grid */}
           <section className="mb-8">
-            <h2 className="text-2xl font-black text-gray-900 mb-5">Контакты</h2>
-            <p className="text-gray-600 mb-5">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-5">Контакты</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-5">
               Свяжитесь удобным способом — отвечаем в рабочие часы за 5–15 минут.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -204,33 +204,33 @@ export default function ContactsPage() {
           </section>
 
           {/* Requisites */}
-          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6 sm:p-8 mb-8">
-            <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
+          <section className="rounded-2xl bg-white dark:bg-white/5 shadow-sm dark:shadow-none ring-1 ring-gray-200 dark:ring-white/10 p-6 sm:p-8 mb-8">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white mb-4">
               <Building2 className="w-5 h-5 text-emerald-600" />
               Реквизиты
             </h2>
             <dl className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-x-6 gap-y-3 text-sm">
-              <dt className="text-gray-500 font-semibold">Полное имя</dt>
-              <dd className="text-gray-900">{LEGAL.fullName}</dd>
+              <dt className="text-gray-500 dark:text-gray-400 font-semibold">Полное имя</dt>
+              <dd className="text-gray-900 dark:text-white">{LEGAL.fullName}</dd>
 
-              <dt className="text-gray-500 font-semibold">Краткое</dt>
-              <dd className="text-gray-900">{LEGAL.shortName}</dd>
+              <dt className="text-gray-500 dark:text-gray-400 font-semibold">Краткое</dt>
+              <dd className="text-gray-900 dark:text-white">{LEGAL.shortName}</dd>
 
-              <dt className="text-gray-500 font-semibold">ИНН</dt>
-              <dd className="text-gray-900 font-mono">{LEGAL.inn}</dd>
+              <dt className="text-gray-500 dark:text-gray-400 font-semibold">ИНН</dt>
+              <dd className="text-gray-900 dark:text-white font-mono">{LEGAL.inn}</dd>
 
-              <dt className="text-gray-500 font-semibold">ОГРНИП</dt>
-              <dd className="text-gray-900 font-mono">{LEGAL.ogrn}</dd>
+              <dt className="text-gray-500 dark:text-gray-400 font-semibold">ОГРНИП</dt>
+              <dd className="text-gray-900 dark:text-white font-mono">{LEGAL.ogrn}</dd>
 
-              <dt className="text-gray-500 font-semibold flex items-center gap-1">
+              <dt className="text-gray-500 dark:text-gray-400 font-semibold flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5" />
                 Адрес
               </dt>
-              <dd className="text-gray-900">{LEGAL.legalAddress}</dd>
+              <dd className="text-gray-900 dark:text-white">{LEGAL.legalAddress}</dd>
             </dl>
           </section>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             <Link href="/privacy" className="text-emerald-600 hover:underline">
               Политика конфиденциальности
             </Link>{" "}
@@ -267,18 +267,18 @@ function StatCard({
 }) {
   const iconBg = accent === "emerald" ? "bg-emerald-500" : "bg-teal-500";
   return (
-    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-4 sm:p-5 flex flex-col gap-2">
+    <div className="rounded-2xl bg-white dark:bg-white/5 shadow-sm dark:shadow-none ring-1 ring-gray-200 dark:ring-white/10 p-4 sm:p-5 flex flex-col gap-2">
       <div
         className={`${iconBg} w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center`}
       >
         <Icon className="w-5 h-5 text-white" />
       </div>
-      <div className="text-3xl sm:text-4xl font-black text-gray-900 tabular-nums leading-none">
+      <div className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
         {value}
       </div>
-      <div className="text-sm font-semibold text-gray-700 -mt-0.5">{label}</div>
+      <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 -mt-0.5">{label}</div>
       {hint && (
-        <div className="text-[11px] text-gray-500 leading-tight">{hint}</div>
+        <div className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">{hint}</div>
       )}
     </div>
   );
@@ -294,12 +294,12 @@ function AdvCard({
   text: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-5 hover:shadow-md hover:ring-emerald-300 transition">
-      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+    <div className="rounded-2xl bg-white dark:bg-white/5 shadow-sm dark:shadow-none ring-1 ring-gray-200 dark:ring-white/10 p-5 hover:shadow-md hover:ring-emerald-300 transition">
+      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mb-3">
         <Icon className="w-5 h-5" />
       </div>
-      <h3 className="text-base font-bold text-gray-900 mb-1.5">{title}</h3>
-      <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
+      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1.5">{title}</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{text}</p>
     </div>
   );
 }
@@ -330,7 +330,7 @@ function ContactCard({
     <a
       href={href}
       {...linkProps}
-      className="flex items-start gap-4 p-5 rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 hover:shadow-md hover:ring-emerald-300 transition"
+      className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-white/5 shadow-sm dark:shadow-none ring-1 ring-gray-200 dark:ring-white/10 hover:shadow-md hover:ring-emerald-300 transition"
     >
       <div
         className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0 overflow-hidden`}
@@ -347,11 +347,11 @@ function ContactCard({
         ) : null}
       </div>
       <div>
-        <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide">
+        <div className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide">
           {eyebrow}
         </div>
-        <div className="text-lg font-bold text-gray-900 mt-0.5">{title}</div>
-        <div className="text-xs text-gray-500 mt-0.5">{hint}</div>
+        <div className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">{title}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{hint}</div>
       </div>
     </a>
   );

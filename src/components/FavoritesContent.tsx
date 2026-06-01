@@ -52,8 +52,8 @@ export default function FavoritesContent() {
   if (!fav.hydrated) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-12 w-64 bg-gray-200 rounded-2xl animate-pulse mb-6" />
-        <div className="h-96 bg-gray-100 rounded-3xl animate-pulse" />
+        <div className="h-12 w-64 bg-gray-200 dark:bg-white/10 rounded-2xl animate-pulse mb-6" />
+        <div className="h-96 bg-gray-100 dark:bg-white/5 rounded-3xl animate-pulse" />
       </div>
     );
   }
@@ -140,10 +140,10 @@ function Header({
           <Heart className="w-4 h-4 fill-rose-500" />
           Ваше избранное
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
           {villageCount + plotCount} объектов сохранено
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           {villageCount > 0 && `${villageCount} посёлков`}
           {villageCount > 0 && plotCount > 0 && " · "}
           {plotCount > 0 && `${plotCount} участков`}
@@ -153,7 +153,7 @@ function Header({
         onClick={() => {
           if (confirm("Очистить всё избранное?")) onClear();
         }}
-        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 transition-colors px-3 py-2 rounded-lg hover:bg-red-50 self-start sm:self-end"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 self-start sm:self-end"
       >
         <Trash2 className="w-4 h-4" />
         Очистить всё
@@ -180,7 +180,7 @@ function Tabs({
   ];
 
   return (
-    <div className="inline-flex items-center bg-white rounded-2xl p-1.5 border border-gray-200 shadow-sm mb-8">
+    <div className="inline-flex items-center bg-white dark:bg-white/5 rounded-2xl p-1.5 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none mb-8">
       {items.map((item) => (
         <button
           key={item.value}
@@ -188,7 +188,7 @@ function Tabs({
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
             tab === item.value
               ? "bg-green-600 text-white shadow-sm"
-              : "text-gray-600 hover:bg-gray-100"
+              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
           }`}
         >
           {item.label}
@@ -196,7 +196,7 @@ function Tabs({
             className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-full text-[11px] font-bold ${
               tab === item.value
                 ? "bg-white/20 text-white"
-                : "bg-gray-200 text-gray-600"
+                : "bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300"
             }`}
           >
             {item.count}
@@ -220,10 +220,10 @@ function SectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between mb-5">
-      <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
         <span className="w-1 h-6 bg-green-600 rounded-full" />
         {title}
-        <span className="text-sm font-medium text-gray-400">{count}</span>
+        <span className="text-sm font-medium text-gray-400 dark:text-gray-500">{count}</span>
       </h2>
     </div>
   );
@@ -240,7 +240,7 @@ function VillageCard({
 }) {
   const photo = village.photos[0];
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative">
+    <div className="group bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 shadow-sm dark:shadow-none hover:shadow-xl transition-all duration-300 relative">
       <a
         href={`/village/${village.slug}`}
         className="block aspect-[16/10] relative overflow-hidden bg-gradient-to-br from-green-100 to-emerald-200"
@@ -259,7 +259,7 @@ function VillageCard({
       <button
         onClick={onRemove}
         aria-label="Убрать из избранного"
-        className="absolute top-3 right-3 w-9 h-9 bg-white/95 hover:bg-rose-50 text-rose-600 rounded-full flex items-center justify-center shadow-md transition-colors"
+        className="absolute top-3 right-3 w-9 h-9 bg-white/95 dark:bg-white/10 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center shadow-md transition-colors"
       >
         <X className="w-4 h-4" />
       </button>
@@ -267,23 +267,23 @@ function VillageCard({
       <div className="p-5">
         <a
           href={`/village/${village.slug}`}
-          className="text-lg font-bold text-gray-900 hover:text-green-700 transition-colors block mb-1"
+          className="text-lg font-bold text-gray-900 dark:text-white hover:text-green-700 dark:hover:text-green-400 transition-colors block mb-1"
         >
           {village.name}
         </a>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-3">
           <MapPin className="w-3.5 h-3.5" />
           {village.direction}, {village.distance} км от МКАД
         </div>
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/10">
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+            <div className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold">
               от
             </div>
             <div className="text-lg font-extrabold text-green-600">
               {formatRub(village.priceFrom)}
             </div>
-            <div className="text-[10px] text-gray-400">за сотку</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500">за сотку</div>
           </div>
           <a
             href={`/village/${village.slug}`}
@@ -309,19 +309,19 @@ function PlotCard({
 }) {
   const statusColor =
     plot.status === "Свободен" || plot.status === "Свободный"
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
       : plot.status === "Бронь" || plot.status === "Забронирован"
-      ? "bg-amber-100 text-amber-700"
+      ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
       : plot.status === "Продан" || plot.status === "Продано"
-      ? "bg-gray-100 text-gray-500"
-      : "bg-slate-100 text-slate-600";
+      ? "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400"
+      : "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400";
 
   return (
-    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-green-200 transition-all duration-300 p-5 relative">
+    <div className="group bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm dark:shadow-none hover:shadow-lg hover:border-green-200 transition-all duration-300 p-5 relative">
       <button
         onClick={onRemove}
         aria-label="Убрать из избранного"
-        className="absolute top-4 right-4 w-9 h-9 bg-gray-50 hover:bg-rose-50 text-rose-600 rounded-full flex items-center justify-center transition-colors"
+        className="absolute top-4 right-4 w-9 h-9 bg-gray-50 dark:bg-white/10 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center transition-colors"
       >
         <X className="w-4 h-4" />
       </button>
@@ -329,13 +329,13 @@ function PlotCard({
       <div className="text-[10px] font-bold uppercase tracking-widest text-green-600 mb-1">
         Участок №{plot.plotNumber}
       </div>
-      <div className="text-2xl font-black text-gray-900 mb-1 flex items-baseline gap-2">
-        {plot.area} <span className="text-sm font-semibold text-gray-400">соток</span>
+      <div className="text-2xl font-black text-gray-900 dark:text-white mb-1 flex items-baseline gap-2">
+        {plot.area} <span className="text-sm font-semibold text-gray-400 dark:text-gray-500">соток</span>
       </div>
 
       <a
         href={`/village/${plot.villageSlug}`}
-        className="text-sm text-gray-600 hover:text-green-700 transition-colors flex items-center gap-1.5 mb-3"
+        className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 transition-colors flex items-center gap-1.5 mb-3"
       >
         <MapPin className="w-3.5 h-3.5" />
         Посёлок {plot.villageName}
@@ -347,15 +347,15 @@ function PlotCard({
         {plot.status}
       </span>
 
-      <div className="space-y-1.5 pt-4 border-t border-gray-100 text-sm">
-        <div className="flex justify-between text-gray-500">
+      <div className="space-y-1.5 pt-4 border-t border-gray-100 dark:border-white/10 text-sm">
+        <div className="flex justify-between text-gray-500 dark:text-gray-400">
           <span>Цена за сотку</span>
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-white">
             {formatRub(plot.pricePerHundred)}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Стоимость</span>
+          <span className="text-gray-500 dark:text-gray-400">Стоимость</span>
           <span className="font-extrabold text-green-600 text-base">
             {formatRub(plot.totalCost)}
           </span>
@@ -377,13 +377,13 @@ function PlotCard({
 function EmptyState() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-16">
-      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-50 mb-6">
+      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-50 dark:bg-rose-900/20 mb-6">
         <Heart className="w-9 h-9 text-rose-400" />
       </div>
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
         Здесь будет ваша подборка
       </h1>
-      <p className="text-gray-600 mb-8 leading-relaxed">
+      <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
         Нажмите на сердечко на карточке посёлка или участка — он сразу появится
         здесь. Вы сможете вернуться к нему позже или обсудить с менеджером.
       </p>
@@ -397,7 +397,7 @@ function EmptyState() {
         </a>
         <a
           href="tel:+79859052555"
-          className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all"
+          className="inline-flex items-center justify-center gap-2 bg-white dark:bg-white/10 hover:bg-gray-50 dark:hover:bg-white/15 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all"
         >
           <Phone className="w-4 h-4" />
           +7 (985) 905-25-55
@@ -410,14 +410,14 @@ function EmptyState() {
 function EmptyTab({ kind }: { kind: "villages" | "plots" }) {
   return (
     <div className="text-center py-16">
-      <Heart className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-      <p className="text-gray-500">
+      <Heart className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+      <p className="text-gray-500 dark:text-gray-400">
         {kind === "villages"
           ? "Здесь пока нет сохранённых посёлков"
           : "Здесь пока нет сохранённых участков"}
       </p>
       {kind === "plots" && (
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
           Откройте посёлок Каретный ряд и нажмите сердечко на любом участке карты
         </p>
       )}

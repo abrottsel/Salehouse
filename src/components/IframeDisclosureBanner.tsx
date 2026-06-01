@@ -22,24 +22,24 @@ interface Props {
 
 export default function IframeDisclosureBanner({ villageName: _villageName }: Props) {
   return (
-    <div className="bg-gradient-to-r from-emerald-50 via-emerald-50/50 to-emerald-50 border-b border-emerald-200/60 px-5 py-3.5">
+    <div className="bg-gradient-to-r from-emerald-50 via-emerald-50/50 to-emerald-50 dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-emerald-950/40 border-b border-emerald-200/60 dark:border-emerald-800/60 px-5 py-3.5">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4 text-emerald-700" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-stone-900 leading-tight">
+            <div className="text-sm font-semibold text-stone-900 dark:text-stone-100 leading-tight">
               Онлайн-бронирование через сервис Zemexx
             </div>
-            <div className="text-xs text-stone-600 mt-0.5">
+            <div className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
               Карта участков и форма бронирования предоставлены партнёром. Данные передаются для обработки заявки.
             </div>
           </div>
         </div>
         <a
           href="/oferta"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 text-xs font-semibold whitespace-nowrap transition-colors"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 ring-1 ring-emerald-200 dark:ring-emerald-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold whitespace-nowrap transition-colors"
         >
           Условия оферты
           <ExternalLink className="w-3 h-3" />
