@@ -179,9 +179,9 @@ export default function Advantages() {
         </div>
 
         {/* Savings banner (from old Infrastructure) */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 dark:from-emerald-500/10 dark:via-green-500/10 dark:to-emerald-500/[0.07] ring-1 ring-emerald-300/70 dark:ring-emerald-400/20 px-4 py-4 sm:px-6 sm:py-5">
-          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-emerald-400/25 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-green-400/25 blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 dark:[background:rgba(255,255,255,0.04)] ring-1 ring-emerald-300/70 dark:ring-white/10 px-4 py-4 sm:px-6 sm:py-5">
+          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-emerald-400/25 dark:opacity-0 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-green-400/25 dark:opacity-0 blur-3xl pointer-events-none" />
 
           <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-5">
             <div className="flex items-start gap-3 text-left">
