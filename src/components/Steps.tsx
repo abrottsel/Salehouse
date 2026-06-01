@@ -62,22 +62,22 @@ export default function Steps() {
   return (
     <section
       id="steps"
-      className="py-6 lg:py-10 bg-gradient-to-b from-stone-50 to-white scroll-mt-16"
+      className="py-6 lg:py-10 bg-gradient-to-b from-stone-50 to-white dark:from-transparent dark:to-transparent scroll-mt-16"
     >
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Compact header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             Как купить участок
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight mb-2 leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2 leading-tight">
             От звонка до ключей —{" "}
             <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
               две недели
             </span>
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 max-w-xl mx-auto">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
             Шесть понятных шагов. Мы рядом на каждом — документы, юрист,
             сопровождение в Росреестре.
           </p>
@@ -86,7 +86,7 @@ export default function Steps() {
         {/* Timeline — horizontal on desktop, vertical on mobile */}
         <div className="relative">
           {/* Desktop horizontal connector line */}
-          <div className="hidden lg:block absolute top-6 left-[8%] right-[8%] h-0.5 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200 pointer-events-none" />
+          <div className="hidden lg:block absolute top-6 left-[8%] right-[8%] h-0.5 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200 dark:from-emerald-500/30 dark:via-emerald-400/40 dark:to-emerald-500/30 pointer-events-none" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-3 relative">
             {steps.map((step, i) => {
@@ -98,29 +98,29 @@ export default function Steps() {
                   className="relative group flex flex-col items-center text-center"
                 >
                   {/* Number badge */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-5 h-5 rounded-full bg-white ring-2 ring-emerald-500 text-[10px] font-black text-emerald-700 flex items-center justify-center z-10 shadow-sm">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-5 h-5 rounded-full bg-white dark:bg-gray-900 ring-2 ring-emerald-500 text-[10px] font-black text-emerald-700 dark:text-emerald-300 flex items-center justify-center z-10 shadow-sm dark:shadow-none">
                     {step.number}
                   </div>
 
                   {/* Icon circle */}
                   <div
-                    className={`relative w-12 h-12 rounded-2xl ${meta.bg} ring-1 flex items-center justify-center mb-3 mt-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform shadow-sm`}
+                    className={`relative w-12 h-12 rounded-2xl ${meta.bg} dark:!bg-white/5 dark:ring-white/10 ring-1 flex items-center justify-center mb-3 mt-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform shadow-sm dark:shadow-none`}
                   >
                     <Icon className={`w-5 h-5 ${meta.color}`} strokeWidth={2.5} />
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-sm font-black text-gray-900 mb-1 leading-tight">
+                  <h3 className="text-sm font-black text-gray-900 dark:text-white mb-1 leading-tight">
                     {step.title}
                   </h3>
 
                   {/* Duration pill */}
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white ring-1 ring-gray-200 text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white dark:bg-white/5 ring-1 ring-gray-200 dark:ring-white/10 text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                     {meta.duration}
                   </span>
 
                   {/* Description */}
-                  <p className="text-[11px] text-gray-600 leading-snug max-w-[180px]">
+                  <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-snug max-w-[180px]">
                     {step.description}
                   </p>
                 </div>

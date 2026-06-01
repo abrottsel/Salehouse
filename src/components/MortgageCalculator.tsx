@@ -48,16 +48,16 @@ export default function MortgageCalculator() {
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         <div
-          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8"
+          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 dark:[background:none!important]"
           style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 60%, #d1fae5 80%, #ecfdf5 100%)" }}
         >
         {/* Header */}
         <div className="text-center mb-5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider mb-2">
             <Landmark className="w-3.5 h-3.5" />
             Ипотека
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight mb-3 leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-3 leading-tight">
             Свой участок{" "}
             <span className="text-emerald-700">дешевле аренды квартиры</span>
           </h2>
@@ -65,7 +65,7 @@ export default function MortgageCalculator() {
             {banks.map((b) => (
               <div
                 key={b.name}
-                className="calc-bank-pill inline-flex items-center gap-1.5 px-3 h-8 rounded-full shadow-sm"
+                className="calc-bank-pill inline-flex items-center gap-1.5 px-3 h-8 rounded-full shadow-sm dark:[background:rgba(255,255,255,0.06)!important] dark:shadow-none dark:ring-1 dark:ring-white/10"
                 style={{
                   backdropFilter: "blur(12px) saturate(1.4)",
                   background: "linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,255,255,0.45))",
@@ -73,8 +73,8 @@ export default function MortgageCalculator() {
                 }}
               >
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.dot }} />
-                <span className="text-[11px] font-black text-gray-900">{b.name}</span>
-                <span className="text-[10px] text-emerald-700 font-bold tabular-nums">{b.rate}</span>
+                <span className="text-[11px] font-black text-gray-900 dark:text-white">{b.name}</span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold tabular-nums">{b.rate}</span>
               </div>
             ))}
           </div>
@@ -82,7 +82,7 @@ export default function MortgageCalculator() {
 
         {/* Main card — frosted glass */}
         <div
-          className="calc-glass-card rounded-3xl overflow-hidden relative"
+          className="calc-glass-card rounded-3xl overflow-hidden relative dark:[background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))!important] dark:ring-1 dark:ring-white/10"
           style={{
             backdropFilter: "blur(12px) saturate(1.4)",
             background: "linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.5))",
@@ -105,7 +105,7 @@ export default function MortgageCalculator() {
 
             {/* Result panel — green tinted glass */}
             <div
-              className="p-6 sm:p-8 flex flex-col relative overflow-hidden"
+              className="p-6 sm:p-8 flex flex-col relative overflow-hidden dark:[background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.04))!important]"
               style={{ background: "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.08))" }}
             >
               <div className="absolute -top-20 -right-20 w-56 h-56 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none" />
@@ -115,30 +115,30 @@ export default function MortgageCalculator() {
               >₽</div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center gap-1.5 mb-5 text-emerald-700/60">
+                <div className="flex items-center gap-1.5 mb-5 text-emerald-700/60 dark:text-emerald-300/70">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Ежемесячный платёж</span>
                 </div>
 
-                <div className="text-4xl sm:text-5xl font-black tracking-tight mb-1 leading-none tabular-nums text-gray-900">
+                <div className="text-4xl sm:text-5xl font-black tracking-tight mb-1 leading-none tabular-nums text-gray-900 dark:text-white">
                   {fmt(result.monthlyPayment)}
                 </div>
-                <p className="text-emerald-800/60 text-[11px] mb-6">
+                <p className="text-emerald-800/60 dark:text-emerald-300/70 text-[11px] mb-6">
                   при ставке {rate}% на {years}&nbsp;лет
                 </p>
 
                 <div className="space-y-2 pt-5 border-t border-emerald-600/10 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-emerald-900/50">Сумма кредита</span>
-                    <span className="font-bold tabular-nums text-gray-900">{fmt(result.loanAmount)}</span>
+                    <span className="text-emerald-900/50 dark:text-emerald-200/60">Сумма кредита</span>
+                    <span className="font-bold tabular-nums text-gray-900 dark:text-white">{fmt(result.loanAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-emerald-900/50">Общая выплата</span>
-                    <span className="font-bold tabular-nums text-gray-900">{fmt(result.totalPayment)}</span>
+                    <span className="text-emerald-900/50 dark:text-emerald-200/60">Общая выплата</span>
+                    <span className="font-bold tabular-nums text-gray-900 dark:text-white">{fmt(result.totalPayment)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-emerald-900/50">Переплата</span>
-                    <span className="font-bold tabular-nums text-gray-900">{fmt(result.overpayment)}</span>
+                    <span className="text-emerald-900/50 dark:text-emerald-200/60">Переплата</span>
+                    <span className="font-bold tabular-nums text-gray-900 dark:text-white">{fmt(result.overpayment)}</span>
                   </div>
                 </div>
 
@@ -193,8 +193,8 @@ function Slider({ label, value, min, max, step, current, onChange, minLabel, max
   return (
     <div>
       <div className="flex justify-between items-baseline mb-2">
-        <label className="text-xs font-semibold text-emerald-900/55 uppercase tracking-wider">{label}</label>
-        <span className="text-sm font-black text-gray-900 tabular-nums">{value}</span>
+        <label className="text-xs font-semibold text-emerald-900/55 dark:text-emerald-300/70 uppercase tracking-wider">{label}</label>
+        <span className="text-sm font-black text-gray-900 dark:text-white tabular-nums">{value}</span>
       </div>
       <input
         type="range" min={min} max={max} step={step} value={current}

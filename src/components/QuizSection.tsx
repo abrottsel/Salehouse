@@ -234,7 +234,7 @@ export default function QuizSection({ slim = false }: { slim?: boolean } = {}) {
   const s = useQuizState(QUESTIONS);
 
   return (
-    <section id="contacts" className={slim ? "pb-4" : "bg-gray-50 pb-4"}>
+    <section id="contacts" className={slim ? "pb-4" : "bg-gray-50 dark:bg-[#0b0f14] pb-4"}>
       <div className={`max-w-[1920px] mx-auto ${slim ? "px-3 sm:px-4 lg:px-6" : "px-3 sm:px-4 lg:px-6"}`}>
         <div
           className="relative overflow-hidden rounded-2xl bg-cover bg-center"

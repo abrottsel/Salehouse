@@ -108,7 +108,7 @@ const items: Item[] = [
 function Card({ item, big }: { item: Item; big: boolean }) {
   return (
     <div
-      className={`adv-glass-card flex flex-col gap-2 rounded-[18px] cursor-default h-full overflow-hidden relative ${
+      className={`adv-glass-card flex flex-col gap-2 rounded-[18px] cursor-default h-full overflow-hidden relative dark:[background:none!important] dark:bg-white/[0.03] dark:ring-1 dark:ring-white/10 dark:shadow-none ${
         big ? "col-span-2 md:col-span-1 p-5 md:p-4" : "p-4"
       }`}
       style={{
@@ -129,14 +129,14 @@ function Card({ item, big }: { item: Item; big: boolean }) {
         />
       </div>
       <h3
-        className={`font-extrabold text-gray-900 leading-tight ${
+        className={`font-extrabold text-gray-900 dark:text-white leading-tight ${
           big ? "text-base md:text-sm" : "text-sm"
         }`}
       >
         {item.title}
       </h3>
       <p
-        className={`text-emerald-900/55 leading-snug ${
+        className={`text-emerald-900/55 dark:text-gray-300 leading-snug ${
           big ? "text-xs md:text-[11px]" : "text-[11px]"
         }`}
       >
@@ -150,24 +150,24 @@ export default function Advantages() {
   return (
     <section
       id="advantages"
-      className="bg-gray-50 pb-4 scroll-mt-16"
+      className="bg-gray-50 dark:bg-transparent pb-4 scroll-mt-16"
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         <div
-          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8"
+          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 dark:[background:none!important] dark:bg-white/[0.02] dark:ring-1 dark:ring-white/10"
           style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 60%, #d1fae5 80%, #ecfdf5 100%)" }}
         >
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 dark:bg-green-500/15 text-green-800 dark:text-green-300 text-[11px] font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             Наши преимущества
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1.5">
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-1.5">
             Всё включено{" "}
-            <span className="text-green-600">для комфортной жизни</span>
+            <span className="text-green-600 dark:text-green-400">для комфортной жизни</span>
           </h2>
-          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
             Коммуникации, охрана, дороги и финансовые программы — всё готово.
           </p>
         </div>
@@ -181,20 +181,20 @@ export default function Advantages() {
         </div>
 
         {/* Savings banner (from old Infrastructure) */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 ring-1 ring-emerald-300/70 px-4 py-4 sm:px-6 sm:py-5">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 via-green-100 to-emerald-200 dark:from-emerald-500/10 dark:via-green-500/10 dark:to-emerald-500/[0.07] ring-1 ring-emerald-300/70 dark:ring-emerald-400/20 px-4 py-4 sm:px-6 sm:py-5">
           <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-emerald-400/25 blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-green-400/25 blur-3xl pointer-events-none" />
 
           <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-5">
             <div className="flex items-start gap-3 text-left">
-              <div className="shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-white ring-1 ring-emerald-300 flex items-center justify-center shadow-sm">
-                <PiggyBank className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+              <div className="shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-white dark:bg-white/10 ring-1 ring-emerald-300 dark:ring-emerald-400/20 flex items-center justify-center shadow-sm dark:shadow-none">
+                <PiggyBank className="w-5 h-5 md:w-6 md:h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-base sm:text-lg md:text-xl font-black text-emerald-950 tracking-tight leading-tight">
+                <h3 className="text-base sm:text-lg md:text-xl font-black text-emerald-950 dark:text-white tracking-tight leading-tight">
                   Экономия 500 000 – 2 000 000 ₽
                 </h3>
-                <p className="text-[11px] sm:text-xs md:text-sm text-emerald-900/75 mt-0.5">
+                <p className="text-[11px] sm:text-xs md:text-sm text-emerald-900/75 dark:text-gray-300 mt-0.5">
                   На подведении коммуникаций — всё уже сделано.
                 </p>
               </div>
@@ -211,7 +211,7 @@ export default function Advantages() {
               </a>
               <a
                 href="#calculator"
-                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-800 ring-1 ring-emerald-300 hover:ring-emerald-400 px-4 sm:px-5 h-10 md:h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white dark:bg-white/[0.06] hover:bg-emerald-50 dark:hover:bg-white/10 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-300 dark:ring-white/15 hover:ring-emerald-400 dark:hover:ring-white/25 px-4 sm:px-5 h-10 md:h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm dark:shadow-none hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
               >
                 <Wallet className="w-4 h-4 shrink-0" />
                 Ипотека

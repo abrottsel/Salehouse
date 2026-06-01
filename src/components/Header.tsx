@@ -48,7 +48,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 lg:px-6 pt-2 sm:pt-2.5">
-      <div className="bg-white shadow-md rounded-2xl sm:rounded-3xl overflow-hidden">
+      <div className="bg-white shadow-md rounded-2xl sm:rounded-3xl overflow-hidden dark:bg-gray-900/80 dark:backdrop-blur-xl dark:shadow-none dark:ring-1 dark:ring-white/10">
       {/* Зелёная градиентная полоска сверху — как в подвале */}
       <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
 
@@ -81,8 +81,8 @@ export default function Header() {
                       "px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150",
                       "border-[1.5px]",
                       isActive
-                        ? "border-emerald-500 text-emerald-600 font-semibold"
-                        : "border-transparent text-gray-500 hover:text-green-700 hover:bg-green-50",
+                        ? "border-emerald-500 text-emerald-600 font-semibold dark:text-emerald-400"
+                        : "border-transparent text-gray-500 hover:text-green-700 hover:bg-green-50 dark:text-gray-300 dark:hover:text-emerald-300 dark:hover:bg-white/5",
                     ].join(" ")}
                   >
                     {link.label}
@@ -98,10 +98,10 @@ export default function Header() {
             <FavoritesCounter />
             <a
               href="tel:+79859052555"
-              className="flex items-center gap-1.5 text-gray-800 font-bold hover:text-green-600 transition-colors"
+              className="flex items-center gap-1.5 text-gray-800 font-bold hover:text-green-600 transition-colors dark:text-gray-100 dark:hover:text-emerald-400"
               aria-label="Позвонить +7 (985) 905-25-55"
             >
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center dark:bg-emerald-500/15">
                 <Phone className="w-4 h-4 text-green-600" />
               </div>
               <span className="hidden 2xl:inline text-xs">+7 (985) 905-25-55</span>
@@ -122,11 +122,11 @@ export default function Header() {
             <div className="md:hidden">
               <FavoritesCounter />
             </div>
-            <a href="tel:+79859052555" className="md:hidden w-11 h-11 bg-green-100 rounded-full flex items-center justify-center">
+            <a href="tel:+79859052555" className="md:hidden w-11 h-11 bg-green-100 rounded-full flex items-center justify-center dark:bg-emerald-500/15">
               <Phone className="w-4 h-4 text-green-600" />
             </a>
             <button
-              className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors dark:text-gray-100 dark:hover:bg-white/10"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Меню"
             >
@@ -138,16 +138,16 @@ export default function Header() {
 
       {/* Mobile Nav */}
       {isOpen && (
-        <div className="lg:hidden border-t border-gray-100 bg-white pb-4">
+        <div className="lg:hidden border-t border-gray-100 bg-white pb-4 dark:border-white/10 dark:bg-gray-900/80 dark:backdrop-blur-xl">
           <nav className="px-4 flex flex-col gap-1 pt-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors font-semibold"
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl transition-colors font-semibold dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-emerald-300"
                 onClick={() => setIsOpen(false)}
               >
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0 dark:bg-emerald-500/15">
                   <link.Icon className="w-4 h-4 text-green-600" />
                 </div>
                 {link.label}
@@ -157,7 +157,7 @@ export default function Header() {
           <div className="px-4 mt-3 flex flex-col gap-2">
             <a
               href="tel:+79859052555"
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 rounded-xl font-bold text-sm"
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 rounded-xl font-bold text-sm dark:bg-white/5 dark:text-gray-100"
             >
               <Phone className="w-4 h-4 text-green-600" />
               +7 (985) 905-25-55

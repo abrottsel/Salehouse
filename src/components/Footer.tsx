@@ -45,9 +45,9 @@ export default function Footer({ slim = false }: { slim?: boolean } = {}) {
   };
 
   return (
-    <footer className={slim ? "pb-4" : "bg-gray-50 pb-4"}>
+    <footer className={slim ? "pb-4" : "bg-gray-50 pb-4 dark:bg-transparent"}>
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
-        <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10">
+        <div className="rounded-3xl bg-gray-900 text-white overflow-hidden shadow-lg shadow-emerald-900/10 dark:bg-[#121821] dark:shadow-none dark:ring-1 dark:ring-white/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
 

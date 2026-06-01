@@ -62,17 +62,17 @@ export default function FAQv2() {
   };
 
   return (
-    <section id="faq" className="py-10 lg:py-16 bg-white scroll-mt-16">
+    <section id="faq" className="py-10 lg:py-16 bg-white dark:bg-transparent scroll-mt-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-7 lg:mb-9">
           <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-600 mb-2">
             Частые вопросы
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
             Всё, что обычно спрашивают
           </h2>
-          <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto">
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 max-w-md mx-auto">
             Нет вашего вопроса — позвоните, ответим развёрнуто и без воды.
           </p>
         </div>
@@ -82,14 +82,14 @@ export default function FAQv2() {
           {faqItems.map((item, i) => (
             <div
               key={i}
-              className="flex gap-3 py-5 border-b border-gray-100"
+              className="flex gap-3 py-5 border-b border-gray-100 dark:border-white/10"
             >
               <span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               <div className="min-w-0">
-                <h3 className="text-[15px] sm:text-base font-semibold text-gray-900 leading-snug mb-1.5">
+                <h3 className="text-[15px] sm:text-base font-semibold text-gray-900 dark:text-white leading-snug mb-1.5">
                   {item.q}
                 </h3>
-                <p className="text-[13px] sm:text-sm text-gray-500 leading-relaxed">
+                <p className="text-[13px] sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                   {item.a}
                 </p>
               </div>

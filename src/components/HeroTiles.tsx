@@ -112,7 +112,7 @@ export default function HeroTiles() {
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/65" />
 
       {/* Subtle bottom fade to white so next section transitions smoothly */}
-      <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white/30 to-transparent dark:from-transparent pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 flex flex-col justify-center" style={{ minHeight: "calc(var(--app-height, 100svh) - 82px)" }}>

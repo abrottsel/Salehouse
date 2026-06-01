@@ -135,10 +135,10 @@ function FilterChip({
         className={`group inline-flex items-center gap-2 h-10 pl-4 pr-3 rounded-full border text-sm font-medium transition-all ${
           active
             ? "bg-green-50 border-green-300 text-green-800 hover:bg-green-100"
-            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-sm"
-        } ${open ? "ring-2 ring-green-200" : ""}`}
+            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-gray-200 dark:hover:border-white/20"
+        } ${open ? "ring-2 ring-green-200 dark:ring-green-500/30" : ""}`}
       >
-        <span className={`text-xs ${active ? "text-green-600" : "text-gray-400"}`}>
+        <span className={`text-xs ${active ? "text-green-600" : "text-gray-400 dark:text-gray-500"}`}>
           {label}:
         </span>
         <span className="font-semibold whitespace-nowrap">
@@ -147,7 +147,7 @@ function FilterChip({
         <ChevronDown
           className={`w-4 h-4 transition-transform ${
             open ? "rotate-180" : ""
-          } ${active ? "text-green-600" : "text-gray-400"}`}
+          } ${active ? "text-green-600" : "text-gray-400 dark:text-gray-500"}`}
         />
       </button>
 
@@ -164,7 +164,7 @@ function FilterChip({
               // Mobile: fixed bottom sheet, full width
               "sm:absolute sm:left-0 sm:top-full sm:mt-2 " +
               "fixed sm:static inset-x-3 bottom-3 sm:inset-auto " +
-              "z-50 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 " +
+              "z-50 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/10 " +
               "overflow-hidden animate-in fade-in slide-in-from-bottom-2 sm:slide-in-from-top-1 duration-150"
             }
           >
@@ -248,18 +248,18 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
   };
 
   return (
-    <section id="catalog" className="pt-8 lg:pt-12 pb-4 bg-gray-50 scroll-mt-16">
+    <section id="catalog" className="pt-8 lg:pt-12 pb-4 bg-gray-50 dark:bg-transparent scroll-mt-16">
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Catalog hero — dynamic stats strip */}
         <div className="text-center mb-6">
           {/* Uppercase pill */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300 text-[11px] font-bold uppercase tracking-wider mb-3">
             <TreePine className="w-3.5 h-3.5" />
             Каталог посёлков
           </div>
 
           {/* Big selling headline */}
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.1] mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-[1.1] mb-4">
             Найдите свой
             <br className="sm:hidden" />{" "}
             <span className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
@@ -269,39 +269,39 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
 
           {/* Stat chips row — pastel, matches project palette */}
           <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 ring-1 ring-emerald-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 ring-1 ring-emerald-200/70 dark:bg-emerald-500/10 dark:ring-emerald-400/20 rounded-full pl-1.5 pr-3.5 h-9">
               <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
                 <TreePine className="w-3.5 h-3.5 text-white" strokeWidth={3} />
               </div>
-              <span className="text-sm font-extrabold text-emerald-900 tabular-nums">
+              <span className="text-sm font-extrabold text-emerald-900 dark:text-emerald-200 tabular-nums">
                 {STAT_VILLAGES}
               </span>
-              <span className="text-xs font-medium text-emerald-700/80">
+              <span className="text-xs font-medium text-emerald-700/80 dark:text-emerald-300/70">
                 {plural(STAT_VILLAGES, "посёлок", "посёлка", "посёлков")}
               </span>
             </div>
 
-            <div className="inline-flex items-center gap-2 bg-sky-50 ring-1 ring-sky-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+            <div className="inline-flex items-center gap-2 bg-sky-50 ring-1 ring-sky-200/70 dark:bg-sky-500/10 dark:ring-sky-400/20 rounded-full pl-1.5 pr-3.5 h-9">
               <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center shadow-sm">
                 <LayoutGrid className="w-3.5 h-3.5 text-white" strokeWidth={3} />
               </div>
-              <span className="text-sm font-extrabold text-sky-900 tabular-nums">
+              <span className="text-sm font-extrabold text-sky-900 dark:text-sky-200 tabular-nums">
                 {STAT_PLOTS_AVAILABLE.toLocaleString("ru-RU")}+
               </span>
-              <span className="text-xs font-medium text-sky-700/80">
+              <span className="text-xs font-medium text-sky-700/80 dark:text-sky-300/70">
                 участков
               </span>
             </div>
 
-            <div className="inline-flex items-center gap-2 bg-amber-50 ring-1 ring-amber-200/70 rounded-full pl-1.5 pr-3.5 h-9">
+            <div className="inline-flex items-center gap-2 bg-amber-50 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:ring-amber-400/20 rounded-full pl-1.5 pr-3.5 h-9">
               <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center shadow-sm">
                 <Wallet className="w-3.5 h-3.5 text-white" strokeWidth={3} />
               </div>
-              <span className="text-xs font-medium text-amber-700/80">от</span>
-              <span className="text-sm font-extrabold text-amber-900 tabular-nums">
+              <span className="text-xs font-medium text-amber-700/80 dark:text-amber-300/70">от</span>
+              <span className="text-sm font-extrabold text-amber-900 dark:text-amber-200 tabular-nums">
                 {STAT_PRICE_MIN_RUB.toLocaleString("ru-RU")} ₽
               </span>
-              <span className="text-xs font-medium text-amber-700/80">
+              <span className="text-xs font-medium text-amber-700/80 dark:text-amber-300/70">
                 /&nbsp;сотка
               </span>
             </div>
@@ -309,7 +309,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
         </div>
 
         {/* ── V9 Иконки: направления / цена / площадь ─────────── */}
-        <div className="mb-6 bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm divide-y divide-gray-100">
+        <div className="mb-6 bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm divide-y divide-gray-100 dark:bg-gray-900 dark:ring-white/10 dark:shadow-none dark:divide-white/10">
 
           {/* Ряд 1: направления + счётчик */}
           <div className="flex items-center gap-1.5 px-3 py-2.5">
@@ -323,8 +323,8 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                 onClick={() => handleDirectionChange(dir)}
                 className={`flex-1 h-8 rounded-xl text-[11px] font-bold text-center transition-all ${
                   activeDirection === dir
-                    ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
-                    : "text-gray-500 hover:bg-gray-50"
+                    ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/25"
+                    : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
                 }`}
               >
                 {dir === "Все" ? "Все" : dir.replace(" шоссе", "")}
@@ -351,8 +351,8 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                     onClick={() => handlePricePreset(p)}
                     className={`flex-1 h-8 rounded-lg text-[11px] font-bold text-center whitespace-nowrap transition-all ${
                       activePrice === p.label
-                        ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
-                        : "text-gray-500 hover:bg-gray-50"
+                        ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-400/25"
+                        : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
                     }`}
                   >
                     {p.label}
@@ -361,7 +361,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
               </div>
             </div>
 
-            <div className="w-px h-5 bg-gray-200 shrink-0 hidden lg:block" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-white/10 shrink-0 hidden lg:block" />
 
             {/* Группа площади + кнопка сброса */}
             <div className="flex flex-1 items-center gap-1.5 mt-1.5 lg:mt-0">
@@ -376,8 +376,8 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                     onClick={() => handleAreaPreset(a)}
                     className={`flex-1 h-8 rounded-lg text-[11px] font-bold text-center whitespace-nowrap transition-all ${
                       activeArea === a.label
-                        ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200"
-                        : "text-gray-500 hover:bg-gray-50"
+                        ? "bg-sky-100 text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-400/25"
+                        : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
                     }`}
                   >
                     {a.label}
@@ -390,8 +390,8 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                 title="Сбросить фильтры"
                 className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
                   isAnyFilterActive
-                    ? "text-gray-400 hover:text-emerald-700 hover:bg-gray-50"
-                    : "text-gray-200 pointer-events-none"
+                    ? "text-gray-400 hover:text-emerald-700 hover:bg-gray-50 dark:text-gray-500 dark:hover:text-emerald-300 dark:hover:bg-white/5"
+                    : "text-gray-200 pointer-events-none dark:text-white/10"
                 }`}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -404,11 +404,11 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
         {/* Empty state */}
         {filtered.length === 0 && (
           <div className="max-w-md mx-auto text-center py-16">
-            <SlidersHorizontal className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 font-semibold mb-1">
+            <SlidersHorizontal className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-300 font-semibold mb-1">
               По вашим фильтрам ничего не нашлось
             </p>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               Попробуйте расширить диапазон цены или площади.
             </p>
             <button
@@ -427,7 +427,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
             <a
               key={village.id}
               href={`/village/${village.slug}`}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group block"
+              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:bg-gray-900 dark:border-white/10 dark:shadow-none dark:ring-1 dark:ring-white/10 dark:hover:ring-white/20 dark:hover:shadow-none group block"
             >
               {/* Image — 5:4, photo-dominant with swiper */}
               <div className="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-green-100 via-emerald-50 to-green-200">
@@ -484,10 +484,10 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
               </div>
 
               <div className="px-4 pt-3 pb-4">
-                <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-green-600 transition-colors">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                   {village.name}
                 </h3>
-                <div className="flex items-center gap-1 text-gray-500 text-xs mt-0.5 mb-2.5">
+                <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs mt-0.5 mb-2.5">
                   <MapPin className="w-3 h-3" />
                   {village.direction}, {village.distance} км от МКАД
                 </div>
@@ -497,7 +497,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                   {village.features.slice(0, 4).map((f) => (
                     <span
                       key={f}
-                      className="text-[11px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded"
+                      className="text-[11px] bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300 px-1.5 py-0.5 rounded"
                     >
                       {f}
                     </span>
@@ -505,21 +505,21 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                 </div>
 
                 {/* Area */}
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
                   <Ruler className="w-3 h-3" />
                   от {village.areaFrom} до {village.areaTo} соток
                 </div>
 
                 {/* Price and CTA */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/10">
                   <div className="leading-tight">
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wider">
+                    <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                       от
                     </div>
-                    <div className="text-lg font-extrabold text-green-600">
+                    <div className="text-lg font-extrabold text-green-600 dark:text-green-400">
                       {village.priceFrom.toLocaleString("ru-RU")} &#8381;
                     </div>
-                    <div className="text-[10px] text-gray-400">за сотку</div>
+                    <div className="text-[10px] text-gray-400 dark:text-gray-500">за сотку</div>
                   </div>
                   <span className="inline-flex items-center gap-1 bg-green-600 text-white px-3.5 py-2 rounded-lg text-xs font-semibold group-hover:bg-green-700 transition-colors">
                     Подробнее
@@ -536,7 +536,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
           <div className="flex flex-col items-center mt-10">
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="group inline-flex items-center gap-3 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-400 text-gray-900 hover:text-green-700 px-7 py-3.5 rounded-full font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200"
+              className="group inline-flex items-center gap-3 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-400 text-gray-900 hover:text-green-700 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:hover:border-green-400/40 dark:text-gray-100 dark:hover:text-green-300 dark:shadow-none px-7 py-3.5 rounded-full font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200"
             >
               {expanded ? (
                 <>
@@ -554,7 +554,7 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
               )}
             </button>
             {!expanded && (
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                 Показано {INITIAL_VISIBLE} из {filtered.length} посёлков
               </p>
             )}
