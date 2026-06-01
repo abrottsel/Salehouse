@@ -73,7 +73,7 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
   const activeCard = cards.find((c) => c.id === activeId);
 
   return (
-    <section className="bg-gray-50 pb-4">
+    <section className="bg-gray-50 dark:bg-transparent pb-4">
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
         {/* Тап по фону (не по карточкам/панели) закрывает раскрытый блок */}
