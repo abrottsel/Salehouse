@@ -10,10 +10,13 @@ import {
   Calculator,
   ListChecks,
   PhoneCall,
+  Sun,
+  Moon,
 } from "lucide-react";
 import Logo from "./Logo";
 import FavoritesCounter from "./FavoritesCounter";
 import SiteSearch from "./SiteSearch";
+import { useTheme } from "./v2/ThemeContext";
 
 const navLinksMain = [
   { href: "#catalog", label: "Посёлки", Icon: TreePine },
@@ -27,6 +30,7 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname() || "";
   const isV2 = pathname.startsWith("/v2");
+  const theme = useTheme();
   // /v2 — клон главной с доработками: шапка ведёт себя как на главной
   // (якоря работают на месте, та же навигация и высота).
   const isHome = pathname === "/" || isV2;
@@ -95,6 +99,18 @@ export default function Header() {
           {/* Phone + CTA */}
           <div className="hidden md:flex items-center gap-1.5 shrink-0 ml-2 lg:ml-4">
             <SiteSearch />
+            {isV2 && theme && (
+              <button
+                type="button"
+                onClick={theme.toggle}
+                aria-label={theme.dark ? "Светлая тема" : "Тёмная тема"}
+                className="w-9 h-9 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-white/10"
+              >
+                {theme.dark
+                  ? <Sun className="w-5 h-5 text-yellow-400" />
+                  : <Moon className="w-5 h-5 text-indigo-500" />}
+              </button>
+            )}
             <FavoritesCounter />
             <a
               href="tel:+79859052555"
@@ -119,6 +135,18 @@ export default function Header() {
             <div className="md:hidden">
               <SiteSearch />
             </div>
+            {isV2 && theme && (
+              <button
+                type="button"
+                onClick={theme.toggle}
+                aria-label={theme.dark ? "Светлая тема" : "Тёмная тема"}
+                className="md:hidden w-10 h-10 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-white/10"
+              >
+                {theme.dark
+                  ? <Sun className="w-5 h-5 text-yellow-400" />
+                  : <Moon className="w-5 h-5 text-indigo-500" />}
+              </button>
+            )}
             <div className="md:hidden">
               <FavoritesCounter />
             </div>
