@@ -44,11 +44,11 @@ export default function MortgageCalculator() {
   return (
     <section
       id="calculator"
-      className="bg-gray-50 pb-4 scroll-mt-16"
+      className="bg-gray-50 dark:bg-[#0b0f14] pb-4 scroll-mt-16"
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         <div
-          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 dark:[background:none!important]"
+          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8"
           style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 60%, #d1fae5 80%, #ecfdf5 100%)" }}
         >
         {/* Header */}

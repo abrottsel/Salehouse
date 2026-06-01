@@ -95,18 +95,18 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-6 lg:py-10 bg-white scroll-mt-16">
+    <section id="faq" className="py-6 lg:py-10 bg-white dark:bg-transparent scroll-mt-16">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider mb-3">
             <HelpCircle className="w-3.5 h-3.5" />
             Частые вопросы
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1.5">
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-1.5">
             Всё, что{" "}
-            <span className="text-green-600">обычно спрашивают</span>
+            <span className="text-green-600 dark:text-emerald-400">обычно спрашивают</span>
           </h2>
-          <p className="text-sm text-gray-500 max-w-lg mx-auto">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
             Если вашего вопроса нет — позвоните, ответим развёрнуто и без воды.
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function FAQ() {
                 key={i}
                 type="button"
                 onClick={() => setOpenIndex(isOpen ? null : i)}
-                className={`group text-left rounded-2xl p-4 ${item.bg} ring-1 ${item.ring} transition-all hover:shadow-sm`}
+                className={`group text-left rounded-2xl p-4 ${item.bg} dark:!bg-white/5 ring-1 ${item.ring} dark:!ring-white/10 transition-all hover:shadow-sm dark:hover:shadow-none`}
                 aria-expanded={isOpen}
               >
                 <div className="flex items-start gap-3">
@@ -133,11 +133,11 @@ export default function FAQ() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug">
+                      <h3 className="text-sm font-extrabold text-gray-900 dark:text-white leading-snug">
                         {item.q}
                       </h3>
                       <ChevronDown
-                        className={`w-4 h-4 text-gray-500 shrink-0 mt-0.5 transition-transform ${
+                        className={`w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0 mt-0.5 transition-transform ${
                           isOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -150,7 +150,7 @@ export default function FAQ() {
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <p className="text-[12px] text-gray-700 leading-relaxed pr-1">
+                        <p className="text-[12px] text-gray-700 dark:text-gray-300 leading-relaxed pr-1">
                           {item.a}
                         </p>
                       </div>
