@@ -1,21 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 import { ArrowUp } from "lucide-react";
 
 export default function ScrollToTop() {
   const btnRef = useRef<HTMLButtonElement>(null);
-  const pathname = usePathname() || "";
-  const hidden = pathname.startsWith("/v2");
 
   useEffect(() => {
-    if (hidden) return;
     const btn = btnRef.current;
     if (!btn) return;
 
-    // Управляем видимостью напрямую через DOM — без React setState,
-    // чтобы не вызывать ре-рендер на каждое событие scroll в TG WebView.
     const update = () => {
       const show = window.scrollY > 600;
       btn.style.opacity = show ? "1" : "0";
@@ -26,9 +20,7 @@ export default function ScrollToTop() {
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, [hidden]);
-
-  if (hidden) return null;
+  }, []);
 
   return (
     <button
