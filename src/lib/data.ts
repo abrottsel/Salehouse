@@ -313,7 +313,6 @@ export const villages: Village[] = [
     areaTo: 12,
     photos: [
       `/villages/red/01.jpg`,
-      `/villages/red/02.jpg`,
       `/villages/red/03.jpg`,
       `/villages/red/04.jpg`,
       `/villages/red/05.jpg`,

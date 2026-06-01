@@ -156,11 +156,26 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
   const villageSlug = String(lead.villageSlug || "");
   const receivedAt = String(lead.receivedAt || "");
 
+  // Нормализуем телефон в цифры с кодом РФ: +7 (985) 905-25-55 → 79859052555
+  const digits = phone.replace(/\D/g, "");
+  let e164 = digits;
+  if (e164.length === 11 && e164.startsWith("8")) e164 = "7" + e164.slice(1);
+  else if (e164.length === 10) e164 = "7" + e164;
+  const hasValidPhone = e164.length === 11 && e164.startsWith("7");
+
+  // Красивый формат +7 985 905-25-55 — Telegram сам распознаёт его как телефон
+  // и при тапе даёт меню «Позвонить / Скопировать». Поэтому НЕ оборачиваем в <code>.
+  const phoneDisplay = hasValidPhone
+    ? `+7 ${e164.slice(1, 4)} ${e164.slice(4, 7)}-${e164.slice(7, 9)}-${e164.slice(9, 11)}`
+    : null;
+
   const lines = [
     "🌿 <b>Новая заявка · ЗемПлюс</b>",
     "",
     `👤 <b>Имя:</b> ${name ? escapeHtml(name) : "<i>не указано</i>"}`,
-    `📞 <b>Телефон:</b> <code>${escapeHtml(phone)}</code>`,
+    phoneDisplay
+      ? `📞 <b>Телефон:</b> ${phoneDisplay}`
+      : `📞 <b>Телефон:</b> <code>${escapeHtml(phone)}</code>`,
   ];
   if (email) lines.push(`✉️ <b>Email:</b> ${escapeHtml(email)}`);
   lines.push(`🏷 <b>Тип:</b> ${escapeHtml(typeLabel)}`);
@@ -179,6 +194,20 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
   if (lead.id) lines.push(`🆔 <code>${escapeHtml(lead.id)}</code>`);
   if (receivedAt) lines.push(`🕒 ${escapeHtml(receivedAt)}`);
 
+  // Кнопки быстрого ответа клиенту. WhatsApp первым — сайт обещает подборку
+  // именно в WhatsApp (экран «Спасибо» после квиза). Звонок — тапом по самому
+  // номеру выше (Telegram распознаёт его и предлагает «Позвонить»).
+  const replyMarkup = hasValidPhone
+    ? {
+        inline_keyboard: [
+          [
+            { text: "💬 WhatsApp", url: `https://wa.me/${e164}` },
+            { text: "✈️ Telegram", url: `tg://resolve?phone=${e164}` },
+          ],
+        ],
+      }
+    : undefined;
+
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -188,6 +217,7 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
         text: lines.join("\n"),
         parse_mode: "HTML",
         disable_web_page_preview: true,
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       }),
       signal: AbortSignal.timeout(5000),
     });

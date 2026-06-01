@@ -709,21 +709,24 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch gap-2 shrink-0">
+              {/* Segment capsule — оба действия в одной капсуле, не выглядит "тонким" */}
+              <div className="relative flex items-stretch shrink-0 w-full md:w-auto bg-white/10 ring-1 ring-white/20 rounded-2xl p-1 backdrop-blur-md">
                 <a
                   href="#contacts"
-                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-12 rounded-xl font-bold text-[13px] sm:text-sm shadow-md shadow-emerald-600/30 transition-all duration-300 whitespace-nowrap"
                 >
                   <SlidersHorizontal className="w-4 h-4 shrink-0" />
-                  Посмотреть вживую
-                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                  <span className="sm:hidden">Показ</span>
+                  <span className="hidden sm:inline">Посмотреть вживую</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 hidden sm:inline" />
                 </a>
                 <a
                   href="#calculator"
-                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white ring-1 ring-white/25 px-4 sm:px-5 h-11 rounded-xl font-bold text-xs sm:text-sm shadow-sm hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                  className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 text-white hover:bg-white/10 px-4 sm:px-5 h-12 rounded-xl font-bold text-[13px] sm:text-sm transition-all duration-300 whitespace-nowrap"
                 >
                   <Wallet className="w-4 h-4 shrink-0" />
-                  Рассчитать ипотеку
+                  <span className="sm:hidden">Ипотека</span>
+                  <span className="hidden sm:inline">Рассчитать ипотеку</span>
                 </a>
               </div>
             </div>
