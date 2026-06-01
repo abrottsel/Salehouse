@@ -1,0 +1,229 @@
+"use client";
+
+/**
+ * GlassSections — three glass cards on a photo background.
+ * Click a card → content expands BELOW all three cards at full width.
+ * Only one section open at a time (accordion behavior).
+ *
+ * Fix (2026): добавлены явные кнопки «Свернуть» — сверху раскрытого блока и
+ * ВНИЗУ (где оказываешься после прочтения длинного контента). При закрытии
+ * плавно возвращает к карточкам. Раньше закрыть можно было только тапнув
+ * карточку-заголовок снова, а она уезжала за экран — было неинтуитивно.
+ */
+
+import { useState, useEffect, useRef } from "react";
+import { ListChecks, HelpCircle, MessageSquare, ChevronDown, X } from "lucide-react";
+
+const iconMap = { ListChecks, HelpCircle, MessageSquare } as const;
+type IconName = keyof typeof iconMap;
+
+interface CardDef {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: IconName;
+  photo?: string;
+  children: React.ReactNode;
+}
+
+export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [showFloating, setShowFloating] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Плавающая «Свернуть» видна только пока раскрытый блок на экране.
+  useEffect(() => {
+    if (!activeId || !contentRef.current) {
+      setShowFloating(false);
+      return;
+    }
+    const el = contentRef.current;
+    const io = new IntersectionObserver(
+      ([entry]) => setShowFloating(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [activeId]);
+
+  const toggle = (id: string) => {
+    setActiveId((prev) => {
+      const next = prev === id ? null : id;
+      if (next) {
+        requestAnimationFrame(() => {
+          contentRef.current?.scrollIntoView({ behavior: "instant", block: "nearest" });
+        });
+      }
+      return next;
+    });
+  };
+
+  // Свернуть + плавно вернуться к карточке (чтобы не остаться в пустоте).
+  const collapse = () => {
+    const id = activeId;
+    setActiveId(null);
+    if (id) {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+  };
+
+  // Auto-open from URL hash
+  useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      const match = cards.find((c) => c.id === hash);
+      if (match) {
+        setActiveId(match.id);
+        requestAnimationFrame(() => {
+          contentRef.current?.scrollIntoView({ behavior: "instant", block: "start" });
+        });
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, [cards]);
+
+  const activeCard = cards.find((c) => c.id === activeId);
+
+  return (
+    <section className="bg-gray-50 pb-4">
+      <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
+        {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
+        <div
+          className="relative overflow-hidden rounded-2xl bg-cover bg-center"
+          style={{ backgroundImage: "url(/hero-home.jpg)" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            {/* Three cards in a row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {cards.map((card) => {
+                const Icon = iconMap[card.icon];
+                const isActive = activeId === card.id;
+                return (
+                  <button
+                    key={card.id}
+                    id={card.id}
+                    type="button"
+                    onClick={() => toggle(card.id)}
+                    className={`glass-section-card overflow-hidden rounded-2xl text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
+                      isActive
+                        ? "shadow-2xl ring-2 ring-white/30"
+                        : "shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                    }`}
+                    style={{
+                      backgroundImage: card.photo ? `url(${card.photo})` : undefined,
+                      boxShadow: isActive
+                        ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)"
+                        : "inset 0 1px 0 rgba(255,255,255,0.3), 0 12px 40px -8px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    {card.photo && <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-black/50" />}
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.4] to-transparent" />
+                    <div className="relative z-10 flex items-center gap-3 p-5 lg:p-6">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shadow-md shrink-0">
+                        <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-base font-black text-white leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                          {card.title}
+                        </div>
+                        <div className="text-xs text-white/60 mt-0.5">{card.subtitle}</div>
+                      </div>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
+                          isActive ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Expanded content — full width below all cards */}
+            {activeCard && (
+              <div
+                ref={contentRef}
+                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 scroll-mt-20"
+                style={{
+                  backdropFilter: "blur(8px) saturate(1.6)",
+                  WebkitBackdropFilter: "blur(8px) saturate(1.6)",
+                  background: "linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)",
+                }}
+              >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
+
+                {/* Top bar with explicit close */}
+                <div className="relative z-10 flex items-center justify-between gap-3 px-5 lg:px-8 pt-4">
+                  <span className="text-sm font-bold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                    {activeCard.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={collapse}
+                    aria-label="Свернуть"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/25 text-white text-[13px] font-semibold px-3 py-1.5 transition-colors"
+                  >
+                    Свернуть
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-5 lg:p-8 pt-3">{activeCard.children}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* v2 — плавающая «Свернуть»: видна всегда пока читаешь раскрытый блок */}
+      {activeCard && showFloating && (
+        <button
+          type="button"
+          onClick={collapse}
+          aria-label="Свернуть раздел"
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-gray-900/90 hover:bg-gray-900 text-white text-sm font-semibold pl-4 pr-3 py-2.5 shadow-2xl ring-1 ring-white/15 backdrop-blur-md transition-colors"
+        >
+          <ChevronDown className="w-4 h-4 rotate-180" />
+          Свернуть «{activeCard.title}»
+          <X className="w-4 h-4 opacity-70" />
+        </button>
+      )}
+
+      <style>{`
+        .glass-section-card {
+          position: relative;
+        }
+        .glass-section-card::before {
+          content: '';
+          position: absolute;
+          inset: -1.5px;
+          border-radius: inherit;
+          padding: 1.5px;
+          background: conic-gradient(
+            from 0deg,
+            rgba(255,0,0,0.3),
+            rgba(255,165,0,0.3),
+            rgba(255,255,0,0.2),
+            rgba(0,255,0,0.2),
+            rgba(0,200,255,0.3),
+            rgba(100,100,255,0.3),
+            rgba(200,0,255,0.3),
+            rgba(255,0,0,0.3)
+          );
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+          z-index: 1;
+        }
+      `}</style>
+    </section>
+  );
+}
