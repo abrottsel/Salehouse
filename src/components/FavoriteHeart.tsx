@@ -29,7 +29,7 @@ const baseBtn =
 
 const variantClasses: Record<Variant, string> = {
   light:
-    "w-9 h-9 bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white shadow-md",
+    "w-9 h-9 bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 shadow-sm",
   dark:
     "w-10 h-10 bg-black/40 backdrop-blur-md text-white hover:bg-black/60 border border-white/20",
   inline: "w-10 h-10 bg-gray-100 text-gray-700 hover:bg-gray-200",
