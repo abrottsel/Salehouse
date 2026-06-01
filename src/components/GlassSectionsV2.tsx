@@ -135,7 +135,6 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
             {activeCard && (
               <div
                 ref={contentRef}
-                onClick={(e) => e.stopPropagation()}
                 className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 scroll-mt-20"
                 style={{
                   backdropFilter: "blur(8px) saturate(1.6)",
@@ -146,10 +145,10 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
 
-                {/* Top bar — ВСЯ шапка кликабельна на сворачивание (не только кнопка) */}
+                {/* Top bar — ВСЯ шапка кликабельна на сворачивание */}
                 <button
                   type="button"
-                  onClick={collapse}
+                  onClick={(e) => { e.stopPropagation(); collapse(); }}
                   aria-label="Свернуть раздел"
                   className="relative z-10 w-full flex items-center justify-between gap-3 px-5 lg:px-8 pt-4 pb-1 text-left"
                 >
@@ -174,7 +173,7 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
       {activeCard && (
         <button
           type="button"
-          onClick={collapse}
+          onClick={(e) => { e.stopPropagation(); collapse(); }}
           aria-label="Свернуть раздел"
           style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.75rem)" }}
           className="fixed left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-gray-900 hover:bg-black active:scale-95 text-white text-sm font-semibold px-5 py-3.5 shadow-2xl ring-1 ring-white/20 transition-all"

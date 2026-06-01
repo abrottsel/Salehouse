@@ -97,8 +97,7 @@ export default function Header() {
           </nav>
 
           {/* Phone + CTA */}
-          <div className="hidden md:flex items-center gap-1.5 shrink-0 ml-2 lg:ml-4">
-            <SiteSearch />
+          <div className="hidden md:flex items-center gap-1 shrink-0 ml-2 lg:ml-4">
             {isV2 && theme && (
               <button
                 type="button"
@@ -111,16 +110,14 @@ export default function Header() {
                   : <Moon className="w-5 h-5 text-indigo-500" />}
               </button>
             )}
+            <SiteSearch />
             <FavoritesCounter />
             <a
               href="tel:+79859052555"
-              className="flex items-center gap-1.5 text-gray-800 font-bold hover:text-green-600 transition-colors dark:text-gray-100 dark:hover:text-emerald-400"
               aria-label="Позвонить +7 (985) 905-25-55"
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
             >
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center dark:bg-emerald-500/15">
-                <Phone className="w-4 h-4 text-green-600" />
-              </div>
-              <span className="hidden 2xl:inline text-xs">+7 (985) 905-25-55</span>
+              <Phone className="w-4 h-4 text-green-600 dark:text-emerald-400" />
             </a>
             <a
               href={ctaHref}
@@ -131,10 +128,7 @@ export default function Header() {
           </div>
 
           {/* Mobile toggle */}
-          <div className="lg:hidden ml-auto flex items-center gap-2">
-            <div className="md:hidden">
-              <SiteSearch />
-            </div>
+          <div className="lg:hidden ml-auto flex items-center gap-1">
             {isV2 && theme && (
               <button
                 type="button"
@@ -148,10 +142,13 @@ export default function Header() {
               </button>
             )}
             <div className="md:hidden">
+              <SiteSearch />
+            </div>
+            <div className="md:hidden">
               <FavoritesCounter />
             </div>
-            <a href="tel:+79859052555" className="md:hidden w-11 h-11 bg-green-100 rounded-full flex items-center justify-center dark:bg-emerald-500/15">
-              <Phone className="w-4 h-4 text-green-600" />
+            <a href="tel:+79859052555" aria-label="Позвонить" className="md:hidden w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+              <Phone className="w-4 h-4 text-green-600 dark:text-emerald-400" />
             </a>
             <button
               className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors dark:text-gray-100 dark:hover:bg-white/10"
