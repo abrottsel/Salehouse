@@ -108,12 +108,11 @@ const items: Item[] = [
 function Card({ item, big }: { item: Item; big: boolean }) {
   return (
     <div
-      className={`adv-glass-card flex flex-col gap-2 rounded-[18px] cursor-default h-full overflow-hidden relative dark:[background:none!important] dark:bg-white/[0.03] dark:ring-1 dark:ring-white/10 dark:shadow-none ${
+      className={`adv-glass-card flex flex-col gap-2 rounded-[18px] cursor-default h-full overflow-hidden relative [background:linear-gradient(135deg,rgba(236,253,245,0.8),rgba(209,250,229,0.4))] dark:[background:rgba(255,255,255,0.03)] dark:ring-1 dark:ring-white/10 dark:shadow-none ${
         big ? "col-span-2 md:col-span-1 p-5 md:p-4" : "p-4"
       }`}
       style={{
         backdropFilter: "blur(12px) saturate(1.5)",
-        background: "linear-gradient(135deg,rgba(236,253,245,0.8),rgba(209,250,229,0.4))",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9),0 4px 16px -4px rgba(5,150,105,0.1)",
       }}
     >
@@ -154,8 +153,7 @@ export default function Advantages() {
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         <div
-          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 dark:[background:none!important] dark:bg-white/[0.02] dark:ring-1 dark:ring-white/10"
-          style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 60%, #d1fae5 80%, #ecfdf5 100%)" }}
+          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 [background:linear-gradient(135deg,#ecfdf5_0%,#d1fae5_30%,#a7f3d0_60%,#d1fae5_80%,#ecfdf5_100%)] dark:[background:rgba(255,255,255,0.02)] dark:ring-1 dark:ring-white/10"
         >
         {/* Header */}
         <div className="text-center mb-6">

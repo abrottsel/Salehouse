@@ -48,8 +48,7 @@ export default function MortgageCalculator() {
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         <div
-          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8"
-          style={{ background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 30%, #a7f3d0 60%, #d1fae5 80%, #ecfdf5 100%)" }}
+          className="rounded-2xl overflow-hidden py-6 lg:py-10 px-4 sm:px-6 lg:px-8 [background:linear-gradient(135deg,#ecfdf5_0%,#d1fae5_30%,#a7f3d0_60%,#d1fae5_80%,#ecfdf5_100%)] dark:[background:rgba(255,255,255,0.02)] dark:ring-1 dark:ring-white/10"
         >
         {/* Header */}
         <div className="text-center mb-5">
@@ -65,10 +64,9 @@ export default function MortgageCalculator() {
             {banks.map((b) => (
               <div
                 key={b.name}
-                className="calc-bank-pill inline-flex items-center gap-1.5 px-3 h-8 rounded-full shadow-sm dark:[background:rgba(255,255,255,0.06)!important] dark:shadow-none dark:ring-1 dark:ring-white/10"
+                className="calc-bank-pill inline-flex items-center gap-1.5 px-3 h-8 rounded-full shadow-sm [background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,255,255,0.45))] dark:[background:rgba(255,255,255,0.06)] dark:shadow-none dark:ring-1 dark:ring-white/10"
                 style={{
                   backdropFilter: "blur(12px) saturate(1.4)",
-                  background: "linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,255,255,0.45))",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9),0 2px 8px -2px rgba(0,0,0,0.06)",
                 }}
               >
@@ -82,10 +80,9 @@ export default function MortgageCalculator() {
 
         {/* Main card — frosted glass */}
         <div
-          className="calc-glass-card rounded-3xl overflow-hidden relative dark:[background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))!important] dark:ring-1 dark:ring-white/10"
+          className="calc-glass-card rounded-3xl overflow-hidden relative [background:linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.5))] dark:[background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] dark:ring-1 dark:ring-white/10"
           style={{
             backdropFilter: "blur(12px) saturate(1.4)",
-            background: "linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.5))",
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.95),0 4px 16px -4px rgba(5,150,105,0.08)",
           }}
         >
@@ -105,8 +102,7 @@ export default function MortgageCalculator() {
 
             {/* Result panel — green tinted glass */}
             <div
-              className="p-6 sm:p-8 flex flex-col relative overflow-hidden dark:[background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.04))!important]"
-              style={{ background: "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.08))" }}
+              className="p-6 sm:p-8 flex flex-col relative overflow-hidden [background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.08))] dark:[background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.04))]"
             >
               <div className="absolute -top-20 -right-20 w-56 h-56 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none" />
               <div
