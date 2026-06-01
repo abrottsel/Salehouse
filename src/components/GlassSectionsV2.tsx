@@ -42,13 +42,13 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
     });
   };
 
-  // Свернуть + плавно вернуться к карточке (чтобы не остаться в пустоте).
+  // Свернуть + вернуться к карточке (instant — smooth вызывал лаги на мобиле).
   const collapse = () => {
     const id = activeId;
     setActiveId(null);
     if (id) {
       requestAnimationFrame(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document.getElementById(id)?.scrollIntoView({ behavior: "instant", block: "center" });
       });
     }
   };
@@ -76,9 +76,11 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
     <section className="bg-gray-50 pb-4">
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
+        {/* Тап по фону (не по карточкам/панели) закрывает раскрытый блок */}
         <div
           className="relative overflow-hidden rounded-2xl bg-cover bg-center"
           style={{ backgroundImage: "url(/hero-home.jpg)" }}
+          onClick={activeCard ? collapse : undefined}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
 
@@ -93,7 +95,7 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
                     key={card.id}
                     id={card.id}
                     type="button"
-                    onClick={() => toggle(card.id)}
+                    onClick={(e) => { e.stopPropagation(); toggle(card.id); }}
                     className={`glass-section-card overflow-hidden rounded-2xl text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
                       isActive
                         ? "shadow-2xl ring-2 ring-white/30"
@@ -133,6 +135,7 @@ export default function GlassSectionsV2({ cards }: { cards: CardDef[] }) {
             {activeCard && (
               <div
                 ref={contentRef}
+                onClick={(e) => e.stopPropagation()}
                 className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 scroll-mt-20"
                 style={{
                   backdropFilter: "blur(8px) saturate(1.6)",

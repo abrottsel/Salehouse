@@ -1,12 +1,10 @@
+import { ThemeWrapper } from "@/components/v2/ThemeWrapper";
+
 /**
- * /v2 layout — оборачивает всю ревью-версию в .dark (class-based dark variant
- * объявлен в globals.css: `@custom-variant dark (&:is(.dark *), &.dark)`).
- * Тёмная тема активна ТОЛЬКО на /v2. Прод / без класса .dark = остаётся светлым.
+ * /v2 layout — class-based dark variant (globals.css: @custom-variant dark).
+ * Тёмная тема по умолчанию. Пользователь переключает через плавающую кнопку.
+ * Прод / без класса .dark = всегда светлый.
  */
 export default function V2Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="dark bg-[#0b0f14] text-gray-100 min-h-screen">
-      {children}
-    </div>
-  );
+  return <ThemeWrapper>{children}</ThemeWrapper>;
 }
