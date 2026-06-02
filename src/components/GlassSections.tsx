@@ -1,13 +1,7 @@
 "use client";
 
-/**
- * GlassSections — three glass cards on a photo background.
- * Click a card → content expands BELOW all three cards at full width.
- * Only one section open at a time (accordion behavior).
- */
-
 import { useState, useEffect, useRef } from "react";
-import { ListChecks, HelpCircle, MessageSquare, ChevronDown } from "lucide-react";
+import { ListChecks, HelpCircle, MessageSquare, ChevronDown, X } from "lucide-react";
 
 const iconMap = { ListChecks, HelpCircle, MessageSquare } as const;
 type IconName = keyof typeof iconMap;
@@ -37,6 +31,16 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
     });
   };
 
+  const collapse = () => {
+    const id = activeId;
+    setActiveId(null);
+    if (id) {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "instant", block: "center" });
+      });
+    }
+  };
+
   // Auto-open from URL hash
   useEffect(() => {
     const checkHash = () => {
@@ -59,10 +63,10 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
   return (
     <section className="bg-gray-50 dark:bg-transparent pb-4">
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
-        {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
         <div
           className="relative overflow-hidden rounded-2xl bg-cover bg-center"
           style={{ backgroundImage: "url(/hero-home.jpg)" }}
+          onClick={activeCard ? collapse : undefined}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
 
@@ -77,7 +81,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
                     key={card.id}
                     id={card.id}
                     type="button"
-                    onClick={() => toggle(card.id)}
+                    onClick={(e) => { e.stopPropagation(); toggle(card.id); }}
                     className={`glass-section-card overflow-hidden rounded-2xl text-left transition-all duration-300 scroll-mt-20 bg-cover bg-center ${
                       isActive
                         ? "shadow-2xl ring-2 ring-white/30"
@@ -117,7 +121,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
             {activeCard && (
               <div
                 ref={contentRef}
-                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 [background:linear-gradient(160deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_100%)] dark:[background:rgba(11,15,20,0.94)] dark:ring-1 dark:ring-white/10"
+                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 scroll-mt-20 [background:linear-gradient(160deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_100%)] dark:[background:rgba(11,15,20,0.94)] dark:ring-1 dark:ring-white/10"
                 style={{
                   backdropFilter: "blur(8px) saturate(1.6)",
                   WebkitBackdropFilter: "blur(8px) saturate(1.6)",
@@ -125,14 +129,44 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
                 }}
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/[0.5] to-transparent" />
-                <div className="p-5 lg:p-8">
-                  {activeCard.children}
-                </div>
+
+                {/* Top bar — вся шапка кликабельна на сворачивание */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); collapse(); }}
+                  aria-label="Свернуть раздел"
+                  className="relative z-10 w-full flex items-center justify-between gap-3 px-5 lg:px-8 pt-4 pb-1 text-left"
+                >
+                  <span className="text-sm font-bold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                    {activeCard.title}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-[13px] font-semibold px-3 py-1.5">
+                    Свернуть
+                    <X className="w-4 h-4" />
+                  </span>
+                </button>
+
+                <div className="p-5 lg:p-8 pt-3">{activeCard.children}</div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Плавающая «Свернуть» — видна всегда пока раздел открыт */}
+      {activeCard && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); collapse(); }}
+          aria-label="Свернуть раздел"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.75rem)" }}
+          className="fixed left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 rounded-full bg-gray-900 hover:bg-black active:scale-95 text-white text-sm font-semibold px-5 py-3.5 shadow-2xl ring-1 ring-white/20 transition-all"
+        >
+          <ChevronDown className="w-4 h-4 rotate-180" />
+          Свернуть
+          <X className="w-4 h-4 opacity-70" />
+        </button>
+      )}
 
       <style>{`
         .glass-section-card {
