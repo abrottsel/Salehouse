@@ -241,7 +241,7 @@ export default function ViewingModal() {
       {/* Panel */}
       <div
         ref={panelRef}
-        className="viewing-glass relative z-10 w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-[24px] text-white [&_*]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
+        className="viewing-glass relative z-10 w-full sm:max-w-md max-h-[95vh] overflow-y-auto rounded-t-3xl sm:rounded-[24px] text-white [&_*]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
         style={GLASS_STYLE}
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-10 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
@@ -256,14 +256,14 @@ export default function ViewingModal() {
           <X className="w-5 h-5 text-white/90" />
         </button>
 
-        <div className="relative z-10 px-5 py-6 sm:px-7 sm:py-7">
+        <div className="relative z-10 px-5 py-5 sm:px-7 sm:py-6">
           {!done ? (
             <>
-              <div className="mb-4">
-                <p className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-emerald-300 mb-1.5">
+              <div className="mb-3">
+                <p className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-emerald-300 mb-1">
                   <CalendarCheck className="w-3.5 h-3.5" /> Посмотреть вживую
                 </p>
-                <h3 className="text-2xl font-black tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight">
                   Запись на просмотр
                 </h3>
                 {contextLabel && (
@@ -278,19 +278,18 @@ export default function ViewingModal() {
                     )}
                   </div>
                 )}
-                <p className="mt-2 text-sm text-white/75">
-                  Выберите удобные дату и время — менеджер подтвердит запись и
-                  встретит вас на месте.
+                <p className="mt-1.5 text-[13px] leading-snug text-white/75">
+                  Выберите удобные дату и время — менеджер подтвердит запись.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
                 <input
                   type="text"
                   placeholder="Имя"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl bg-white/15 border border-white/30 text-white placeholder:text-white/70 px-4 py-3 outline-none focus:bg-white/25 focus:border-white/50 transition"
+                  className="w-full rounded-xl bg-white/15 border border-white/30 text-white placeholder:text-white/70 px-4 py-2.5 outline-none focus:bg-white/25 focus:border-white/50 transition"
                 />
 
                 <PhoneInput value={phone} onChange={setPhone} required />
@@ -307,7 +306,7 @@ export default function ViewingModal() {
                     max={maxISO(60)}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="w-full rounded-xl bg-white/15 border border-white/30 text-white px-4 py-3 outline-none focus:bg-white/25 focus:border-white/50 transition [color-scheme:dark]"
+                    className="w-full rounded-xl bg-white/15 border border-white/30 text-white px-4 py-2.5 outline-none focus:bg-white/25 focus:border-white/50 transition [color-scheme:dark]"
                   />
                 </label>
 
@@ -343,7 +342,7 @@ export default function ViewingModal() {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={2}
-                  className="w-full rounded-xl bg-white/15 border border-white/30 text-white placeholder:text-white/70 px-4 py-3 outline-none focus:bg-white/25 focus:border-white/50 transition resize-none"
+                  className="w-full rounded-xl bg-white/15 border border-white/30 text-white placeholder:text-white/70 px-4 py-2.5 outline-none focus:bg-white/25 focus:border-white/50 transition resize-none"
                 />
 
                 {/* Согласие 152-ФЗ */}
@@ -370,7 +369,7 @@ export default function ViewingModal() {
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="mt-1 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/40 disabled:cursor-not-allowed text-white px-6 h-12 rounded-xl font-bold transition"
+                  className="mt-0.5 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/40 disabled:cursor-not-allowed text-white px-6 h-11 rounded-xl font-bold transition"
                 >
                   {submitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -413,11 +412,15 @@ export default function ViewingModal() {
         </div>
 
         <style>{`
-          .viewing-glass { position: relative; }
+          .viewing-glass { position: relative; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
           .viewing-glass::before {
             content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;
             ${RAINBOW_CSS}
           }
+          .viewing-glass::-webkit-scrollbar { width: 6px; }
+          .viewing-glass::-webkit-scrollbar-track { background: transparent; }
+          .viewing-glass::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+          .viewing-glass::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
         `}</style>
       </div>
     </div>,
