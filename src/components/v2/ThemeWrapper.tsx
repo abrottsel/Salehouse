@@ -7,14 +7,10 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   const [dark, setDark] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("v2-theme");
-    const isDark = saved !== "light";
-    setDark(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // Источник истины — класс, который уже выставил анти-FOUC скрипт в <head>
+    // (ручной выбор v2-theme, иначе авто по времени суток). Просто синхронизируем
+    // React-состояние с фактическим классом, не переопределяя решение скрипта.
+    setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggle = () => {

@@ -73,15 +73,26 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ru" className={`${inter.variable}`}>
+    <html lang="ru" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
-        {/* Замораживаем высоту viewport один раз при загрузке — защита от прыжков в TG/iOS WebView */}
+        {/* Замораживаем высоту viewport один раз при загрузке — защита от прыжков в TG/iOS WebView.
+            Тема: ручной выбор (v2-theme = dark|light) имеет приоритет и держится,
+            пока пользователь сам не переключит. Если выбора не было — авто по времени:
+            день 07:00–19:00 светлая, вечер/ночь тёмная (по локальному времени устройства). */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){
   var h = window.innerHeight;
   document.documentElement.style.setProperty('--app-height', h + 'px');
-  if (localStorage.getItem('v2-theme') !== 'light') {
-    document.documentElement.classList.add('dark');
+  var pref = null;
+  try { pref = localStorage.getItem('v2-theme'); } catch(e){}
+  var dark;
+  if (pref === 'dark' || pref === 'light') {
+    dark = pref === 'dark';
+  } else {
+    var hr = new Date().getHours();
+    dark = hr < 7 || hr >= 19;
   }
+  if (dark) document.documentElement.classList.add('dark');
+  else document.documentElement.classList.remove('dark');
 })();` }} />
         <script
           type="application/ld+json"
