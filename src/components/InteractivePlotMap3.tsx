@@ -835,15 +835,15 @@ export default function InteractivePlotMap3({
   // ─── Render ────────────────────────────────────────────────
   if (bundle.kind === "blocked") {
     return (
-      <section className="relative w-full h-[70vh] bg-stone-100 rounded-2xl flex items-center justify-center p-6">
+      <section className="relative w-full h-[70vh] bg-stone-100 dark:bg-stone-800/50 rounded-2xl flex items-center justify-center p-6">
         <div className="max-w-md text-center space-y-3">
-          <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+          <div className="mx-auto w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
             <MapPin className="w-7 h-7 text-amber-600" />
           </div>
-          <h3 className="text-base font-black text-gray-900">
+          <h3 className="text-base font-black text-gray-900 dark:text-gray-100">
             Карта участков недоступна
           </h3>
-          <p className="text-xs text-gray-600 leading-relaxed">
+          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
             Браузер заблокировал загрузку Yandex Maps 3.0 — скорее всего вы
             в приватном режиме Safari или в браузере с блокировщиком трекеров.
             Откройте эту страницу в обычном окне Chrome/Safari.
@@ -863,7 +863,7 @@ export default function InteractivePlotMap3({
 
   if (bundle.kind === "loading" || !data || !location) {
     return (
-      <section className="relative w-full h-[70vh] bg-stone-100 rounded-2xl flex items-center justify-center">
+      <section className="relative w-full h-[70vh] bg-stone-100 dark:bg-stone-800/50 rounded-2xl flex items-center justify-center">
         <div className="text-xs font-semibold text-gray-500 flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           {dataError ? `Ошибка: ${dataError}` : "Загрузка карты…"}
@@ -894,13 +894,13 @@ export default function InteractivePlotMap3({
       {/* overflow-y-auto so all sections fit on short viewports. Pack
           everything tighter so on a 13\" MBA (950 px useful height)
           the price filter lands above the fold without scrolling. */}
-      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[272px] xl:w-[320px] 2xl:w-[360px] bg-white z-20 border-r border-gray-100 flex-col overflow-y-auto">
+      <aside className="hidden lg:flex absolute top-0 left-0 bottom-0 w-[272px] xl:w-[320px] 2xl:w-[360px] bg-white dark:bg-gray-900 z-20 border-r border-gray-100 dark:border-white/10 flex-col overflow-y-auto">
         {/* Header — village title + compact inline stats + phone pill */}
-        <div className="px-3 xl:px-4 pt-3 pb-2 border-b border-gray-100">
-          <div className="text-lg xl:text-xl font-black text-gray-900 leading-tight">
+        <div className="px-3 xl:px-4 pt-3 pb-2 border-b border-gray-100 dark:border-white/10">
+          <div className="text-lg xl:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">
             {villageName}
           </div>
-          <div className="mt-1 text-[10px] xl:text-[11px] text-gray-600 leading-snug tabular-nums">
+          <div className="mt-1 text-[10px] xl:text-[11px] text-gray-600 dark:text-gray-400 leading-snug tabular-nums">
             <span className="font-bold text-gray-900">{data.plots.length}</span> всего
             <span className="mx-1 text-gray-300">·</span>
             <span className="font-bold text-green-600">{data.statistics.free}</span> свободно
@@ -911,7 +911,7 @@ export default function InteractivePlotMap3({
           </div>
           <a
             href="tel:+79859052555"
-            className="mt-2 flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 ring-1 ring-emerald-200/70 text-green-700 font-black text-[11px] hover:from-green-100 hover:to-emerald-100 transition-all"
+            className="mt-2 flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/20 ring-1 ring-emerald-200/70 dark:ring-emerald-700/40 text-green-700 dark:text-emerald-300 font-black text-[11px] hover:from-green-100 hover:to-emerald-100 transition-all"
           >
             <Phone className="w-3.5 h-3.5" />
             +7 (985) 905-25-55
@@ -929,22 +929,22 @@ export default function InteractivePlotMap3({
           const minPrice = Math.min(...prices);
           const maxPrice = Math.max(...prices);
           return (
-            <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
+            <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100 dark:border-white/10">
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg bg-emerald-50 ring-1 ring-emerald-200/60 p-2">
+                <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-200/60 dark:ring-emerald-800/40 p-2">
                   <div className="text-[8px] uppercase font-bold text-emerald-700 tracking-wider">
                     Площадь
                   </div>
-                  <div className="text-sm font-black text-gray-900 tabular-nums leading-none mt-0.5">
+                  <div className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums leading-none mt-0.5">
                     {minArea}–{maxArea}{" "}
                     <span className="text-[9px] text-gray-500 font-bold">сот</span>
                   </div>
                 </div>
-                <div className="rounded-lg bg-emerald-50 ring-1 ring-emerald-200/60 p-2">
+                <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-200/60 dark:ring-emerald-800/40 p-2">
                   <div className="text-[8px] uppercase font-bold text-emerald-700 tracking-wider">
                     От
                   </div>
-                  <div className="text-sm font-black text-gray-900 tabular-nums leading-none mt-0.5">
+                  <div className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums leading-none mt-0.5">
                     {minPrice.toLocaleString("ru-RU")}{" "}
                     <span className="text-[9px] text-gray-500 font-bold">₽/сот</span>
                   </div>
@@ -961,8 +961,8 @@ export default function InteractivePlotMap3({
         })()}
 
         {/* Filter header + reset */}
-        <div className="px-3 xl:px-4 pt-2.5 pb-2 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-sm font-black text-gray-900">Фильтр</h3>
+        <div className="px-3 xl:px-4 pt-2.5 pb-2 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
+          <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">Фильтр</h3>
           {(enabledTiers.size > 0 || enabledStatuses.size > 0) && (
             <button
               type="button"
@@ -975,8 +975,8 @@ export default function InteractivePlotMap3({
         </div>
 
         {/* Status filter — clickable dots */}
-        <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100">
-          <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1.5">
+        <div className="px-3 xl:px-4 pt-2 pb-2 border-b border-gray-100 dark:border-white/10">
+          <h3 className="text-[9px] font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-1.5">
             Статус
           </h3>
           <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
@@ -1008,7 +1008,7 @@ export default function InteractivePlotMap3({
         {/* Price tier filters */}
         {data.priceTiers.length > 0 && (
           <div className="px-3 xl:px-4 pt-2 pb-3">
-            <h3 className="text-[9px] font-bold text-gray-900 uppercase tracking-wider mb-1">
+            <h3 className="text-[9px] font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-1">
               Цена за сотку
             </h3>
             <div className="space-y-1">
@@ -1326,9 +1326,9 @@ export default function InteractivePlotMap3({
           </button>
 
           {showPlacesPanel && (
-            <div className="mt-2 w-[min(86vw,340px)] bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
-              <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-gray-100">
-                <h3 className="text-sm font-black text-gray-900">Мои места</h3>
+            <div className="mt-2 w-[min(86vw,340px)] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
+              <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-gray-100 dark:border-white/10">
+                <h3 className="text-sm font-black text-gray-900 dark:text-gray-100">Мои места</h3>
                 {places.length > 0 && (
                   <button
                     type="button"
@@ -1349,7 +1349,7 @@ export default function InteractivePlotMap3({
                       <div
                         key={p.id}
                         className={`flex items-center gap-2 px-3 py-2.5 transition-colors ${
-                          active ? "bg-emerald-50" : "hover:bg-gray-50"
+                          active ? "bg-emerald-50" : "hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
                         <button
@@ -1373,10 +1373,10 @@ export default function InteractivePlotMap3({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[11px] font-black text-gray-900 truncate">
+                            <div className="text-[11px] font-black text-gray-900 dark:text-gray-100 truncate">
                               {p.label}
                             </div>
-                            <div className="text-[10px] text-gray-500 truncate">
+                            <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
                               {p.address}
                             </div>
                           </div>
@@ -1397,7 +1397,7 @@ export default function InteractivePlotMap3({
 
               {/* Add form */}
               {addingPlace ? (
-                <div className="px-3 py-3 bg-gray-50 border-t border-gray-100 space-y-2">
+                <div className="px-3 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-white/10 space-y-2">
                   <div className="flex items-center gap-1">
                     {(["Дом", "Работа", "Дача"] as const).map((preset) => (
                       <button
@@ -1446,7 +1446,7 @@ export default function InteractivePlotMap3({
                       }
                     }}
                     placeholder="Адрес, например «Москва, Тверская 1»"
-                    className="w-full h-9 px-3 rounded-xl bg-white ring-1 ring-gray-200 text-[11px] placeholder:text-gray-400 focus:ring-emerald-400 focus:outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 text-[11px] dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-emerald-400 focus:outline-none"
                   />
 
                   {geocodeError && (
@@ -1472,7 +1472,7 @@ export default function InteractivePlotMap3({
                         setGeocodeError("");
                         setNewPlaceAddress("");
                       }}
-                      className="h-9 px-3 rounded-xl bg-white ring-1 ring-gray-200 text-gray-700 text-[11px] font-bold hover:ring-gray-300"
+                      className="h-9 px-3 rounded-xl bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 text-gray-700 dark:text-gray-300 text-[11px] font-bold hover:ring-gray-300"
                     >
                       Отмена
                     </button>
@@ -1505,7 +1505,7 @@ export default function InteractivePlotMap3({
             onClick={() =>
               setMapType((m) => (m === "map" ? "satellite" : "map"))
             }
-            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg bg-white text-gray-900 hover:bg-gray-50 text-[11px] font-bold shadow-lg ring-1 ring-black/5 transition-all active:scale-95"
+            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 text-[11px] font-bold shadow-lg ring-1 ring-black/5 transition-all active:scale-95"
             aria-label={mapType === "map" ? "Переключить на Спутник" : "Переключить на Схему"}
           >
             {mapType === "map" ? (
@@ -1520,20 +1520,20 @@ export default function InteractivePlotMap3({
               </>
             )}
           </button>
-          <div className="flex flex-col bg-white rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden">
+          <div className="flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black/5 overflow-hidden">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 text-emerald-700 active:scale-95 transition-all"
               aria-label="Приблизить"
             >
               <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
-            <div className="h-px bg-gray-100 mx-1.5" />
+            <div className="h-px bg-gray-100 dark:bg-white/10 mx-1.5" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 text-emerald-700 active:scale-95 transition-all"
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 text-emerald-700 active:scale-95 transition-all"
               aria-label="Отдалить"
             >
               <Minus className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -1543,20 +1543,20 @@ export default function InteractivePlotMap3({
 
         {/* Route info bar */}
         {routeInfo && activeRouteId && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 bg-white rounded-full shadow-2xl ring-1 ring-black/5 pl-3 pr-1.5 py-1.5 flex items-center gap-2 max-w-[min(94vw,460px)]">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 bg-white dark:bg-gray-900 rounded-full shadow-2xl ring-1 ring-black/5 dark:ring-white/10 pl-3 pr-1.5 py-1.5 flex items-center gap-2 max-w-[min(94vw,460px)]">
             <div className="flex items-center gap-1.5 min-w-0">
               <div className="shrink-0 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
                 <HomeIcon className="w-3 h-3 text-white" strokeWidth={3} />
               </div>
-              <span className="text-xs font-bold text-gray-900 truncate">
+              <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">
                 {places.find((p) => p.id === activeRouteId)?.label}
               </span>
               <span className="text-gray-400 text-xs">→</span>
-              <span className="text-xs font-semibold text-gray-700 truncate">
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">
                 {villageName}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-gray-200">
+            <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-gray-200 dark:border-gray-700">
               <span className="text-xs font-black text-green-700 tabular-nums whitespace-nowrap">
                 {routeInfo.distance}
               </span>
@@ -1567,7 +1567,7 @@ export default function InteractivePlotMap3({
             <button
               type="button"
               onClick={clearRoute}
-              className="shrink-0 w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
+              className="shrink-0 w-6 h-6 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
               aria-label="Скрыть маршрут"
             >
               <X className="w-3.5 h-3.5" />
