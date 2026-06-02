@@ -22,6 +22,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { villages, type Village } from "@/lib/data";
 
@@ -126,7 +127,11 @@ export default function SiteSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Портал в body монтируется только на клиенте.
+  useEffect(() => setMounted(true), []);
 
   // Open / close shortcuts
   useEffect(() => {
@@ -226,8 +231,10 @@ export default function SiteSearch() {
         <Search className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-emerald-400 transition-colors" />
       </button>
 
-      {/* Modal */}
-      {open && (
+      {/* Modal — портал в body, иначе overflow-hidden + backdrop-blur шапки
+          (containing block для position:fixed в тёмной теме) обрезают окно
+          до полоски ввода и прячут список результатов. */}
+      {open && mounted && createPortal(
         <div
           className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 px-4"
           role="dialog"
@@ -340,7 +347,8 @@ export default function SiteSearch() {
               <div className="text-gray-400">ЗемПлюс</div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
