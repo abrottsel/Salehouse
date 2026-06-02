@@ -134,6 +134,33 @@ function formatQuizAnswers(raw: string): string | null {
   }
 }
 
+/* ─── Viewing-appointment pretty-printing ─────────────────────────── */
+
+const escapeHtmlBasic = (s: string) =>
+  s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c] ?? c));
+
+/**
+ * Заявка из формы «Запись на просмотр» (ViewingModal).
+ * message приходит как "[VIEWING]\n{json}" с полями date/slot/village/plot/comment.
+ * Возвращает готовый HTML-блок для TG или null, если это не VIEWING-заявка.
+ */
+function formatViewingDetails(raw: string): string | null {
+  const match = raw.match(/^\[VIEWING\]\s*\n?([\s\S]+)$/);
+  if (!match) return null;
+  try {
+    const d = JSON.parse(match[1]) as Record<string, string>;
+    const rows: string[] = [];
+    if (d.date) rows.push(`  📅 <b>Дата:</b> ${escapeHtmlBasic(d.date)}`);
+    if (d.slot) rows.push(`  🕒 <b>Время:</b> ${escapeHtmlBasic(d.slot)}`);
+    if (d.village) rows.push(`  🏡 <b>Посёлок:</b> ${escapeHtmlBasic(d.village)}`);
+    if (d.plot) rows.push(`  📍 <b>Участок:</b> №${escapeHtmlBasic(d.plot)}`);
+    if (d.comment) rows.push(`  💬 <b>Комментарий:</b> ${escapeHtmlBasic(d.comment)}`);
+    return rows.length ? rows.join("\n") : null;
+  } catch {
+    return null;
+  }
+}
+
 async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error?: string }> {
   // Лиды идут через @prozemplus_bot (PROZEM_BOT_TOKEN) в личку Антону.
   // Фоллбэк на TG_BOT_TOKEN если PROZEM_BOT_TOKEN ещё не прописан в env.
@@ -183,8 +210,11 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
 
   if (message) {
     const quizFormatted = formatQuizAnswers(message);
+    const viewingFormatted = formatViewingDetails(message);
     if (quizFormatted) {
       lines.push(`📋 <b>Ответы квиза:</b>\n${quizFormatted}`);
+    } else if (viewingFormatted) {
+      lines.push(`📋 <b>Запись на просмотр:</b>\n${viewingFormatted}`);
     } else {
       lines.push(`💬 <b>Комментарий:</b>\n${escapeHtml(message)}`);
     }
