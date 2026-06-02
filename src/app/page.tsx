@@ -4,7 +4,7 @@ import Catalog from "@/components/Catalog";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import Advantages from "@/components/Advantages";
 import Steps from "@/components/Steps";
-import FAQ from "@/components/FAQ";
+import FAQv2 from "@/components/FAQv2";
 import Reviews from "@/components/Reviews";
 import QuizSection from "@/components/QuizSection";
 import Footer from "@/components/Footer";
@@ -35,7 +35,7 @@ export default async function Home() {
               subtitle: "Ответы на главное",
               icon: "HelpCircle",
               photo: "/villages/favorit/03.jpg",
-              children: <FAQ />,
+              children: <FAQv2 />,
             },
             {
               id: "steps-block",
