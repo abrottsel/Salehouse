@@ -56,10 +56,13 @@ const RAINBOW_CSS = `
 `;
 
 const GLASS_STYLE: React.CSSProperties = {
-  backdropFilter: "blur(8px) saturate(1.8)",
-  WebkitBackdropFilter: "blur(8px) saturate(1.8)",
+  // Почти непрозрачный фон + saturate≈1: на пёстром фоне (цветные иконки
+  // плиток) полупрозрачное стекло с saturate(1.8) давало цветные штрихи
+  // («полоски») по краям. Делаем панель плотной — bleed-through убран.
+  backdropFilter: "blur(10px) saturate(1.05)",
+  WebkitBackdropFilter: "blur(10px) saturate(1.05)",
   background:
-    "linear-gradient(160deg, rgba(20,28,38,0.72) 0%, rgba(12,18,26,0.82) 100%)",
+    "linear-gradient(160deg, rgba(18,26,36,0.97) 0%, rgba(10,16,24,0.98) 100%)",
   boxShadow:
     "inset 0 1px 0 rgba(255,255,255,0.30), 0 24px 64px -12px rgba(0,0,0,0.6)",
 };
