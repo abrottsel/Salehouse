@@ -124,6 +124,60 @@ function VariantSides() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Variant D — Компас (без дуги) + подсветка сторон, вкл/выкл кнопкой
+// Кнопка стоит левее «Спутник» (у карты Земекс он вверху справа).
+
+function MiniCompass() {
+  return (
+    <div className="pointer-events-none absolute bottom-3 right-3 w-16 h-16 rounded-full bg-black/55 backdrop-blur-sm ring-1 ring-white/25 text-white">
+      <span className="absolute left-1/2 -translate-x-1/2 top-1 text-[11px] font-black">С</span>
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-1 text-[11px] font-black text-amber-300">Ю</span>
+      <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[11px] font-black">В</span>
+      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[11px] font-black">З</span>
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/80" />
+    </div>
+  );
+}
+
+function VariantToggle() {
+  const [on, setOn] = useState(true);
+  return (
+    <div className="absolute inset-0">
+      {/* Кнопка вкл/выкл — левее «Спутник» (верх-право карты) */}
+      <button
+        type="button"
+        onClick={() => setOn((v) => !v)}
+        className={`pointer-events-auto absolute top-3 right-[112px] z-30 inline-flex items-center gap-1.5 h-[34px] px-3 rounded-md text-[13px] font-semibold shadow-md ring-1 transition ${
+          on ? "bg-amber-400 text-amber-950 ring-amber-300" : "bg-white text-gray-700 ring-black/10 hover:bg-gray-50"
+        }`}
+        title="Показать направление солнца"
+      >
+        <Sun className={`w-4 h-4 ${on ? "text-amber-700" : "text-gray-400"}`} />
+        Солнце
+      </button>
+
+      {on && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Тёплый юг (низ) / холодный север (верх) */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3" style={{ background: "linear-gradient(to top, rgba(251,191,36,0.35), rgba(251,191,36,0))" }} />
+          <div className="absolute inset-x-0 top-0 h-1/4" style={{ background: "linear-gradient(to bottom, rgba(59,130,246,0.26), rgba(59,130,246,0))" }} />
+          {/* Подписи сторон с восходом/закатом */}
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-3 px-3.5 py-1.5 rounded-full bg-amber-400/90 text-amber-950 text-[12px] font-black flex items-center gap-1.5">
+            <Sun className="w-4 h-4" /> ЮГ · солнечная сторона
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 top-3 px-3 py-1.5 rounded-full bg-blue-500/85 text-white text-[12px] font-bold">
+            СЕВЕР · тень
+          </div>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full bg-black/55 text-white text-[11px] font-semibold">🌅 Восход · восток</div>
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full bg-black/55 text-white text-[11px] font-semibold">🌇 Закат · запад</div>
+          <MiniCompass />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── shared bits
 function Cardinal() {
   return (
@@ -149,13 +203,14 @@ function SunDot({ t }: { t: number }) {
 // ─────────────────────────────────────────────────────────────────────
 
 const TABS = [
+  { key: "toggle", label: "4 · Компас + стороны (вкл/выкл) ★", Icon: Sun },
   { key: "compass", label: "1 · Компас + дуга", Icon: Compass },
   { key: "interactive", label: "2 · Интерактив (время)", Icon: SunMedium },
   { key: "sides", label: "3 · Подсветка сторон", Icon: Sun },
 ] as const;
 
 export default function PreviewSunPage() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("compass");
+  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("toggle");
   return (
     <main className="min-h-screen bg-gray-950 text-white px-4 py-8">
       <div className="max-w-3xl mx-auto">
@@ -180,6 +235,7 @@ export default function PreviewSunPage() {
 
         <div className="mt-4 relative w-full aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-white/15 bg-gray-800">
           <iframe src={FAVORIT_MAP} className="absolute inset-0 w-full h-full" title="Карта Фаворит" loading="lazy" />
+          {tab === "toggle" && <VariantToggle />}
           {tab === "compass" && <VariantCompass />}
           {tab === "interactive" && <VariantInteractive />}
           {tab === "sides" && <VariantSides />}
