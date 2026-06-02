@@ -296,8 +296,8 @@ export default function MortgageModal() {
                 Заявка принята!
               </h4>
               <p className="text-white/85 mt-2 text-sm">
-                {name ? `${name}, ` : ""}наш ипотечный специалист перезвонит,
-                подберёт банк и поможет с одобрением.
+                {name ? `${name}, ` : ""}наш менеджер перезвонит, подберёт банк
+                и поможет с одобрением.
               </p>
               <button
                 type="button"
