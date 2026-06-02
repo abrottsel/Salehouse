@@ -145,8 +145,36 @@ function VariantToggle() {
         Солнце
       </button>
 
-      {/* Просто стороны света С/Ю/В/З — как в примере 1 */}
-      {on && <Cardinal />}
+      {/* Подсветка сторон + буквы С/Ю/В/З в фирменных emerald-пилюлях */}
+      {on && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Тёплый юг (низ) / холодный север (верх) */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3" style={{ background: "linear-gradient(to top, rgba(251,191,36,0.32), rgba(251,191,36,0))" }} />
+          <div className="absolute inset-x-0 top-0 h-1/4" style={{ background: "linear-gradient(to bottom, rgba(59,130,246,0.22), rgba(59,130,246,0))" }} />
+          {/* Пилюли сторон: буква + подпись, emerald-стекло */}
+          <SidePill cls="left-1/2 -translate-x-1/2 bottom-3" letter="Ю" text="солнечная сторона" emoji="☀️" />
+          <SidePill cls="left-1/2 -translate-x-1/2 top-3" letter="С" text="теневая сторона" />
+          <SidePill cls="right-3 top-1/2 -translate-y-1/2" letter="В" text="восход" emoji="🌅" />
+          <SidePill cls="left-3 top-1/2 -translate-y-1/2" letter="З" text="закат" emoji="🌇" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SidePill({ cls, letter, text, emoji }: { cls: string; letter: string; text: string; emoji?: string }) {
+  return (
+    <div
+      className={`absolute inline-flex items-center gap-1.5 rounded-full border border-white/45 pl-1 pr-3 py-1 text-white ${cls}`}
+      style={{
+        background: "linear-gradient(135deg, rgba(16,185,129,0.92) 0%, rgba(5,150,105,0.85) 100%)",
+        backdropFilter: "blur(6px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(6px) saturate(1.4)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 12px -2px rgba(0,0,0,0.4)",
+      }}
+    >
+      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/25 font-black text-sm">{letter}</span>
+      <span className="text-[12px] font-bold whitespace-nowrap">{emoji ? `${emoji} ` : ""}{text}</span>
     </div>
   );
 }
