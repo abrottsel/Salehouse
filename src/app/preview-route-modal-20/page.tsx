@@ -46,7 +46,7 @@ const LABELS: Record<V, string> = {
   17: "Mobile full-screen rounded top (iOS sheet)",
   18: "С turn-by-turn списком снизу",
   19: "Сохранён в избранное (сердце)",
-  20: "Share — копировать / Telegram / WhatsApp",
+  20: "Share — копировать / Telegram / MAX",
 };
 
 // ---------- mock data ----------
@@ -617,7 +617,7 @@ function Modal({ v, onClose, isMobile }: { v: V; onClose: () => void; isMobile: 
             <div className="mt-4 grid grid-cols-3 gap-3">
               <ShareBtn icon={<Copy className="w-5 h-5" />} label="Копировать" color="bg-gray-100 text-gray-900" />
               <ShareBtn icon={<Send className="w-5 h-5" />} label="Telegram" color="bg-sky-100 text-sky-600" />
-              <ShareBtn icon={<MessageCircle className="w-5 h-5" />} label="WhatsApp" color="bg-emerald-100 text-emerald-600" />
+              <ShareBtn icon={<MessageCircle className="w-5 h-5" />} label="MAX" color="bg-emerald-100 text-emerald-600" />
             </div>
           </div>
         </SheetShell>

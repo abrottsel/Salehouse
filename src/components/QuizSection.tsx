@@ -220,8 +220,8 @@ function SuccessGlass({ name, phone }: { name: string; phone: string }) {
         Спасибо, {name || "друг"}!
       </h4>
       <p className="text-white/85 mt-2 text-sm sm:text-base">
-        Подборка летит на {phoneFmt || "ваш номер"} — обычно приходит в течение
-        15 минут в WhatsApp.
+        Менеджер перезвонит на {phoneFmt || "ваш номер"} в течение 15 минут и
+        пришлёт подборку участков.
       </p>
     </div>
   );

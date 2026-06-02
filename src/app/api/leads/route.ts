@@ -224,16 +224,12 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
   if (lead.id) lines.push(`🆔 <code>${escapeHtml(lead.id)}</code>`);
   if (receivedAt) lines.push(`🕒 ${escapeHtml(receivedAt)}`);
 
-  // Кнопки быстрого ответа клиенту. WhatsApp первым — сайт обещает подборку
-  // именно в WhatsApp (экран «Спасибо» после квиза). Звонок — тапом по самому
+  // Кнопка быстрого ответа клиенту в Telegram. Звонок — тапом по самому
   // номеру выше (Telegram распознаёт его и предлагает «Позвонить»).
   const replyMarkup = hasValidPhone
     ? {
         inline_keyboard: [
-          [
-            { text: "💬 WhatsApp", url: `https://wa.me/${e164}` },
-            { text: "✈️ Telegram", url: `tg://resolve?phone=${e164}` },
-          ],
+          [{ text: "✈️ Написать в Telegram", url: `tg://resolve?phone=${e164}` }],
         ],
       }
     : undefined;
