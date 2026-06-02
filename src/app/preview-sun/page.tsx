@@ -153,15 +153,23 @@ function VariantToggle() {
 
 // ── shared bits
 function Cardinal() {
-  // Каждая буква — в тёмном кружке с белым жирным текстом: читаемо на любом фоне карты.
-  const chip =
-    "absolute w-8 h-8 flex items-center justify-center rounded-full bg-black/70 ring-1 ring-white/40 text-white font-black text-base shadow-lg";
+  // Фирменное emerald-стекло «Пушка»: зелёный полупрозрачный кружок с белой
+  // буквой, тонкая светлая рамка и мягкая тень. Читаемо на светлой карте,
+  // но не грубо-чёрное.
+  const chipCls =
+    "absolute w-9 h-9 flex items-center justify-center rounded-full border border-white/45 text-white font-black text-base";
+  const glass: React.CSSProperties = {
+    background: "linear-gradient(135deg, rgba(16,185,129,0.92) 0%, rgba(5,150,105,0.85) 100%)",
+    backdropFilter: "blur(6px) saturate(1.4)",
+    WebkitBackdropFilter: "blur(6px) saturate(1.4)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 12px -2px rgba(0,0,0,0.4)",
+  };
   return (
     <div className="pointer-events-none absolute inset-0">
-      <span className={`${chip} left-1/2 -translate-x-1/2 top-3`}>С</span>
-      <span className={`${chip} left-1/2 -translate-x-1/2 bottom-14 text-amber-300`}>Ю</span>
-      <span className={`${chip} right-3 top-1/2 -translate-y-1/2`}>В</span>
-      <span className={`${chip} left-3 top-1/2 -translate-y-1/2`}>З</span>
+      <span className={`${chipCls} left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
+      <span className={`${chipCls} left-1/2 -translate-x-1/2 bottom-14`} style={glass}>Ю</span>
+      <span className={`${chipCls} right-3 top-1/2 -translate-y-1/2`} style={glass}>В</span>
+      <span className={`${chipCls} left-3 top-1/2 -translate-y-1/2`} style={glass}>З</span>
     </div>
   );
 }
