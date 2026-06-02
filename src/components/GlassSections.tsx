@@ -57,7 +57,7 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
   const activeCard = cards.find((c) => c.id === activeId);
 
   return (
-    <section className="bg-gray-50 pb-4">
+    <section className="bg-gray-50 dark:bg-transparent pb-4">
       <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6">
         {/* Outer rounded container — mirrors the CTA "Один показ" banner */}
         <div
@@ -117,11 +117,10 @@ export default function GlassSections({ cards }: { cards: CardDef[] }) {
             {activeCard && (
               <div
                 ref={contentRef}
-                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300"
+                className="mt-4 glass-section-card rounded-2xl overflow-hidden transition-all duration-300 [background:linear-gradient(160deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_100%)] dark:[background:rgba(11,15,20,0.94)] dark:ring-1 dark:ring-white/10"
                 style={{
                   backdropFilter: "blur(8px) saturate(1.6)",
                   WebkitBackdropFilter: "blur(8px) saturate(1.6)",
-                  background: "linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 16px 48px -8px rgba(0,0,0,0.35)",
                 }}
               >
