@@ -26,6 +26,7 @@ import {
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, MapPin, Ruler } from "lucide-react";
 import FavoriteHeart from "./FavoriteHeart";
+import { openViewingForm } from "@/components/ViewingModal";
 import VillageLightbox from "./VillageLightbox";
 import HomeDistanceBadge from "./HomeDistanceBadge";
 
@@ -245,12 +246,15 @@ export default function VillageHeroSwiper({
               >
                 Смотреть участки
               </a>
-              <a
-                href="#contact-form"
+              <button
+                type="button"
+                onClick={() =>
+                  openViewingForm({ villageSlug: slug, villageName: name, source: "village-hero" })
+                }
                 className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-black/35 ring-1 ring-white/30 hover:bg-white/20 text-white font-bold text-sm transition-all"
               >
-                Записаться на просмотр
-              </a>
+                Посмотреть вживую
+              </button>
             </div>
           </div>
         </div>

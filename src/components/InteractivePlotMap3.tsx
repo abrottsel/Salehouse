@@ -59,6 +59,7 @@ import {
   LocateFixed,
 } from "lucide-react";
 import { loadYmaps3 } from "@/lib/ymaps3";
+import { openViewingForm } from "@/components/ViewingModal";
 import FavoriteHeart from "./FavoriteHeart";
 import VillagePlotBottomSheet from "./VillagePlotBottomSheet";
 
@@ -950,12 +951,15 @@ export default function InteractivePlotMap3({
                   </div>
                 </div>
               </div>
-              <a
-                href="#contact-form"
+              <button
+                type="button"
+                onClick={() =>
+                  openViewingForm({ villageSlug, villageName, source: "village-map" })
+                }
                 className="mt-2 flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-600 hover:to-emerald-600 text-white font-bold text-[11px] shadow-md shadow-emerald-900/20 transition-all"
               >
-                Записаться на просмотр
-              </a>
+                Посмотреть вживую
+              </button>
             </div>
           );
         })()}
