@@ -16,6 +16,7 @@ import {
 import Logo from "./Logo";
 import FavoritesCounter from "./FavoritesCounter";
 import SiteSearch from "./SiteSearch";
+import { openViewingForm } from "@/components/ViewingModal";
 import { useTheme } from "./v2/ThemeContext";
 
 const navLinksMain = [
@@ -46,7 +47,6 @@ export default function Header() {
     return `/${href}`;
   };
   const navLinks = navLinksMain.map((l) => ({ ...l, href: rewriteHref(l.href) }));
-  const ctaHref = "#contacts";
   const logoHref = isV2 ? "/v2" : "/";
   const rowHeight = "h-14";
 
@@ -119,12 +119,13 @@ export default function Header() {
             >
               <Phone className="w-4 h-4 text-green-600 dark:text-emerald-400" />
             </a>
-            <a
-              href={ctaHref}
+            <button
+              type="button"
+              onClick={() => openViewingForm({ source: "header" })}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs shadow-sm shadow-green-600/25 whitespace-nowrap"
             >
               Посмотреть вживую
-            </a>
+            </button>
           </div>
 
           {/* Mobile toggle */}
@@ -187,13 +188,16 @@ export default function Header() {
               <Phone className="w-4 h-4 text-green-600" />
               +7 (985) 905-25-55
             </a>
-            <a
-              href={ctaHref}
+            <button
+              type="button"
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-center text-sm shadow-sm"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                openViewingForm({ source: "header-mobile" });
+              }}
             >
               Посмотреть вживую
-            </a>
+            </button>
           </div>
         </div>
       )}

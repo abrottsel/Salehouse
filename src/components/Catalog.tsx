@@ -19,6 +19,7 @@ import { villages } from "@/lib/data";
 import FavoriteHeart from "./FavoriteHeart";
 import CardPhotoSwiper from "./CardPhotoSwiper";
 import HomeDistanceBadge from "./HomeDistanceBadge";
+import { openViewingForm } from "@/components/ViewingModal";
 
 interface VillageStats {
   plotsAvailable: number;
@@ -589,15 +590,16 @@ export default function Catalog({ liveStats }: CatalogProps = {}) {
 
               {/* Segment capsule — оба действия в одной капсуле, не выглядит "тонким" */}
               <div className="relative flex items-stretch shrink-0 w-full md:w-auto bg-white/10 ring-1 ring-white/20 rounded-2xl p-1 backdrop-blur-md">
-                <a
-                  href="#contacts"
+                <button
+                  type="button"
+                  onClick={() => openViewingForm({ source: "catalog" })}
                   className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 sm:px-5 h-12 rounded-xl font-bold text-[13px] sm:text-sm shadow-md shadow-emerald-600/30 transition-all duration-300 whitespace-nowrap"
                 >
                   <SlidersHorizontal className="w-4 h-4 shrink-0" />
                   <span className="sm:hidden">Показ</span>
                   <span className="hidden sm:inline">Посмотреть вживую</span>
                   <ArrowRight className="w-3.5 h-3.5 shrink-0 hidden sm:inline" />
-                </a>
+                </button>
                 <a
                   href="#calculator"
                   className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 text-white hover:bg-white/10 px-4 sm:px-5 h-12 rounded-xl font-bold text-[13px] sm:text-sm transition-all duration-300 whitespace-nowrap"

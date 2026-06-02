@@ -1,3 +1,5 @@
+"use client";
+
 import {
   TreePine,
   CalendarCheck,
@@ -10,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { villages } from "@/lib/data";
+import { openViewingForm } from "@/components/ViewingModal";
 
 /**
  * HeroTiles — Avito-style tile hero for the main route (/).
@@ -45,6 +48,8 @@ interface HeroTile {
   /** Tailwind class for the icon background. */
   iconBg: string;
   wide?: boolean;
+  /** "viewing" — открывает модалку записи на просмотр вместо перехода по href. */
+  action?: "viewing";
 }
 
 const tiles: HeroTile[] = [
@@ -62,6 +67,7 @@ const tiles: HeroTile[] = [
     title: "Записаться на просмотр",
     subtitle: "Бесплатно, с выездом",
     iconBg: "bg-gradient-to-br from-emerald-400 to-green-600",
+    action: "viewing",
   },
   {
     href: "#calculator",
@@ -133,6 +139,14 @@ export default function HeroTiles() {
             <a
               key={tile.title}
               href={tile.href}
+              onClick={
+                tile.action === "viewing"
+                  ? (e) => {
+                      e.preventDefault();
+                      openViewingForm({ source: "home-tile" });
+                    }
+                  : undefined
+              }
               className={`group relative overflow-hidden rounded-[22px] p-3.5 sm:p-4 lg:p-5 xl:p-6 hover:-translate-y-0.5 transition-all duration-300 ${
                 tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center hero-glass-tile-wide" : "hero-glass-tile"
               }`}

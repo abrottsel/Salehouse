@@ -22,6 +22,7 @@ import {
   Banknote,
 } from "lucide-react";
 import FavoriteHeart from "./FavoriteHeart";
+import { openViewingForm } from "@/components/ViewingModal";
 import {
   DEFAULT_HIDDEN_FEES,
   FEE_GROUPS,
@@ -153,12 +154,20 @@ export default function VillagePlotBottomSheet({
                 >
                   Забронировать
                 </a>
-                <a
-                  href="#contact-form"
+                <button
+                  type="button"
+                  onClick={() =>
+                    openViewingForm({
+                      villageSlug,
+                      villageName,
+                      plotNumber: plot?.number,
+                      source: "plot-sheet",
+                    })
+                  }
                   className="flex items-center justify-center h-9 px-4 rounded-lg bg-white dark:bg-gray-800 ring-1 ring-emerald-300 dark:ring-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 font-bold text-xs active:scale-[0.98] transition-all"
                 >
                   Записаться
-                </a>
+                </button>
               </>
             )}
             <FavoriteHeart
