@@ -153,12 +153,15 @@ function VariantToggle() {
 
 // ── shared bits
 function Cardinal() {
+  // Каждая буква — в тёмном кружке с белым жирным текстом: читаемо на любом фоне карты.
+  const chip =
+    "absolute w-8 h-8 flex items-center justify-center rounded-full bg-black/70 ring-1 ring-white/40 text-white font-black text-base shadow-lg";
   return (
-    <div className="pointer-events-none absolute inset-0 text-white/85 font-black text-xs">
-      <span className="absolute left-1/2 -translate-x-1/2 top-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">С</span>
-      <span className="absolute left-1/2 -translate-x-1/2 bottom-12 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Ю</span>
-      <span className="absolute right-2 top-1/2 -translate-y-1/2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">В</span>
-      <span className="absolute left-2 top-1/2 -translate-y-1/2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">З</span>
+    <div className="pointer-events-none absolute inset-0">
+      <span className={`${chip} left-1/2 -translate-x-1/2 top-3`}>С</span>
+      <span className={`${chip} left-1/2 -translate-x-1/2 bottom-14 text-amber-300`}>Ю</span>
+      <span className={`${chip} right-3 top-1/2 -translate-y-1/2`}>В</span>
+      <span className={`${chip} left-3 top-1/2 -translate-y-1/2`}>З</span>
     </div>
   );
 }
