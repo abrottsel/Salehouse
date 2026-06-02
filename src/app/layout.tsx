@@ -7,6 +7,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import SocialFloating from "@/components/SocialFloating";
 import CookieBanner from "@/components/CookieBanner";
 import ViewingModal from "@/components/ViewingModal";
+import MortgageModal from "@/components/MortgageModal";
 import { ThemeWrapper } from "@/components/v2/ThemeWrapper";
 
 const inter = Inter({
@@ -96,6 +97,7 @@ export default function RootLayout({
             <SocialFloating />
             <CookieBanner />
             <ViewingModal />
+            <MortgageModal />
           </FavoritesProvider>
         </ThemeWrapper>
       </body>

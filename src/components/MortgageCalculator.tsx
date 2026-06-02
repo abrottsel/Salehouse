@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+import { openMortgageForm } from "@/components/MortgageModal";
 
 const banks = [
   { name: "ВТБ", rate: "6.5%", dot: "#002D5F" },
@@ -147,13 +148,22 @@ export default function MortgageCalculator() {
                   </span>
                 </div>
 
-                <a
-                  href="#contacts"
+                <button
+                  type="button"
+                  onClick={() =>
+                    openMortgageForm({
+                      price,
+                      downPayment,
+                      years,
+                      rate,
+                      monthlyPayment: result.monthlyPayment,
+                    })
+                  }
                   className="mt-5 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-5 h-12 rounded-xl font-black text-sm shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 transition-all w-full"
                 >
-                  Получить одобрение <ArrowRight className="w-4 h-4" />
-                </a>
-                <p className="mt-2 text-[9px] text-center text-emerald-800/40 uppercase tracking-widest">
+                  Оставить заявку <ArrowRight className="w-4 h-4" />
+                </button>
+                <p className="mt-2.5 text-[11px] text-center font-semibold text-emerald-900/70 dark:text-emerald-200/70 tracking-wide">
                   Предварительный расчёт · не оферта
                 </p>
               </div>
