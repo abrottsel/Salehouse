@@ -224,20 +224,12 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
   if (lead.id) lines.push(`🆔 <code>${escapeHtml(lead.id)}</code>`);
   if (receivedAt) lines.push(`🕒 ${escapeHtml(receivedAt)}`);
 
-  // Быстрые действия менеджера по клиенту:
-  //  • «✈️ Чат в Telegram» — открывает диалог с клиентом по номеру (tg://resolve).
-  //  • «📋 Копировать номер» — копирует +7… в буфер (Bot API copy_text). Удобно
-  //    вставить в звонилку (позвонить) или в поиск MAX — у MAX нет deep-link по
-  //    номеру телефона, поэтому прямой кнопки «чат в MAX» технически не сделать.
-  // Позвонить можно и тапом по самому номеру выше — Telegram распознаёт его и
-  // предлагает «Позвонить / Скопировать». tel:-кнопки Telegram запрещает.
+  // Кнопка быстрого ответа клиенту в Telegram. Звонок — тапом по самому
+  // номеру выше (Telegram распознаёт его и предлагает «Позвонить»).
   const replyMarkup = hasValidPhone
     ? {
         inline_keyboard: [
-          [
-            { text: "✈️ Чат в Telegram", url: `tg://resolve?phone=${e164}` },
-            { text: "📋 Копировать номер", copy_text: { text: `+${e164}` } },
-          ],
+          [{ text: "✈️ Написать в Telegram", url: `tg://resolve?phone=${e164}` }],
         ],
       }
     : undefined;
