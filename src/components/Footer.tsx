@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone, Mail, Check } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 
@@ -23,6 +24,14 @@ function TgIcon() {
 
 export default function Footer({ slim = false }: { slim?: boolean } = {}) {
   const [emailCopied, setEmailCopied] = useState(false);
+  const pathname = usePathname() || "";
+  // /v2 — клон главной: якоря работают на месте, как на "/".
+  const isHome = pathname === "/" || pathname.startsWith("/v2");
+  // Внутренние страницы (например /village/[slug]) не содержат секций
+  // catalog / calculator / steps-block, поэтому hash-ссылки в подвале
+  // должны иметь ведущий "/" — Next.js Link переходит на главную и
+  // скроллит к нужному якорю. Идентично rewriteHref в Header.tsx.
+  const hashHref = (hash: string) => (isHome ? hash : `/${hash}`);
 
   /**
    * Tap on email → opens mailto in user's mail app AND silently copies the
@@ -67,9 +76,9 @@ export default function Footer({ slim = false }: { slim?: boolean } = {}) {
 
             {/* Nav */}
             <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:flex-1 md:justify-center">
-              <a href="#catalog" className="hover:text-white transition-colors">Посёлки</a>
-              <a href="#calculator" className="hover:text-white transition-colors">Ипотека</a>
-              <a href="#steps-block" className="hover:text-white transition-colors">Как купить</a>
+              <a href={hashHref("#catalog")} className="hover:text-white transition-colors">Посёлки</a>
+              <a href={hashHref("#calculator")} className="hover:text-white transition-colors">Ипотека</a>
+              <a href={hashHref("#steps-block")} className="hover:text-white transition-colors">Как купить</a>
               <Link href="/contacts" className="hover:text-white transition-colors">Контакты</Link>
             </nav>
 
