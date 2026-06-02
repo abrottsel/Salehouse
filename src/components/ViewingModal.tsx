@@ -367,7 +367,7 @@ export default function ViewingModal() {
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="mt-1 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/40 disabled:cursor-not-allowed text-white px-6 h-12 rounded-xl font-bold shadow-lg shadow-emerald-600/30 transition"
+                  className="mt-1 inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/40 disabled:cursor-not-allowed text-white px-6 h-12 rounded-xl font-bold transition"
                 >
                   {submitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
