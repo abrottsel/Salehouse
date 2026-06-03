@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { Sun } from "lucide-react";
 
 function Cardinal() {
   const chipCls =
@@ -56,12 +57,11 @@ export default function SunOverlay() {
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-3 right-[124px] inline-flex items-center justify-center"
+        className="pointer-events-auto absolute top-3 right-[124px] inline-flex items-center gap-1.5"
         style={{
-          // Один-в-один со стилями кнопки «Спутник» карты Земекс:
-          // тот же размер и форма, только текст, без иконки.
+          // Форма и размер как у кнопки «Спутник» карты Земекс (значок солнца сохранён).
           height: "34px",
-          padding: "0 20px",
+          padding: "0 18px",
           borderRadius: "20px",
           background: "#fff",
           color: "#333",
@@ -71,6 +71,7 @@ export default function SunOverlay() {
           border: "none",
         }}
       >
+        <Sun className="w-4 h-4" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
         Солнце
       </button>
 
