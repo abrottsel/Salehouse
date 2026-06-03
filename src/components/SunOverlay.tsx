@@ -25,7 +25,8 @@ function Cardinal() {
   };
   return (
     <div className="pointer-events-none absolute inset-0">
-      <span className={`${chipCls} left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
+      {/* На мобиле «С» чуть левее центра — чтобы иконка солнца не налезала на неё */}
+      <span className={`${chipCls} left-[calc(50%-16px)] sm:left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
       {/* На мобиле «Спутник» карты — снизу по центру, поэтому Ю поднимаем выше */}
       <span className={`${chipCls} left-1/2 -translate-x-1/2 bottom-14 sm:bottom-3`} style={glass}>Ю</span>
       <span className={`${chipCls} right-3 top-1/2 -translate-y-1/2`} style={glass}>В</span>
@@ -49,7 +50,7 @@ export default function SunOverlay() {
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-3 right-[144px] sm:right-[114px] w-7 h-7 sm:w-[34px] sm:h-[34px] inline-flex items-center justify-center rounded-full"
+        className="pointer-events-auto absolute top-3 right-[140px] sm:right-[114px] w-7 h-7 sm:w-[34px] sm:h-[34px] inline-flex items-center justify-center rounded-full"
         style={{
           // Высота: мобайл 28px (как «Дорога к мечте»), ПК 34px (как «Спутник»).
           background: "#fff",
