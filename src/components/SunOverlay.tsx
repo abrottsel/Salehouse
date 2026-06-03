@@ -41,28 +41,22 @@ export default function SunOverlay() {
     // pointer-events-none на контейнере: оверлей НЕ перехватывает клики по
     // карте, маршруту, «Дороге к мечте», «Спутник». Кликабельна только кнопка.
     <div className="pointer-events-none absolute inset-0 z-20">
-      {/* Кнопка вкл/выкл — левее «Спутник» (верх-право карты) */}
+      {/* Только иконка (Sunrise) в белом кружке: на мобиле — левее «Дороги к
+          мечте», на ПК — левее «Спутник». Контейнер pointer-events-none —
+          «Дорогу к мечте»/«Спутник» не перекрывает, кликается только иконка. */}
       <button
         type="button"
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-[54px] right-3 sm:top-3 sm:right-[124px] inline-flex items-center gap-1.5"
+        className="pointer-events-auto absolute top-3 right-[140px] sm:right-[124px] w-9 h-9 inline-flex items-center justify-center rounded-full"
         style={{
-          // Форма и размер как у кнопки «Спутник» карты Земекс (значок солнца сохранён).
-          height: "34px",
-          padding: "0 18px",
-          borderRadius: "20px",
           background: "#fff",
-          color: "#333",
-          fontSize: "13px",
-          fontWeight: 600,
           boxShadow: "rgba(0,0,0,0.18) 0px 2px 14px 0px",
           border: "none",
         }}
       >
-        <Sunrise className="w-4 h-4" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
-        Солнце
+        <Sunrise className="w-[18px] h-[18px]" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
       </button>
 
       {on && (

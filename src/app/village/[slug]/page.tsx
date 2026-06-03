@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import IframeMapOverlay from "@/components/IframeMapOverlay";
 import ShowRouteButton from "@/components/ShowRouteButton";
 import IframeDisclosureBanner from "@/components/IframeDisclosureBanner";
+import SunOverlay from "@/components/SunOverlay";
 
 /**
  * /village/[slug] — full village detail page.
@@ -129,6 +130,9 @@ export default async function VillagePage({ params }: Props) {
                   villageCoords={village.coords}
                   villageName={village.name}
                 />
+                {/* Иконка «Солнце» — отдельный слой pointer-events-none,
+                    кликается только сама иконка; «Дорогу к мечте» не трогает. */}
+                <SunOverlay />
               </div>
             </div>
           </section>
