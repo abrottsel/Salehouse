@@ -11,7 +11,7 @@
  * Пока за флагом ?sun=1 (тест на одном посёлке). По умолчанию не рендерится.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Sun } from "lucide-react";
 
 function Cardinal() {
@@ -34,18 +34,7 @@ function Cardinal() {
 }
 
 export default function SunOverlay() {
-  const [enabled, setEnabled] = useState(false); // флаг ?sun=1
   const [on, setOn] = useState(true);
-
-  useEffect(() => {
-    try {
-      if (new URLSearchParams(window.location.search).get("sun") === "1") {
-        setEnabled(true);
-      }
-    } catch {}
-  }, []);
-
-  if (!enabled) return null;
 
   return (
     // pointer-events-none на контейнере: оверлей НЕ перехватывает клики по
