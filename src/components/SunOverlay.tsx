@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { Sun } from "lucide-react";
+import { Sunrise } from "lucide-react";
 
 function Cardinal() {
   const chipCls =
@@ -61,7 +61,7 @@ export default function SunOverlay() {
           border: "none",
         }}
       >
-        <Sun className="w-4 h-4" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
+        <Sunrise className="w-4 h-4" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
         Солнце
       </button>
 
