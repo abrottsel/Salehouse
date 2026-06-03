@@ -26,7 +26,8 @@ function Cardinal() {
   return (
     <div className="pointer-events-none absolute inset-0">
       <span className={`${chipCls} left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
-      <span className={`${chipCls} left-1/2 -translate-x-1/2 bottom-3`} style={glass}>Ю</span>
+      {/* На мобиле «Спутник» карты — снизу по центру, поэтому Ю поднимаем выше */}
+      <span className={`${chipCls} left-1/2 -translate-x-1/2 bottom-14 sm:bottom-3`} style={glass}>Ю</span>
       <span className={`${chipCls} right-3 top-1/2 -translate-y-1/2`} style={glass}>В</span>
       <span className={`${chipCls} left-3 top-1/2 -translate-y-1/2`} style={glass}>З</span>
     </div>
@@ -46,7 +47,7 @@ export default function SunOverlay() {
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-3 right-[124px] inline-flex items-center gap-1.5"
+        className="pointer-events-auto absolute top-[54px] right-3 sm:top-3 sm:right-[124px] inline-flex items-center gap-1.5"
         style={{
           // Форма и размер как у кнопки «Спутник» карты Земекс (значок солнца сохранён).
           height: "34px",
