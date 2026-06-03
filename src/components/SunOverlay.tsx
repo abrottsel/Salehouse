@@ -16,7 +16,7 @@ import { Sun } from "lucide-react";
 
 function Cardinal() {
   const chipCls =
-    "absolute w-9 h-9 flex items-center justify-center rounded-full border border-white/45 text-white font-black text-base";
+    "absolute w-7 h-7 flex items-center justify-center rounded-full border border-white/45 text-white font-black text-sm";
   const glass: React.CSSProperties = {
     background: "linear-gradient(135deg, rgba(16,185,129,0.92) 0%, rgba(5,150,105,0.85) 100%)",
     backdropFilter: "blur(6px) saturate(1.4)",
@@ -55,12 +55,11 @@ export default function SunOverlay() {
       <button
         type="button"
         onClick={() => setOn((v) => !v)}
-        className={`pointer-events-auto absolute top-3 right-[112px] inline-flex items-center gap-1.5 h-[34px] px-3 rounded-md text-[13px] font-semibold shadow-md ring-1 transition ${
-          on ? "bg-amber-400 text-amber-950 ring-amber-300" : "bg-white text-gray-700 ring-black/10 hover:bg-gray-50"
-        }`}
+        aria-pressed={on}
+        className="pointer-events-auto absolute top-3 right-[112px] inline-flex items-center gap-1.5 h-[34px] px-3 rounded-md bg-white text-gray-800 text-[13px] font-semibold shadow-md ring-1 ring-black/10 hover:bg-gray-50 transition"
         title="Направление солнца"
       >
-        <Sun className={`w-4 h-4 ${on ? "text-amber-700" : "text-gray-400"}`} />
+        <Sun className={`w-4 h-4 ${on ? "text-amber-500" : "text-gray-400"}`} />
         Солнце
       </button>
 
