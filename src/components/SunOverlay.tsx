@@ -49,14 +49,17 @@ export default function SunOverlay() {
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-3 right-[140px] sm:right-[124px] w-9 h-9 inline-flex items-center justify-center rounded-full"
+        className="pointer-events-auto absolute top-3 right-[140px] sm:right-[114px] inline-flex items-center justify-center rounded-full"
         style={{
+          // Та же высота, что у кнопки «Спутник» (34px) — на одном уровне (top-3).
+          width: "34px",
+          height: "34px",
           background: "#fff",
           boxShadow: "rgba(0,0,0,0.18) 0px 2px 14px 0px",
           border: "none",
         }}
       >
-        <Sunrise className="w-[18px] h-[18px]" style={{ color: on ? "#f59e0b" : "#9ca3af" }} />
+        <Sunrise style={{ width: "16px", height: "16px", color: on ? "#f59e0b" : "#9ca3af" }} />
       </button>
 
       {on && (
