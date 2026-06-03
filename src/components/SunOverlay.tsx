@@ -56,7 +56,7 @@ export default function SunOverlay() {
         type="button"
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
-        className="pointer-events-auto absolute top-3 right-[112px] inline-flex items-center gap-1.5 h-[34px] px-3 rounded-md bg-white text-gray-800 text-[13px] font-semibold shadow-md ring-1 ring-black/10 hover:bg-gray-50 transition"
+        className="pointer-events-auto absolute top-3 right-[120px] inline-flex items-center gap-1.5 h-[38px] px-4 rounded-full bg-white text-gray-800 text-sm font-medium shadow-md ring-1 ring-black/10 hover:bg-gray-50 transition"
         title="Направление солнца"
       >
         <Sun className={`w-4 h-4 ${on ? "text-amber-500" : "text-gray-400"}`} />
