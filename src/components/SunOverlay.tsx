@@ -48,7 +48,9 @@ export default function SunOverlay() {
   if (!enabled) return null;
 
   return (
-    <div className="absolute inset-0 z-20">
+    // pointer-events-none на контейнере: оверлей НЕ перехватывает клики по
+    // карте, маршруту, «Дороге к мечте», «Спутник». Кликабельна только кнопка.
+    <div className="pointer-events-none absolute inset-0 z-20">
       {/* Кнопка вкл/выкл — левее «Спутник» (верх-право карты) */}
       <button
         type="button"
