@@ -49,7 +49,7 @@ export default function SunOverlay() {
         onClick={() => setOn((v) => !v)}
         aria-pressed={on}
         title="Направление солнца"
-        className="pointer-events-auto absolute top-3 right-[135px] sm:right-[114px] w-7 h-7 sm:w-[34px] sm:h-[34px] inline-flex items-center justify-center rounded-full"
+        className="pointer-events-auto absolute top-3 left-[calc(50%+18px)] sm:left-auto sm:right-[114px] w-7 h-7 sm:w-[34px] sm:h-[34px] inline-flex items-center justify-center rounded-full"
         style={{
           // Высота: мобайл 28px (как «Дорога к мечте»), ПК 34px (как «Спутник»).
           background: "#fff",
