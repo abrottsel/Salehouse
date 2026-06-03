@@ -25,8 +25,7 @@ function Cardinal() {
   };
   return (
     <div className="pointer-events-none absolute inset-0">
-      {/* На мобиле «С» чуть левее центра — чтобы иконка солнца не налезала на неё */}
-      <span className={`${chipCls} left-[calc(50%-16px)] sm:left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
+      <span className={`${chipCls} left-1/2 -translate-x-1/2 top-3`} style={glass}>С</span>
       {/* На мобиле «Спутник» карты — снизу по центру, поэтому Ю поднимаем выше */}
       <span className={`${chipCls} left-1/2 -translate-x-1/2 bottom-14 sm:bottom-3`} style={glass}>Ю</span>
       <span className={`${chipCls} right-3 top-1/2 -translate-y-1/2`} style={glass}>В</span>
