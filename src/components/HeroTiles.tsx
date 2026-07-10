@@ -151,8 +151,8 @@ export default function HeroTiles() {
                 tile.wide ? "col-span-2 lg:col-span-2 flex flex-col items-center text-center hero-glass-tile-wide" : "hero-glass-tile"
               }`}
               style={{
-                backdropFilter: "blur(1px) saturate(2)",
-                WebkitBackdropFilter: "blur(1px) saturate(2)",
+                backdropFilter: "blur(10px) saturate(1.6)",
+                WebkitBackdropFilter: "blur(10px) saturate(1.6)",
                 background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)",
                 boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 8px 32px -4px rgba(0,0,0,0.25)",
               }}
