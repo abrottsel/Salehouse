@@ -1,6 +1,5 @@
 /**
  * Site admin auth — cookie-based session for /admin (lead viewer + site editor).
- * Independent of /admin/vpn (which has its own ADMIN_VPN_PASSWORD + admin_vpn cookie).
  *
  * Flow:
  *   POST /api/admin/site/login { password } → setAuthCookie() → cookie "admin_site"
@@ -8,7 +7,7 @@
  *   POST /api/admin/site/logout → clearAuthCookie()
  *
  * Cookie value is `ok.<HMAC-SHA256(ADMIN_SITE_SECRET, "ok")>` — reproducible only
- * if the attacker knows the secret. Same shape as lib/admin-auth.ts (VPN).
+ * if the attacker knows the secret.
  */
 
 import { cookies } from "next/headers";
