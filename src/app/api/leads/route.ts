@@ -235,7 +235,10 @@ async function sendTelegram(lead: LeadForTelegram): Promise<{ ok: boolean; error
     : undefined;
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    // api.telegram.org недоступен с московского сервера (блокировка РФ) —
+    // TG_API_BASE указывает на SSH-туннель до релея на Париже.
+    const tgBase = process.env.TG_API_BASE ?? "https://api.telegram.org";
+    const res = await fetch(`${tgBase}/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

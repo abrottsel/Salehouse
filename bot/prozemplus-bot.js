@@ -10,7 +10,12 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-const bot = new TelegramBot(TOKEN, { polling: true });
+// api.telegram.org недоступен с московского сервера (блокировка РФ) —
+// TG_API_BASE указывает на SSH-туннель до релея на Париже.
+const bot = new TelegramBot(TOKEN, {
+  polling: true,
+  baseApiUrl: process.env.TG_API_BASE || 'https://api.telegram.org',
+});
 
 // ---------------------------------------------------------------------------
 // Village data

@@ -42,9 +42,14 @@ const fs = require('fs');
 const path = require('path');
 
 const MAX_TOKEN = process.env.MAX_BOT_TOKEN;
-const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
+// Лиды из MAX уведомляем через @prozemplus_bot. @zemplus_bot (TG_BOT_TOKEN)
+// выведен из эксплуатации — оставлен фоллбэком на случай пустого env.
+const TG_BOT_TOKEN = process.env.PROZEM_BOT_TOKEN || process.env.TG_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TG_CHAT_ID;
 
+// api.telegram.org недоступен с московского сервера (блокировка РФ) —
+// TG_API_BASE указывает на SSH-туннель до релея на Париже.
+const TG_API_BASE = process.env.TG_API_BASE || 'https://api.telegram.org';
 const MAX_API = 'https://platform-api.max.ru';
 const SITE_URL = process.env.SITE_URL || 'https://prozemplus.ru';
 
@@ -225,7 +230,7 @@ function senderLabel(sender) {
 }
 
 function notifyTgAdmin(text) {
-  return fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+  return fetch(`${TG_API_BASE}/bot${TG_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text, parse_mode: 'HTML' }),

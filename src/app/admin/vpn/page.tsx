@@ -62,7 +62,19 @@ export default function AdminVpnPage() {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setLoginError("Неверный пароль");
+        // 429 = сработала защита от перебора. Раньше показывали «Неверный
+        // пароль» на любую ошибку — и было не понять, что дело в блокировке.
+        if (res.status === 429) {
+          const retryAfter = Number(res.headers.get("Retry-After"));
+          const minutes = Number.isFinite(retryAfter)
+            ? Math.max(1, Math.ceil(retryAfter / 60))
+            : 10;
+          setLoginError(
+            `Слишком много попыток. Попробуйте через ${minutes} мин.`,
+          );
+        } else {
+          setLoginError("Неверный пароль");
+        }
         return;
       }
       await load();
