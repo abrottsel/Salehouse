@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 /**
- * /v3 — How it works + social proof + stats.
+ * /v2 — How it works + social proof + stats.
  * Warm premium aesthetic: cream bg, emerald accents.
  */
 
@@ -52,7 +52,7 @@ const REVIEWS = [
 export default function HowItWorks() {
   return (
     <section
-      id="v3-how-it-works"
+      id="v2-how-it-works"
       className="relative py-16 lg:py-24 scroll-mt-16 bg-[#fffaf3]"
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">

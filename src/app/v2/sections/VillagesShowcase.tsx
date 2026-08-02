@@ -4,7 +4,7 @@ import { ArrowRight, MapPin, Route, Hammer } from "lucide-react";
 import { villages } from "@/lib/data";
 
 /**
- * VillagesShowcase — flagship product grid for the v3 landing.
+ * VillagesShowcase — flagship product grid for the v2 landing.
  * Native horizontal scroll-snap (no swiper dep). Premium photo cards.
  */
 

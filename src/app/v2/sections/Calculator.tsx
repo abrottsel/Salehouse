@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Calculator as CalcIcon, Sparkles } from "lucide-react";
 
 /**
- * /v3 — Calculator section.
+ * /v2 — Calculator section.
  * Warm Premium aesthetic: cream/emerald gradient band, large rounded card,
  * inline mortgage math (annuity), bank-rate toggles, primary CTA.
  */
@@ -34,7 +34,7 @@ export default function Calculator() {
 
   return (
     <section
-      id="v3-calculator"
+      id="v2-calculator"
       className="relative py-16 lg:py-24 scroll-mt-16"
       style={{
         background:
@@ -149,7 +149,7 @@ export default function Calculator() {
               </div>
 
               <a
-                href="#v3-final-cta"
+                href="#v2-final-cta"
                 className="mt-8 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 h-14 rounded-full font-bold text-sm sm:text-base shadow-lg shadow-emerald-600/30 hover:-translate-y-0.5 transition-all"
               >
                 Получить точный расчёт от менеджера

@@ -6,7 +6,7 @@ import PhoneInput from "@/components/PhoneInput";
 import { LEGAL } from "@/lib/legal";
 
 /**
- * /v3 — Final CTA.
+ * /v2 — Final CTA.
  * Full-width dark backdrop image, centered headline + inline phone form,
  * 3 alt-contact pills, legal note.
  */
@@ -34,7 +34,7 @@ export default function FinalCTA() {
           phone: "+7" + phone,
           email: "",
           type: "CALLBACK",
-          message: "Заявка на обратный звонок · v3 final CTA",
+          message: "Заявка на обратный звонок · v2 final CTA",
         }),
       });
       if (!res.ok) throw new Error();
@@ -48,7 +48,7 @@ export default function FinalCTA() {
 
   return (
     <section
-      id="v3-final-cta"
+      id="v2-final-cta"
       className="relative isolate py-20 lg:py-28 overflow-hidden scroll-mt-16"
     >
       {/* Background image + dark overlay */}

@@ -24,7 +24,7 @@ export default function Hero() {
           phone: "+7" + phone,
           email: "",
           type: "CALLBACK",
-          message: "v3 hero — подобрать участок за 15 минут",
+          message: "v2 hero — подобрать участок за 15 минут",
         }),
       });
       if (!res.ok) throw new Error();
