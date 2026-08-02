@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { ArrowRight, Shield, TreePine, Home } from "lucide-react";
 import { villages } from "@/lib/data";
 
@@ -20,13 +19,10 @@ const PLOTS_AVAILABLE_FMT = PLOTS_AVAILABLE.toLocaleString("ru-RU");
 const VILLAGE_LABEL = plural(VILLAGE_COUNT, "посёлок", "посёлка", "посёлков");
 
 export default function Hero() {
-  const pathname = usePathname() || "";
-  const isV2 = pathname.startsWith("/v2");
-  // Both routes use the same base photo; /v2 has a softer overlay below.
   const heroSrc = "/hero-home.jpg";
-  const stepsHref = isV2 ? "/v2/how-to-buy" : "#steps";
-  const faqHref = isV2 ? "/v2/faq" : "#faq";
-  const contactsHref = isV2 ? "#callback" : "#contacts";
+  const stepsHref = "#steps";
+  const faqHref = "#faq";
+  const contactsHref = "#contacts";
 
   return (
     <section className="relative min-h-svh flex items-start pt-16 sm:items-center sm:pt-20 overflow-hidden">
@@ -40,18 +36,9 @@ export default function Hero() {
         sizes="100vw"
         quality={85}
       />
-      {/* Overlays — softer on /v2 to preserve the photo */}
-      {isV2 ? (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-        </>
-      ) : (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </>
-      )}
+      {/* Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
       <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 lg:py-24">
         <div className="max-w-3xl">
