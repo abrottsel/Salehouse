@@ -25,8 +25,7 @@ function TgIcon() {
 export default function Footer({ slim = false }: { slim?: boolean } = {}) {
   const [emailCopied, setEmailCopied] = useState(false);
   const pathname = usePathname() || "";
-  // /v2 — клон главной: якоря работают на месте, как на "/".
-  const isHome = pathname === "/" || pathname.startsWith("/v2");
+  const isHome = pathname === "/";
   // Внутренние страницы (например /village/[slug]) не содержат секций
   // catalog / calculator / steps-block, поэтому hash-ссылки в подвале
   // должны иметь ведущий "/" — Next.js Link переходит на главную и

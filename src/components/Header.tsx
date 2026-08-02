@@ -30,11 +30,8 @@ const navLinksMain = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname() || "";
-  const isV2 = pathname.startsWith("/v2");
   const theme = useTheme();
-  // /v2 — клон главной с доработками: шапка ведёт себя как на главной
-  // (якоря работают на месте, та же навигация и высота).
-  const isHome = pathname === "/" || isV2;
+  const isHome = pathname === "/";
   // Inner pages (e.g. /village/[slug]) don't contain the catalog /
   // calculator / steps-block anchors, so nav links that target those
   // hash fragments need a leading "/" to jump back to the home page.
@@ -47,7 +44,7 @@ export default function Header() {
     return `/${href}`;
   };
   const navLinks = navLinksMain.map((l) => ({ ...l, href: rewriteHref(l.href) }));
-  const logoHref = isV2 ? "/v2" : "/";
+  const logoHref = "/";
   const rowHeight = "h-14";
 
   return (
