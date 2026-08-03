@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, MapPin, Ruler } from "lucide-react";
 import { useTier } from "../../_lib/perf";
+import RouteBadgeDark from "../RouteBadgeDark";
 
 /**
  * Hero посёлка — тёмный премиум.
@@ -35,6 +36,7 @@ interface Props {
   areaFrom: number;
   areaTo: number;
   photos: string[];
+  coords: [number, number];
 }
 
 export default function VillageHero({
@@ -49,6 +51,7 @@ export default function VillageHero({
   areaFrom,
   areaTo,
   photos,
+  coords,
 }: Props) {
   const tier = useTier();
   const lite = tier === "lite";
@@ -143,11 +146,23 @@ export default function VillageHero({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0b0e13] to-transparent" />
 
       <div className="absolute inset-0 z-20 mx-auto flex max-w-[1500px] flex-col px-4 pb-24 pt-24 sm:px-6 sm:pb-28 sm:pt-28 lg:px-10">
-        <div className="flex flex-wrap items-center gap-2">
-          <Pill lite={lite}>
+        {/* Верхний ряд: сколько ехать от МКАД и — рядом — «Дорога к мечте»,
+            сколько ехать именно от дома посетителя. Здесь у панели есть
+            место развернуться вниз, в нижнем ряду пилюль она легла бы
+            поверх кнопок.
+
+            stopPropagation обязателен: секция ловит свайп для листания
+            фото, и перетаскивание внутри панели пролистывало бы карусель. */}
+        <div
+          className="flex flex-wrap items-center gap-2"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+        >
+          <Pill lite={lite} tall>
             <MapPin className="h-3.5 w-3.5 text-emerald-300" />
             {direction} · {distance} км от МКАД
           </Pill>
+          <RouteBadgeDark villageCoords={coords} villageName={name} />
         </div>
 
         <div className="flex-1" />
@@ -256,12 +271,21 @@ export default function VillageHero({
   );
 }
 
-function Pill({ children, lite }: { children: ReactNode; lite: boolean }) {
+function Pill({
+  children,
+  lite,
+  tall = false,
+}: {
+  children: ReactNode;
+  lite: boolean;
+  /** h-11 — чтобы в верхнем ряду совпасть по высоте с «Дорогой к мечте». */
+  tall?: boolean;
+}) {
   return (
     <span
-      className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-bold text-white ring-1 ring-white/20 ${
-        lite ? "bg-black/55" : "bg-black/35 backdrop-blur-md"
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3.5 text-[13px] font-bold text-white ring-1 ring-white/20 ${
+        tall ? "h-11" : "h-9"
+      } ${lite ? "bg-black/55" : "bg-black/35 backdrop-blur-md"}`}
     >
       {children}
     </span>

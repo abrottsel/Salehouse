@@ -130,11 +130,16 @@ async function fetchRoute(from: [number, number], to: [number, number]): Promise
 export default function RouteBadgeDark({
   villageCoords,
   villageName,
+  align = "left",
 }: {
   villageCoords: [number, number];
   villageName: string;
+  /** С какого края кнопки разворачивается панель. На узком экране панель
+   *  шире кнопки, и якорь не с той стороны уводит её за край. */
+  align?: "left" | "right";
 }) {
   const home = useSyncExternalStore(subscribeHome, homeSnapshot, () => null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [route, setRoute] = useState<RouteInfo | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -150,6 +155,24 @@ export default function RouteBadgeDark({
       cancelled = true;
     };
   }, [home, villageCoords]);
+
+  // Клик мимо панели и Escape закрывают её. Без этого на телефоне панель
+  // висит поверх hero, пока не попадёшь точно в крестик.
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   const savePlace = useCallback((place: UserPlace) => {
     const rest = readJson<UserPlace[]>(PLACES_KEY, []).filter((p) => p.id !== place.id);
@@ -246,7 +269,7 @@ export default function RouteBadgeDark({
   }, [savePlace]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={rootRef}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -256,8 +279,15 @@ export default function RouteBadgeDark({
       >
         <Navigation className="h-4 w-4 shrink-0 text-emerald-300" />
         {route ? (
-          <span className="tabular-nums">
-            {route.distanceKm} км · {route.durationMin} мин
+          // Округляем на выводе: /api/route отдаёт дробные километры и
+          // минуты, и «60.9402 км · 62.96 мин» на пилюле выглядит мусором.
+          <span className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-white/50">
+              от дома
+            </span>
+            <span className="tabular-nums">
+              {Math.round(route.distanceKm)} км · {Math.round(route.durationMin)} мин
+            </span>
           </span>
         ) : (
           "Дорога к мечте"
@@ -271,7 +301,9 @@ export default function RouteBadgeDark({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute right-0 top-[52px] z-50 w-[288px] max-w-[calc(100vw-24px)] rounded-[24px] p-4"
+            className={`absolute top-[52px] z-50 w-[288px] max-w-[calc(100vw-32px)] rounded-[24px] p-4 ${
+              align === "right" ? "right-0" : "left-0"
+            }`}
             style={glassStyle}
           >
             <div className="mb-3 flex items-start justify-between">

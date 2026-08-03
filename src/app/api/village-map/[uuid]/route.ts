@@ -87,6 +87,18 @@ function normalizeUtp(raw: unknown): string[] {
   return out;
 }
 
+/** Гонка с таймером: Next оборачивает fetch кэширующим слоем и не
+ *  доносит AbortSignal до сети, поэтому зависший upstream иначе
+ *  держал бы наш эндпоинт минутами. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("upstream timeout")), ms),
+    ),
+  ]);
+}
+
 // Simple in-memory cache
 const cache = new Map<string, { data: NormalizedVillageMap; expires: number }>();
 const CACHE_MS = 60 * 60 * 1000; // 1 hour
@@ -111,14 +123,15 @@ export async function GET(
 
   try {
     const apiUrl = `http://map.zemexx.ru/v2/api.php?village_id=${encodeURIComponent(uuid)}`;
-    const res = await fetch(apiUrl, {
+    const res = await withTimeout(fetch(apiUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         Accept: "application/json, text/plain, */*",
       },
+
       next: { revalidate: 3600 },
-    });
+    }), 8000);
 
     if (!res.ok) {
       return NextResponse.json(

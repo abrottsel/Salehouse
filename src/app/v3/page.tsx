@@ -4,15 +4,18 @@ import AdvantagesSection from "./_components/home/AdvantagesSection";
 import CatalogPreview from "./_components/home/CatalogPreview";
 import Hero from "./_components/home/Hero";
 import QuizSection from "./_components/home/QuizSection";
-import ReviewsSection from "./_components/home/ReviewsSection";
+import ReviewsTeaser from "./_components/home/ReviewsTeaser";
 import StepsSection from "./_components/home/StepsSection";
 import TrustBar from "./_components/home/TrustBar";
 
 /**
  * Главная /v3 — витрина нового дизайна («тёмный премиум»).
  *
- * Порядок секций повторяет боевую главную: первый экран → доверие →
- * каталог → преимущества → шаги → отзывы → форма подбора.
+ * Порядок секций: первый экран → доверие → каталог → преимущества →
+ * шаги → строка доверия по отзывам → форма подбора.
+ *
+ * Карточки отзывов с главной убраны — они живут в разделе /v3/reviews,
+ * здесь только рейтинг и ссылка туда.
  *
  * Прод не затронут: страница ничего не импортирует из боевых компонентов,
  * только данные (src/lib/data.ts) и собственный фундамент /v3.
@@ -35,7 +38,7 @@ export default async function V3HomePage() {
       <CatalogPreview liveAvailable={liveAvailable} />
       <AdvantagesSection />
       <StepsSection />
-      <ReviewsSection />
+      <ReviewsTeaser />
       <QuizSection />
     </main>
   );

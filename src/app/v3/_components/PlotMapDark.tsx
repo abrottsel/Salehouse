@@ -4,77 +4,149 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentType,
   type ReactNode,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, MapPin, Ruler, Wallet, X, Layers } from "lucide-react";
-import { loadYmaps3 } from "@/lib/ymaps3";
-import { money, useCountUp } from "./shared";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
+
+import { loadYmaps3, resetYmaps3Loader } from "@/lib/ymaps3";
+
+import {
+  ControlRail,
+  FilterBar,
+  LegendPanel,
+  MapError,
+  MapSkeleton,
+  PlotCard,
+  TouchGate,
+  type ChipId,
+} from "./map/MapUI";
+import {
+  boundsOf,
+  collectUtp,
+  EMPTY_FILTERS,
+  filtersActive,
+  fitView,
+  passesFilters,
+  plotKind,
+  RESERVED_COLOR,
+  ringToLngLat,
+  textOn,
+  tierColor,
+  type Filters,
+  type LngLat,
+  type LngLatBounds,
+  type Plot,
+  type PlotKind,
+  type VillageMap,
+} from "./map/types";
 
 /**
- * Карта участков — тёмный премиум.
+ * Карта генплана посёлка — тёмный премиум.
  *
- * Чем отличается от карты Земекс, которую перебиваем:
- *   • проданные уводим почти в невидимость, свободные светятся —
- *     на их карте 438 серых пятен глушат 42 свободных;
- *   • номера рисуем только у свободных и у выбранного, а не у всех 480;
- *   • фильтр по площади и бюджету — у них его нет вообще;
- *   • карточка участка с кадастром и полной ценой;
- *   • спутник по умолчанию, тёмный интерфейс поверх.
+ * Разбор эталона (генплан zemexx.ru, «Каретный ряд») показал, за счёт
+ * чего он читается, и это перенесено сюда:
  *
- * Данные и бронь — по-прежнему Земекс: тянем их API через наш
+ *   • Цвет живёт в КРУЖКАХ, не в заливке. У Земекс все 128 полигонов
+ *     покрашены одинаково серым (#dadada, stroke 1.5), а статус и цену
+ *     несут маркеры-кружки 25×25 с номером внутри. Мы делаем так же:
+ *     границы тонкие и нейтральные, тир — крупный цветной кружок.
+ *   • Проданные почти не видны: у них вообще нет кружка, только
+ *     бледный контур и мелкий серый номер, который проявляется на
+ *     ближнем зуме. При 438 проданных из 480 иначе тонут свободные.
+ *   • Колесо мыши не зумит: behaviors без scrollZoom, ровно как у них
+ *     (['drag','pinchZoom','dblClick']) — страница листается нормально.
+ *   • Старт = «домой»: fitBounds по границе посёлка И по всем полигонам
+ *     участков, с пиксельными отступами под панели.
+ *
+ * Чего у эталона нет, а у нас есть: тёмная эстетика /v3, фильтр по
+ * площади и бюджету рядом со статусом и УТП, карточка с кадастром и
+ * полной стоимостью, мобильная шторка вместо перехвата скролла.
+ *
+ * Данные и бронь по-прежнему Земекс: тянем их API через наш
  * /api/village-map/[uuid], бронируем в их же фрейме.
  */
 
-interface Plot {
-  number: string;
-  area: number;
-  pricePerHundred: number;
-  totalCost: number;
-  statusName: string;
-  coords: [number, number][];
-  center: [number, number];
-  kadastr: string;
-  priceTier: number;
-}
+// ─────────────────────────────────────────────────────────────────
+// Реактифицированный ymaps3
+// ─────────────────────────────────────────────────────────────────
 
-interface VillageMap {
-  villageName: string;
-  center: [number, number];
-  villageCoords: [number, number][];
-  priceTiers: number[];
-  statistics: { free: number; sold: number; reserved: number; other: number };
-  plots: Plot[];
-}
-
-const isFree = (s: string) => /свобод/i.test(s);
-const isReserved = (s: string) => /бронь|брон/i.test(s);
-
-function ringToLonLat(ring: [number, number][]): [number, number][] {
-  const out: [number, number][] = new Array(ring.length);
-  for (let i = 0; i < ring.length; i++) out[i] = [ring[i][1], ring[i][0]];
-  return out;
-}
+type LocationRequest =
+  | {
+      bounds: LngLatBounds;
+      /** В типах ymaps3 его нет, но рантайм его понимает — так же фитит генплан Земекс. */
+      padding?: { top: number; right: number; bottom: number; left: number };
+      duration?: number;
+      easing?: string;
+    }
+  | { center: LngLat; zoom: number; duration?: number; easing?: string };
 
 interface Reactified {
-  YMap: ComponentType<{ location: unknown; mode?: string; children?: ReactNode }>;
+  YMap: ComponentType<{
+    location: LocationRequest;
+    mode?: "vector" | "raster";
+    behaviors?: readonly string[];
+    zoomRange?: { min: number; max: number };
+    children?: ReactNode;
+  }>;
   YMapDefaultSchemeLayer: ComponentType<Record<string, unknown>>;
   YMapDefaultSatelliteLayer: ComponentType<Record<string, unknown>>;
   YMapDefaultFeaturesLayer: ComponentType<Record<string, unknown>>;
   YMapFeature: ComponentType<{
-    geometry: { type: "Polygon"; coordinates: [number, number][][] };
+    geometry: { type: "Polygon"; coordinates: LngLat[][] };
     style?: Record<string, unknown>;
     onClick?: () => void;
   }>;
-  YMapMarker: ComponentType<{ coordinates: [number, number]; children?: ReactNode }>;
+  YMapMarker: ComponentType<{
+    coordinates: LngLat;
+    zIndex?: number;
+    onClick?: () => void;
+    children?: ReactNode;
+  }>;
+  YMapListener: ComponentType<{
+    onUpdate?: (state: { location: { center: LngLat; zoom: number } }) => void;
+    onActionEnd?: (state: { location: { center: LngLat; zoom: number } }) => void;
+  }>;
 }
 
 type Bundle =
   | { kind: "loading" }
   | { kind: "ready"; c: Reactified }
   | { kind: "blocked"; error: string };
+
+/** Без scrollZoom — колесо остаётся странице. Точь-в-точь как у Земекс. */
+const BEHAVIORS = ["drag", "pinchZoom", "dblClick"] as const;
+const ZOOM_RANGE = { min: 3, max: 20 } as const;
+
+/** Запас под панели, чтобы «домой» не прятал края посёлка под интерфейс. */
+const PADDING_DESKTOP = { top: 88, right: 76, bottom: 56, left: 24 };
+const PADDING_MOBILE = { top: 84, right: 62, bottom: 52, left: 14 };
+
+/**
+ * Размер кружка по зуму. У Земекс он фиксированный 25px, но их генплан
+ * всегда открыт на одном масштабе, а у нас можно уехать на общий план.
+ * На узком экране режем на четверть: посёлок там занимает меньше
+ * пикселей, и кружки взрослого размера слипаются в кашу.
+ */
+function circleSize(zoom: number, narrow: boolean): number {
+  let base: number;
+  if (zoom <= 12) base = 0;
+  else if (zoom <= 13) base = 15;
+  else if (zoom === 14) base = 19;
+  else if (zoom === 15) base = 22;
+  else if (zoom === 16) base = 25;
+  else if (zoom === 17) base = 29;
+  else if (zoom === 18) base = 33;
+  else base = 38;
+  if (base === 0) return 0;
+  // Нижняя граница 18px: телефон вписывает посёлок на меньшем зуме, и
+  // без неё кружки схлопывались в безымянные точки — а номер участка
+  // и есть главное, что человек ищет глазами.
+  return narrow ? Math.max(18, Math.round(base * 0.82)) : base;
+}
 
 export default function PlotMapDark({
   uuid,
@@ -86,28 +158,55 @@ export default function PlotMapDark({
   const [bundle, setBundle] = useState<Bundle>({ kind: "loading" });
   const [data, setData] = useState<VillageMap | null>(null);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   const [selected, setSelected] = useState<Plot | null>(null);
   const [booking, setBooking] = useState(false);
   const [satellite, setSatellite] = useState(true);
-  const [areaMax, setAreaMax] = useState<number | null>(null);
-  const [budgetMax, setBudgetMax] = useState<number | null>(null);
+
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [openChip, setOpenChip] = useState<ChipId>(null);
+  const [hiddenTiers, setHiddenTiers] = useState<ReadonlySet<number>>(new Set());
+  const [legendOpen, setLegendOpen] = useState(false);
+
+  const [location, setLocation] = useState<LocationRequest | null>(null);
+  const [zoomBucket, setZoomBucket] = useState(16);
+  const cameraRef = useRef<{ center: LngLat; zoom: number } | null>(null);
+
+  const [gated, setGated] = useState(false);
+  const [me, setMe] = useState<LngLat | null>(null);
+  const [locating, setLocating] = useState(false);
+  const touchedRef = useRef(false);
+  const gateDismissedRef = useRef(false);
+
+  /** Реальный размер контейнера карты. Считаем посадку от него, а не от
+   *  window: контейнер может смонтироваться нулевым (скрытая вкладка,
+   *  ленивый блок) — тогда fitBounds по нулю даёт зум «вся страна». */
+  const [shellEl, setShellEl] = useState<HTMLDivElement | null>(null);
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const [narrow, setNarrow] = useState(false);
 
   // ── данные Земекс ──────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
+    setDataError(null);
     fetch(`/api/village-map/${uuid}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d: VillageMap) => !cancelled && setData(d))
-      .catch((e: Error) => !cancelled && setDataError(e.message));
+      .then((d: VillageMap) => {
+        if (!cancelled) setData(d);
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setDataError(e.message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [uuid]);
+  }, [uuid, attempt]);
 
   // ── ymaps3 ─────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
+    setBundle({ kind: "loading" });
     loadYmaps3()
       .then(async ({ ymaps3, reactify }) => {
         if (cancelled) return;
@@ -116,330 +215,502 @@ export default function PlotMapDark({
         const bound = reactify.bindTo(React, ReactDOM);
         setBundle({ kind: "ready", c: bound.module(ymaps3) as unknown as Reactified });
       })
-      .catch((e: Error) => !cancelled && setBundle({ kind: "blocked", error: e.message }));
+      .catch((e: Error) => {
+        if (!cancelled) setBundle({ kind: "blocked", error: e.message });
+      });
     return () => {
       cancelled = true;
     };
+  }, [attempt]);
+
+  // ── габариты посёлка ───────────────────────────────────────
+  const bounds = useMemo(() => (data ? boundsOf(data) : null), [data]);
+
+  /**
+   * Единственный способ подвинуть камеру — через состояние.
+   *
+   * Reactify переприменяет проп `location` на каждый ре-рендер, поэтому
+   * императивный setLocation бесполезен: ближайший же ре-рендер (смена
+   * зум-бакета, выбор участка) утащит камеру обратно на значение пропа.
+   * Значит проп обязан быть источником правды и всегда совпадать с тем,
+   * где карта стоит на самом деле — за этим следит onActionEnd ниже.
+   */
+  const applyView = useCallback(
+    (view: { center: LngLat; zoom: number }, animate: boolean) => {
+      cameraRef.current = view;
+      // Сразу ставим зум-бакет: маркеры получают верный размер в том же
+      // кадре, не дожидаясь первого onUpdate от карты.
+      const b = Math.round(view.zoom);
+      setZoomBucket((prev) => (prev === b ? prev : b));
+      setLocation({
+        ...view,
+        ...(animate ? { duration: 420, easing: "ease-in-out" } : null),
+      });
+    },
+    [],
+  );
+
+  const fitVillage = useCallback(
+    (animate: boolean) => {
+      if (!bounds) return;
+      const size = sizeRef.current;
+      if (size.w < 1 || size.h < 1) return;
+      const pad = size.w >= 640 ? PADDING_DESKTOP : PADDING_MOBILE;
+      applyView(fitView(bounds, size, pad, ZOOM_RANGE), animate);
+    },
+    [bounds, applyView],
+  );
+
+  /**
+   * Стартовый кадр карты. Считается один раз и дальше не меняется —
+   * иначе reactify при смене пропа дёрнет камеру обратно.
+   */
+  const initialLocationRef = useRef<LocationRequest | null>(null);
+  if (!initialLocationRef.current && bounds) {
+    // Считаем только когда габариты уже известны: до загрузки данных
+    // здесь застряла бы Москва, и карта так и осталась бы на ней.
+    initialLocationRef.current = {
+      center: [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2],
+      zoom: 15,
+    };
+  }
+
+  // Стартовое состояние = «домой». Считаем его от реального размера
+  // контейнера: он же ловит и поворот телефона, и ресайз окна, и
+  // переход из нулевой ширины (скрытая вкладка, ленивый блок).
+  // Пока пользователь ничего не двигал — пересобираем посадку под кадр.
+  useEffect(() => {
+    if (!shellEl || typeof ResizeObserver === "undefined") return;
+    let t: ReturnType<typeof setTimeout>;
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (!r) return;
+      const prev = sizeRef.current;
+      sizeRef.current = { w: r.width, h: r.height };
+      if (r.width < 1 || r.height < 1) return;
+      setNarrow(r.width < 640);
+      const grew =
+        prev.w < 1 || Math.abs(prev.w - r.width) > 32 || Math.abs(prev.h - r.height) > 32;
+      if (!grew || touchedRef.current) return;
+      clearTimeout(t);
+      t = setTimeout(() => fitVillage(false), 160);
+    });
+    ro.observe(shellEl);
+    return () => {
+      clearTimeout(t);
+      ro.disconnect();
+    };
+  }, [shellEl, fitVillage]);
+
+  // ── мобильная шторка ───────────────────────────────────────
+  // Ставим только после монтирования: на сервере ширины нет, а рисовать
+  // шторку в первом же кадре — гарантированный hydration mismatch.
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(max-width: 639.98px)");
+    const sync = () => {
+      if (gateDismissedRef.current) return;
+      setGated(mq.matches && window.innerWidth > 0);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
   }, []);
 
   // ── производные ────────────────────────────────────────────
-  const bounds = useMemo(() => {
-    const free = (data?.plots ?? []).filter((p) => isFree(p.statusName));
-    const areas = free.map((p) => p.area).filter(Boolean);
-    const costs = free.map((p) => p.totalCost).filter(Boolean);
-    return {
-      areaMin: areas.length ? Math.floor(Math.min(...areas)) : 0,
-      areaMax: areas.length ? Math.ceil(Math.max(...areas)) : 0,
-      costMax: costs.length ? Math.max(...costs) : 0,
-    };
+  const utpOptions = useMemo(() => (data ? collectUtp(data.plots) : []), [data]);
+  const hasFilters = filtersActive(filters);
+
+  const kinds = useMemo(() => {
+    const m = new Map<string, PlotKind>();
+    for (const p of data?.plots ?? []) m.set(p.number, plotKind(p.statusName));
+    return m;
   }, [data]);
 
-  useEffect(() => {
-    if (bounds.areaMax && areaMax === null) setAreaMax(bounds.areaMax);
-    if (bounds.costMax && budgetMax === null) setBudgetMax(bounds.costMax);
-  }, [bounds, areaMax, budgetMax]);
+  const matched = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of data?.plots ?? []) {
+      const k = kinds.get(p.number) ?? "other";
+      if (passesFilters(p, k, filters, hiddenTiers)) s.add(p.number);
+    }
+    return s;
+  }, [data, kinds, filters, hiddenTiers]);
 
-  const matches = useCallback(
-    (p: Plot) => {
-      if (!isFree(p.statusName)) return false;
-      if (areaMax !== null && p.area > areaMax) return false;
-      if (budgetMax !== null && p.totalCost && p.totalCost > budgetMax) return false;
-      return true;
+  const tierCounts = useMemo(() => {
+    const counts = new Array<number>(data?.priceTiers.length ?? 0).fill(0);
+    for (const p of data?.plots ?? []) {
+      if (kinds.get(p.number) !== "free") continue;
+      if (p.priceTier < counts.length) counts[p.priceTier] += 1;
+    }
+    return counts;
+  }, [data, kinds]);
+
+  const selectPlot = useCallback((p: Plot) => {
+    touchedRef.current = true;
+    setSelected(p);
+    setOpenChip(null);
+  }, []);
+
+  const toggleTier = useCallback((tier: number) => {
+    setHiddenTiers((prev) => {
+      const next = new Set(prev);
+      if (next.has(tier)) next.delete(tier);
+      else next.add(tier);
+      return next;
+    });
+  }, []);
+
+  const zoomBy = useCallback(
+    (delta: number) => {
+      touchedRef.current = true;
+      const cam = cameraRef.current;
+      if (!cam) return;
+      applyView(
+        {
+          center: cam.center,
+          zoom: Math.min(ZOOM_RANGE.max, Math.max(ZOOM_RANGE.min, cam.zoom + delta)),
+        },
+        true,
+      );
     },
-    [areaMax, budgetMax],
+    [applyView],
   );
 
-  const matchCount = useMemo(
-    () => (data?.plots ?? []).filter(matches).length,
-    [data, matches],
-  );
+  const locate = useCallback(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    touchedRef.current = true;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c: LngLat = [pos.coords.longitude, pos.coords.latitude];
+        setMe(c);
+        applyView({ center: c, zoom: 13 }, true);
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  }, [applyView]);
 
-  const freeShown = useCountUp(data?.statistics.free ?? 0);
-  const totalShown = useCountUp(data?.plots.length ?? 0);
+  const onMapUpdate = useCallback((state: { location: { center: LngLat; zoom: number } }) => {
+    const loc = state?.location;
+    if (!loc || typeof loc.zoom !== "number") return;
+    cameraRef.current = { center: loc.center, zoom: loc.zoom };
+    const b = Math.round(loc.zoom);
+    setZoomBucket((prev) => (prev === b ? prev : b));
+  }, []);
 
-  // ── состояния загрузки ─────────────────────────────────────
+  /**
+   * Конец жеста (drag / pinch). Подтягиваем проп location к тому, где
+   * карта реально оказалась, иначе первый же ре-рендер вернёт камеру
+   * на последнюю программную позицию — и посёлок «прыгнет» под рукой.
+   */
+  const onActionEnd = useCallback(() => {
+    touchedRef.current = true;
+    const cam = cameraRef.current;
+    if (cam) setLocation({ center: cam.center, zoom: cam.zoom });
+  }, []);
+
+  // ── полигоны ───────────────────────────────────────────────
+  // Границы у всех участков тонкие и нейтральные — цвет несут кружки.
+  // Подсветка заливкой только у подходящих под фильтр и у выбранного.
+  const C = bundle.kind === "ready" ? bundle.c : null;
+  const selectedNumber = selected?.number ?? null;
+
+  const polygons = useMemo(() => {
+    if (!C || !data) return null;
+    const { YMapFeature } = C;
+    return data.plots.map((p) => {
+      if (!p.coords || p.coords.length < 3) return null;
+      const kind = kinds.get(p.number) ?? "other";
+      const hit = matched.has(p.number);
+      const sel = selectedNumber === p.number;
+      const accent = kind === "reserved" ? RESERVED_COLOR : tierColor(p.priceTier);
+
+      let fill = "#ffffff";
+      let fillOpacity = 0.03;
+      let strokeColor = "#dfe9f3";
+      let strokeWidth = 1;
+      let strokeOpacity = 0.24;
+
+      if (hit) {
+        fill = accent;
+        fillOpacity = 0.17;
+        strokeColor = accent;
+        strokeWidth = 1.2;
+        strokeOpacity = 0.75;
+      }
+      if (sel) {
+        fill = accent;
+        fillOpacity = 0.42;
+        strokeColor = "#ffffff";
+        strokeWidth = 2.4;
+        strokeOpacity = 1;
+      }
+
+      return (
+        <YMapFeature
+          key={`p-${p.number}`}
+          geometry={{ type: "Polygon", coordinates: [ringToLngLat(p.coords)] }}
+          style={{
+            fill,
+            fillOpacity,
+            stroke: [{ color: strokeColor, width: strokeWidth, opacity: strokeOpacity }],
+            cursor: "pointer",
+          }}
+          onClick={() => selectPlot(p)}
+        />
+      );
+    });
+  }, [C, data, kinds, matched, selectedNumber, selectPlot]);
+
+  // ── маркеры ────────────────────────────────────────────────
+  const markers = useMemo(() => {
+    if (!C || !data) return null;
+    const { YMapMarker } = C;
+    const size = circleSize(zoomBucket, narrow);
+    const showSoldNumbers = zoomBucket >= 17;
+
+    return data.plots.map((p) => {
+      if (!p.center || (p.center[0] === 0 && p.center[1] === 0)) return null;
+      const kind = kinds.get(p.number) ?? "other";
+      const hit = matched.has(p.number);
+      const sel = selectedNumber === p.number;
+      const coord: LngLat = [p.center[1], p.center[0]];
+
+      // Проданные — только мелкий серый номер, и только вблизи.
+      if (!hit && !sel) {
+        if (!showSoldNumbers) return null;
+        return (
+          <YMapMarker key={`m-${p.number}`} coordinates={coord} zIndex={100}>
+            <span
+              className="pointer-events-none block -translate-x-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums text-white/40"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.95)" }}
+            >
+              {p.number}
+            </span>
+          </YMapMarker>
+        );
+      }
+
+      if (size === 0 && !sel) return null;
+
+      const accent = kind === "reserved" ? RESERVED_COLOR : tierColor(p.priceTier);
+      const d = sel ? Math.max(size, 22) + 6 : size;
+      const fontSize = d >= 30 ? 13 : d >= 25 ? 12 : d >= 21 ? 11 : d >= 17 ? 9.5 : 8;
+
+      return (
+        <YMapMarker
+          key={`m-${p.number}`}
+          coordinates={coord}
+          zIndex={sel ? 1000 : kind === "free" ? 300 : 250}
+          onClick={() => selectPlot(p)}
+        >
+          <span
+            className="block cursor-pointer select-none rounded-full text-center font-extrabold tabular-nums transition-transform hover:scale-110"
+            style={{
+              width: d,
+              height: d,
+              lineHeight: `${d}px`,
+              fontSize,
+              marginLeft: -d / 2,
+              marginTop: -d / 2,
+              background: accent,
+              color: textOn(accent),
+              boxShadow: sel
+                ? `0 0 0 2.5px #fff, 0 0 22px -2px ${accent}, 0 4px 14px rgba(0,0,0,0.6)`
+                : `0 0 0 1.5px rgba(0,0,0,0.45), 0 3px 10px rgba(0,0,0,0.5)`,
+            }}
+          >
+            {d >= 15 ? p.number : ""}
+          </span>
+        </YMapMarker>
+      );
+    });
+  }, [C, data, kinds, matched, selectedNumber, zoomBucket, narrow, selectPlot]);
+
+  // ── состояния ──────────────────────────────────────────────
   if (dataError || bundle.kind === "blocked") {
     return (
-      <div className="grid h-[560px] place-items-center rounded-[28px] bg-white/[0.03] p-8 text-center ring-1 ring-white/10">
-        <div className="max-w-md">
-          <p className="text-[15px] font-bold text-white/80">Карта недоступна</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-white/50">
-            {dataError
-              ? `Данные Земекс не пришли: ${dataError}. С этой машины map.zemexx.ru не отвечает — на проде карта работает.`
-              : bundle.kind === "blocked"
-                ? bundle.error
-                : ""}
-          </p>
-        </div>
-      </div>
+      <MapError
+        title="Карта участков недоступна"
+        detail={
+          dataError
+            ? `Данные Земекс не пришли (${dataError}). Так бывает, если у сервиса Земекс перерыв или сеть режет запрос — на проде карта работает.`
+            : bundle.kind === "blocked"
+              ? `Яндекс.Карты не загрузились: ${bundle.error}. Обычно это приватный режим Safari или блокировщик — откройте страницу в обычном окне.`
+              : ""
+        }
+        onRetry={() => {
+          resetYmaps3Loader();
+          setAttempt((n) => n + 1);
+        }}
+      />
     );
   }
 
-  if (!data || bundle.kind === "loading") {
-    return (
-      <div className="grid h-[560px] place-items-center rounded-[28px] bg-white/[0.03] ring-1 ring-white/10">
-        <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
-      </div>
-    );
+  if (!data || bundle.kind !== "ready") {
+    return <MapSkeleton label="Загружаем генплан…" />;
   }
 
-  const { YMap, YMapDefaultSchemeLayer, YMapDefaultSatelliteLayer, YMapDefaultFeaturesLayer, YMapFeature, YMapMarker } =
-    bundle.c;
+  const {
+    YMap,
+    YMapDefaultSchemeLayer,
+    YMapDefaultSatelliteLayer,
+    YMapDefaultFeaturesLayer,
+    YMapFeature,
+    YMapMarker,
+    YMapListener,
+  } = bundle.c;
 
-  // Рисуем ВСЕ участки всегда. Если прятать проданные, посёлок теряет
-  // очертания и карта читается как пустое поле — иерархию делает
-  // прозрачность, а не фильтрация.
-  const visible = data.plots;
+  const selectedKind: PlotKind = selected
+    ? (kinds.get(selected.number) ?? "other")
+    : "other";
 
   return (
     <>
       <div className="relative overflow-hidden rounded-[28px] bg-[#0b0e13] ring-1 ring-white/10">
-        <div className="relative h-[620px] sm:h-[780px]">
-          <YMap
-            location={{ center: [data.center[1], data.center[0]], zoom: 16 }}
-            mode="vector"
-          >
-            {/* Схема всегда смонтирована — на ней держится векторный
-                конвейер; theme только "light"/"dark" из поддержанных,
-                берём проверенный в бою light. Спутник кладётся сверху. */}
-            <YMapDefaultSchemeLayer theme="light" />
-            {satellite && <YMapDefaultSatelliteLayer />}
-            <YMapDefaultFeaturesLayer zIndex={2000} />
+        {/* Высота подобрана так, чтобы генплан целиком помещался в экран
+            ноутбука и телефона: svh не скачет от адресной строки iOS. */}
+        <div
+          ref={setShellEl}
+          className="relative h-[70svh] max-h-[760px] min-h-[430px] sm:h-[74vh]"
+        >
+          <div className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}>
+            <YMap
+              location={
+                location ?? initialLocationRef.current ?? { center: [37.6173, 55.7558], zoom: 9 }
+              }
+              mode="vector"
+              behaviors={BEHAVIORS}
+              zoomRange={ZOOM_RANGE}
+            >
+              {/* Схема всегда смонтирована — на ней держится векторный
+                  конвейер. Спутник кладётся сверху, features — над обоими. */}
+              <YMapDefaultSchemeLayer theme="dark" />
+              {satellite && <YMapDefaultSatelliteLayer />}
+              <YMapDefaultFeaturesLayer zIndex={2000} />
 
-            {data.villageCoords.length >= 3 && (
-              <YMapFeature
-                geometry={{ type: "Polygon", coordinates: [ringToLonLat(data.villageCoords)] }}
-                style={{
-                  fill: "#34d399",
-                  fillOpacity: 0.03,
-                  stroke: [{ color: "#34d399", width: 2.5, opacity: 0.7 }],
-                }}
-              />
-            )}
-
-            {visible.map((p) => {
-              if (!p.coords || p.coords.length < 3) return null;
-              const free = isFree(p.statusName);
-              const reserved = isReserved(p.statusName);
-              const hit = free && matches(p);
-              const sel = selected?.number === p.number;
-
-              // Проданные — почти в ноль. Ради этого всё и затевалось:
-              // на карте Земекс они забивают собой свободные.
-              const fill = sel ? "#a3e635" : hit ? "#34d399" : reserved ? "#fbbf24" : "#64748b";
-              const fillOpacity = sel ? 0.7 : hit ? 0.45 : reserved ? 0.3 : 0.07;
-              const strokeColor = sel ? "#d9f99d" : hit ? "#6ee7b7" : reserved ? "#fbbf24" : "#94a3b8";
-              const strokeWidth = sel ? 4 : hit ? 2 : 0.75;
-              const strokeOpacity = sel ? 1 : hit ? 0.95 : 0.28;
-
-              return (
+              {data.villageCoords.length >= 3 && (
                 <YMapFeature
-                  key={p.number}
-                  geometry={{ type: "Polygon", coordinates: [ringToLonLat(p.coords)] }}
-                  style={{
-                    fill,
-                    fillOpacity,
-                    stroke: [{ color: strokeColor, width: strokeWidth, opacity: strokeOpacity }],
+                  geometry={{
+                    type: "Polygon",
+                    coordinates: [ringToLngLat(data.villageCoords)],
                   }}
-                  onClick={() => setSelected(p)}
+                  style={{
+                    fill: "#34d399",
+                    fillOpacity: 0.02,
+                    stroke: [{ color: "#34d399", width: 1.8, opacity: 0.6 }],
+                  }}
                 />
-              );
-            })}
+              )}
 
-            {/* Номера — только у подходящих под фильтр и у выбранного.
-                480 подписей разом превращаются в кашу, как у Земекс. */}
-            {data.plots
-              .filter((p) => matches(p) || p.number === selected?.number)
-              .map((p) => (
-                <YMapMarker key={`m-${p.number}`} coordinates={[p.center[1], p.center[0]]}>
-                  <button
-                    onClick={() => setSelected(p)}
-                    className={`-translate-x-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-[11px] font-extrabold tabular-nums transition-transform hover:scale-110 ${
-                      selected?.number === p.number
-                        ? "bg-lime-300 text-black shadow-[0_0_16px_rgba(163,230,53,0.9)]"
-                        : "bg-emerald-400 text-black shadow-[0_0_12px_rgba(52,211,153,0.7)]"
-                    }`}
-                  >
-                    {p.number}
-                  </button>
+              {polygons}
+              {markers}
+
+              {me && (
+                <YMapMarker coordinates={me} zIndex={1200}>
+                  <span className="relative block h-0 w-0">
+                    <span className="absolute -left-2 -top-2 block h-4 w-4 rounded-full bg-sky-400 shadow-[0_0_0_2px_#fff,0_0_18px_rgba(56,189,248,0.9)]" />
+                  </span>
                 </YMapMarker>
-              ))}
-          </YMap>
+              )}
 
-          {/* ── панель фильтров ── */}
-          <motion.div
-            initial={{ opacity: 0, x: -18 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute left-3 top-3 w-[248px] rounded-[24px] p-4 sm:left-5 sm:top-5"
-            style={{
-              backdropFilter: "blur(18px) saturate(1.5)",
-              background: "linear-gradient(160deg, rgba(14,18,24,0.86), rgba(9,12,16,0.92))",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 24px 60px -18px rgba(0,0,0,0.85)",
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-300" />
-              <span className="text-[15px] font-extrabold">{data.villageName}</span>
-            </div>
+              <YMapListener onUpdate={onMapUpdate} />
+              <YMapListener onActionEnd={onActionEnd} />
+            </YMap>
+          </div>
 
-            <div className="mt-3 flex items-baseline gap-1.5">
-              <span className="text-[30px] font-extrabold leading-none text-emerald-300 tabular-nums">
-                {freeShown}
+          {/* ── фильтры + счётчик слева сверху ── */}
+          <div className="pointer-events-none absolute left-3 right-[62px] top-3 z-20 sm:left-5 sm:right-[92px] sm:top-5">
+            <div className="pointer-events-auto mb-2 inline-flex items-center gap-2 rounded-full bg-[#0e1218]/85 px-3 py-1.5 text-[11.5px] ring-1 ring-white/12 backdrop-blur-md">
+              <span className="font-extrabold text-white/90">{data.villageName}</span>
+              <span className="h-3 w-px bg-white/15" />
+              <span className="font-bold tabular-nums text-emerald-300">
+                {data.statistics.free}
               </span>
-              <span className="text-[13px] text-white/50">
-                свободно из <span className="tabular-nums">{totalShown}</span>
+              <span className="text-white/45">
+                свободно из <span className="tabular-nums">{data.plots.length}</span>
               </span>
             </div>
 
-            <div className="mt-4 space-y-3.5">
-              <div>
-                <div className="mb-1.5 flex items-center justify-between text-[12px]">
-                  <span className="flex items-center gap-1.5 font-bold text-white/70">
-                    <Ruler className="h-3.5 w-3.5" /> Площадь
-                  </span>
-                  <span className="tabular-nums text-white/85">до {areaMax ?? "—"} сот</span>
-                </div>
-                <input
-                  type="range"
-                  min={bounds.areaMin}
-                  max={bounds.areaMax}
-                  value={areaMax ?? bounds.areaMax}
-                  onChange={(e) => setAreaMax(+e.target.value)}
-                  aria-label="Максимальная площадь"
-                  className="w-full accent-emerald-400"
+            <FilterBar
+              open={openChip}
+              onOpen={setOpenChip}
+              filters={filters}
+              onChange={setFilters}
+              onReset={() => {
+                setFilters(EMPTY_FILTERS);
+                setHiddenTiers(new Set());
+              }}
+              hasFilters={hasFilters}
+              utpOptions={utpOptions}
+              matchCount={matched.size}
+            />
+          </div>
+
+          {/* ── колонка управления справа ── */}
+          <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
+            <ControlRail
+              satellite={satellite}
+              onToggleBase={() => setSatellite((v) => !v)}
+              legendOpen={legendOpen}
+              onToggleLegend={() => setLegendOpen((v) => !v)}
+              onZoomIn={() => zoomBy(1)}
+              onZoomOut={() => zoomBy(-1)}
+              onLocate={locate}
+              onHome={() => {
+                touchedRef.current = false;
+                setSelected(null);
+                fitVillage(true);
+              }}
+              locating={locating}
+            />
+          </div>
+
+          {/* ── легенда слева снизу, выше плашки «Открыть Яндекс Карты» ── */}
+          <div className="pointer-events-none absolute bottom-[58px] left-3 z-20 sm:bottom-[64px] sm:left-5">
+            <AnimatePresence>
+              {legendOpen && data.priceTiers.length > 0 && (
+                <LegendPanel
+                  tiers={data.priceTiers}
+                  hidden={hiddenTiers}
+                  onToggle={toggleTier}
+                  counts={tierCounts}
+                  hasReserved={data.statistics.reserved > 0}
+                  hasSold={data.statistics.sold > 0}
+                  onClose={() => setLegendOpen(false)}
                 />
-              </div>
-
-              <div>
-                <div className="mb-1.5 flex items-center justify-between text-[12px]">
-                  <span className="flex items-center gap-1.5 font-bold text-white/70">
-                    <Wallet className="h-3.5 w-3.5" /> Бюджет
-                  </span>
-                  <span className="tabular-nums text-white/85">
-                    до {budgetMax ? (budgetMax / 1_000_000).toFixed(1) : "—"} млн
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={bounds.costMax}
-                  step={100_000}
-                  value={budgetMax ?? bounds.costMax}
-                  onChange={(e) => setBudgetMax(+e.target.value)}
-                  aria-label="Максимальный бюджет"
-                  className="w-full accent-emerald-400"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-emerald-400/10 px-3 py-2 text-center ring-1 ring-emerald-400/25">
-              <span className="text-[19px] font-extrabold tabular-nums text-emerald-300">
-                {matchCount}
-              </span>
-              <span className="ml-1.5 text-[12px] text-white/60">подходит</span>
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => {
-                  setAreaMax(bounds.areaMax);
-                  setBudgetMax(bounds.costMax);
-                  setSelected(null);
-                }}
-                className="h-9 flex-1 rounded-full bg-white/[0.09] text-[12px] font-bold text-white/80 ring-1 ring-white/15 transition-colors hover:bg-white/[0.16]"
-              >
-                Сбросить фильтр
-              </button>
-              <button
-                onClick={() => setSatellite((v) => !v)}
-                aria-label="Спутник или схема"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.09] ring-1 ring-white/15 transition-colors hover:bg-white/[0.16]"
-              >
-                <Layers className="h-4 w-4 text-white/75" />
-              </button>
-            </div>
-          </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* ── карточка участка ── */}
+          {/* Приподняты над обязательной плашкой копирайта Яндекса —
+              её перекрывать нельзя, а она сидит по низу карты. */}
+          <div className="pointer-events-none absolute bottom-[46px] left-3 right-3 z-30 flex justify-end sm:left-auto sm:right-5">
+            <AnimatePresence>
+              {selected && (
+                <PlotCard
+                  plot={selected}
+                  kind={selectedKind}
+                  onClose={() => setSelected(null)}
+                  onBook={() => setBooking(true)}
+                  canBook={selectedKind === "free" && Boolean(bookingUrl)}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── мобильная шторка ── */}
           <AnimatePresence>
-            {selected && (
-              <motion.div
-                initial={{ opacity: 0, y: 24, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-3 right-3 w-[300px] max-w-[calc(100%-1.5rem)] rounded-[24px] p-4 sm:bottom-5 sm:right-5"
-                style={{
-                  backdropFilter: "blur(18px) saturate(1.5)",
-                  background: "linear-gradient(160deg, rgba(14,18,24,0.9), rgba(9,12,16,0.95))",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16), 0 24px 60px -18px rgba(0,0,0,0.9)",
+            {gated && (
+              <TouchGate
+                onOpen={() => {
+                  gateDismissedRef.current = true;
+                  setGated(false);
                 }}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="text-[19px] font-extrabold leading-tight">
-                      Участок № {selected.number}
-                    </div>
-                    <div
-                      className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                        isFree(selected.statusName)
-                          ? "bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-400/30"
-                          : "bg-white/[0.07] text-white/55 ring-1 ring-white/12"
-                      }`}
-                    >
-                      {selected.statusName}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelected(null)}
-                    aria-label="Закрыть карточку"
-                    className="-mr-1 -mt-1 grid h-9 w-9 place-items-center rounded-full text-white/60 hover:bg-white/10"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <dl className="mt-3 space-y-1.5 text-[13px]">
-                  <div className="flex justify-between">
-                    <dt className="text-white/50">Площадь</dt>
-                    <dd className="font-bold tabular-nums">{selected.area} сот</dd>
-                  </div>
-                  {selected.pricePerHundred > 0 && (
-                    <div className="flex justify-between">
-                      <dt className="text-white/50">Цена сотки</dt>
-                      <dd className="font-bold tabular-nums">
-                        {money(selected.pricePerHundred)} ₽
-                      </dd>
-                    </div>
-                  )}
-                  {selected.totalCost > 0 && (
-                    <div className="flex justify-between">
-                      <dt className="text-white/50">Стоимость</dt>
-                      <dd className="text-[15px] font-extrabold tabular-nums text-emerald-300">
-                        {money(selected.totalCost)} ₽
-                      </dd>
-                    </div>
-                  )}
-                  {selected.kadastr && (
-                    <div className="flex justify-between gap-3">
-                      <dt className="shrink-0 text-white/50">Кадастр</dt>
-                      <dd className="truncate text-[12px] tabular-nums text-white/70">
-                        {selected.kadastr}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-
-                {isFree(selected.statusName) && bookingUrl && (
-                  <button
-                    onClick={() => setBooking(true)}
-                    className="mt-3.5 h-11 w-full rounded-full bg-emerald-500 text-[13px] font-bold transition-all hover:-translate-y-0.5 hover:bg-emerald-400"
-                  >
-                    Забронировать
-                  </button>
-                )}
-              </motion.div>
+              />
             )}
           </AnimatePresence>
         </div>
@@ -467,6 +738,7 @@ export default function PlotMapDark({
                   Бронирование участка № {selected?.number} · система Земекс
                 </span>
                 <button
+                  type="button"
                   onClick={() => setBooking(false)}
                   aria-label="Закрыть бронирование"
                   className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10"

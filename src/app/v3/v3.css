@@ -41,6 +41,105 @@
   }
 }
 
+/* ── Фоны героя (лаборатория /v3/hero-lab) ───────────────────── */
+
+/* Звёзды варианта «Аврора+»: ярче и крупнее прежних — старые тонули
+   при обычной яркости экрана, их было видно только на максимуме. */
+@keyframes v3-twinkle-bright {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+.v3-star-bright {
+  animation: v3-twinkle-bright 3s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+}
+
+@keyframes v3-meteor {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(28deg);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  26% {
+    transform: translate3d(46vw, 46vh, 0) rotate(28deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(46vw, 46vh, 0) rotate(28deg);
+    opacity: 0;
+  }
+}
+.v3-meteor {
+  width: 140px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), transparent);
+  animation: v3-meteor 16s linear infinite;
+}
+
+/* Сетка «Кадастр»: плоскость медленно едет на зрителя */
+@keyframes v3-grid-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 84px;
+  }
+}
+.v3-grid-scroll {
+  animation: v3-grid-scroll 3.4s linear infinite;
+}
+
+@keyframes v3-cell {
+  0%,
+  70%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  46% {
+    opacity: 1;
+  }
+}
+.v3-cell {
+  background: rgba(52, 211, 153, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(110, 231, 183, 0.7);
+  animation: v3-cell 9s ease-in-out infinite;
+}
+
+/* «Живое фото»: медленный наезд */
+@keyframes v3-kenburns {
+  0%,
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.12) translate3d(-1.5%, -1%, 0);
+  }
+}
+.v3-kenburns {
+  animation: v3-kenburns 26s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-star-bright,
+  .v3-meteor,
+  .v3-grid-scroll,
+  .v3-cell,
+  .v3-kenburns {
+    animation: none !important;
+  }
+}
+
 /* Родные контролы Яндекс.Карт светлые и на тёмной карте читаются плохо
    («Открыть Яндекс Карты» внизу слева). Перекрашиваем под интерфейс. */
 .ymaps3x0--control-button,

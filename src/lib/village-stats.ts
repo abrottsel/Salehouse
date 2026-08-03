@@ -36,15 +36,53 @@ export function extractVillageUuid(
  * Cached for 15 minutes via Next.js `revalidate: 900`.
  * Falls back to fallbackStats on any error (network, parsing).
  */
+/** Сколько ждём Земекс, прежде чем взять цифры из data.ts. */
+const TIMEOUT_MS = 6000;
+
 export async function fetchVillageStats(
   uuid: string,
   fallback: { plotsAvailable: number; plotsCount: number },
 ): Promise<VillageStats> {
+  // Аварийный рубильник. Если Земекс лежит, сборка не должна вставать:
+  // страницы идут с revalidate=900, живые цифры подтянутся при первой
+  // регенерации. Лучше выкатиться с числами из data.ts, чем сорвать
+  // деплой из-за чужого сервера.
+  if (process.env.SKIP_LIVE_STATS === "1") {
+    return {
+      plotsAvailable: fallback.plotsAvailable,
+      plotsCount: fallback.plotsCount,
+      reserved: 0,
+      sold: Math.max(0, fallback.plotsCount - fallback.plotsAvailable),
+      fresh: false,
+    };
+  }
+
   try {
-    const res = await fetch(
-      `https://map.zemexx.ru/v2/api.php?village_id=${uuid}`,
-      { next: { revalidate: 900 } }, // 15 min ISR
-    );
+    // Таймаут обязателен: без него зависший Земекс держит запрос минутами,
+    // и сборка 31 страницы посёлка встаёт целиком. Лучше быстро упасть
+    // на цифры из data.ts, чем уронить деплой из-за чужого сервера.
+    //
+    // Именно гонка с таймером, а не AbortSignal: Next оборачивает fetch
+    // своим кэширующим слоем, и сигнал до сети не доходит — проверено,
+    // сборка всё равно висела по минуте на каждой странице посёлка.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await Promise.race([
+        fetch(`https://map.zemexx.ru/v2/api.php?village_id=${uuid}`, {
+          next: { revalidate: 900 }, // 15 min ISR
+          signal: ctrl.signal,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("zemexx timeout")), TIMEOUT_MS + 200),
+        ),
+      ]);
+    } finally {
+      // Снимаем таймер в любом случае: иначе он держал бы процесс сборки
+      // живым лишние секунды на каждый из 31 посёлка.
+      clearTimeout(timer);
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const stat = data?.stat;

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/v3/catalog", label: "Посёлки" },
   { href: "/v3/mortgage", label: "Ипотека" },
   { href: "/v3/how-to-buy", label: "Как купить" },
+  { href: "/v3/reviews", label: "Отзывы" },
   { href: "/v3/faq", label: "Вопросы" },
   { href: "/v3/contacts", label: "Контакты" },
 ];

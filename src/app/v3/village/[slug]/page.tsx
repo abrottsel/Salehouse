@@ -19,6 +19,7 @@ import { SectionTitle } from "@/app/v3/_components/ui/primitives";
  *
  * Блоки:
  *   1. VillageHero        — полноэкранная фотокарусель + пилюли цифр
+ *                           и «Дорога к мечте» (RouteBadgeDark)
  *   2. VillageAdvantages  — стат-ячейки, три плитки, инфраструктура
  *   3. PlotMapDark        — карта участков (компонент готов, не трогаем)
  *   4. ViewingForm        — запись на просмотр, ничего не отправляет
@@ -76,6 +77,7 @@ export default async function V3VillagePage({ params }: Props) {
         areaFrom={village.areaFrom}
         areaTo={village.areaTo}
         photos={village.photos}
+        coords={village.coords}
       />
 
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-10">
