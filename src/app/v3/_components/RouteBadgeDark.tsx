@@ -82,6 +82,15 @@ function homeSnapshot(): UserPlace | null {
   return homeValue;
 }
 
+/** «45 мин», «2ч», «31ч 55м» — как на боевой странице. Полторы тысячи
+ *  минут человек в уме не переводит, а именно это и показывалось. */
+function formatDuration(min: number): string {
+  if (min < 60) return `${Math.round(min)} мин`;
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  return m === 0 ? `${h}ч` : `${h}ч ${m}м`;
+}
+
 function haversineKm(a: [number, number], b: [number, number]) {
   const R = 6371;
   const dLat = ((b[0] - a[0]) * Math.PI) / 180;
@@ -279,14 +288,15 @@ export default function RouteBadgeDark({
       >
         <Navigation className="h-4 w-4 shrink-0 text-emerald-300" />
         {route ? (
-          // Округляем на выводе: /api/route отдаёт дробные километры и
-          // минуты, и «60.9402 км · 62.96 мин» на пилюле выглядит мусором.
+          // Порядок и формат как на боевой странице: сначала время, потом
+          // расстояние, минуты переводятся в часы. Было «2879 км · 1915 мин» —
+          // полторы тысячи минут в уме никто не переводит.
           <span className="flex items-center gap-1.5">
             <span className="text-[10px] uppercase tracking-wider text-white/50">
               от дома
             </span>
             <span className="tabular-nums">
-              {Math.round(route.distanceKm)} км · {Math.round(route.durationMin)} мин
+              {formatDuration(route.durationMin)} · {Math.round(route.distanceKm)} км
             </span>
           </span>
         ) : (

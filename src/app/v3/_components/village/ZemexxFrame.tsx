@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MousePointerClick } from "lucide-react";
 import RouteBadgeDark from "../RouteBadgeDark";
+import ShowRouteButton from "@/components/ShowRouteButton";
 import { glassStyle } from "../ui/primitives";
 
 /**
@@ -96,8 +97,17 @@ export default function ZemexxFrame({
 
       {/* «Дорога к мечте» — поверх фрейма, как на боевой странице.
           Слой не ловит клики целиком: их ловит только сама кнопка,
-          иначе он перекрыл бы карту. */}
-      <div className="pointer-events-none absolute right-3 top-3 z-30 flex justify-end sm:right-5 sm:top-5">
+          иначе он перекрыл бы карту.
+
+          Отступ сверху не случайный: у самого фрейма Земекс в правом
+          верхнем углу свои контролы, в том числе «Спутник». Прижатый
+          к верху бейдж их накрывал — на боевой странице он по этой же
+          причине сидит ниже. Атрибут data-frame-overlay нужен кнопке
+          «Путь»: она ищет его, чтобы встать слева от бейджа. */}
+      <div
+        data-frame-overlay
+        className="pointer-events-none absolute right-3 top-16 z-30 flex justify-end sm:right-5 sm:top-20"
+      >
         <div className="pointer-events-auto">
           <RouteBadgeDark
             villageCoords={villageCoords}
@@ -106,6 +116,10 @@ export default function ZemexxFrame({
           />
         </div>
       </div>
+
+      {/* Кнопка «Путь» — боевой компонент, взят как есть. Показывается
+          только если у человека сохранён домашний адрес. */}
+      <ShowRouteButton villageCoords={villageCoords} villageName={villageName} />
     </div>
   );
 }
