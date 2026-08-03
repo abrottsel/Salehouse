@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { villages } from "@/lib/data";
 import { extractVillageUuid, fetchVillageStats } from "@/lib/village-stats";
 
-import PlotMapDark from "@/app/v3/_components/PlotMapDark";
+import ZemexxFrame from "@/app/v3/_components/village/ZemexxFrame";
 import MapDisclosure from "@/app/v3/_components/village/MapDisclosure";
 import VillageAdvantages from "@/app/v3/_components/village/VillageAdvantages";
 import VillageHero from "@/app/v3/_components/village/VillageHero";
@@ -112,13 +112,17 @@ export default async function V3VillagePage({ params }: Props) {
               eyebrow="Свободные участки"
               title="Выберите участок"
               accent="на карте"
-              sub="Проданные уходят в фон, свободные светятся. Фильтр по площади и бюджету, карточка участка с кадастром и полной стоимостью, бронирование — в системе Земекс."
+              sub="Выбирайте участок и бронируйте прямо на карте. Колесо и палец прокручивают страницу — чтобы работать с картой, нажмите на неё."
             />
           </Reveal>
           <Reveal delay={0.08}>
             <MapDisclosure />
-            {uuid ? (
-              <PlotMapDark uuid={uuid} bookingUrl={village.iframeMapUrl} />
+            {village.iframeMapUrl ? (
+              <ZemexxFrame
+                src={village.iframeMapUrl}
+                villageName={village.name}
+                villageCoords={village.coords}
+              />
             ) : (
               <div className="grid h-[320px] place-items-center rounded-[28px] bg-white/[0.03] px-6 text-center text-[15px] text-white/50 ring-1 ring-white/10">
                 У посёлка пока нет карты участков — свободные предложения подскажет менеджер.
