@@ -47,21 +47,33 @@ export function plotKind(statusName: string): PlotKind {
 /**
  * Палитра тиров. Земекс берёт максимально разнесённые тона (#f2f023,
  * #f62f7a, #19dae6, #e66b19, #a744ec, #ff0000) — именно контраст между
- * ними и делает карту «сочной». Повторяем идею, но подбираем тона,
- * которые не выцветают на тёмной подложке и на спутнике.
+ * ними и делает карту «сочной». Повторяем идею, но подбираем тона под
+ * СВЕТЛУЮ схему: пастель вроде прежнего лайма #d9f04a на белом просто
+ * исчезала.
+ *
+ * Длина не случайна: у «Фаворита» девять ценовых тиров, а палитра из
+ * семи заставляла восьмой и девятый повторять первый и второй — два
+ * разных ценника одним цветом. Держим запас в десять.
  */
 export const TIER_COLORS = [
-  "#d9f04a", // лайм
-  "#22d3ee", // циан
-  "#fb923c", // оранжевый
-  "#f472b6", // розовый
-  "#a78bfa", // фиолетовый
-  "#f87171", // красный
-  "#34d399", // изумруд
+  "#e66b19", // оранжевый — их же
+  "#19dae6", // циан — их же
+  "#a744ec", // фиолетовый — их же
+  "#f2c218", // жёлтый
+  "#f62f7a", // розовый
+  "#ef4444", // красный
+  "#16a34a", // зелёный
+  "#0d9488", // тил
+  "#84cc16", // лайм
+  "#1e40af", // тёмно-синий
 ] as const;
 
-/** Синий кружок резерва — как «Резерв» у Земекс, но читаемее на тёмном. */
-export const RESERVED_COLOR = "#4f8bff";
+/**
+ * Кружок брони. У Земекс это чистый синий rgb(0,30,255) — берём его как
+ * есть, поэтому в палитре тиров синего нет: два разных смысла одним
+ * цветом читать нельзя.
+ */
+export const RESERVED_COLOR = "#001eff";
 
 export function tierColor(tier: number): string {
   return TIER_COLORS[tier % TIER_COLORS.length];
@@ -197,47 +209,164 @@ export function fitView(
   return { center: [(mx / world) * 360 - 180, invMercY(my / world)], zoom };
 }
 
+// ── экранный размер участка ─────────────────────────────────────
+// Сколько пикселей занимает участок на текущем зуме — от этого зависит,
+// что вообще влезет в его клетку: только иконка дома или ещё и номер.
+// Считаем медиану по посёлку один раз (в долях мира), дальше умножаем на
+// размер мира — это дешевле, чем мерить каждый полигон на каждый зум.
+
+/** Медианная ширина участка в долях экватора. 0, если геометрии нет. */
+export function medianPlotSpan(plots: Plot[]): number {
+  const spans: number[] = [];
+  for (const p of plots) {
+    if (!p.coords || p.coords.length < 3) continue;
+    let minLon = Infinity;
+    let maxLon = -Infinity;
+    for (const [, lon] of p.coords) {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+    }
+    if (Number.isFinite(minLon) && maxLon > minLon) spans.push((maxLon - minLon) / 360);
+  }
+  if (spans.length === 0) return 0;
+  spans.sort((a, b) => a - b);
+  return spans[spans.length >> 1];
+}
+
+/** Ширина участка в пикселях экрана на этом зуме. */
+export function plotPixels(span: number, zoom: number): number {
+  return span * TILE * 2 ** zoom;
+}
+
+// ── группировка маркеров ────────────────────────────────────────
+// Главная беда прошлой карты: на общем плане соседние кружки налезали
+// друг на друга и номера сливались в «4484 487». Соседние участки в
+// «Фаворите» стоят в 9 экранных пикселях друг от друга — кружок с
+// читаемым номером туда не помещается физически, сколько его ни крась.
+//
+// Поэтому на каждом зуме считаем экранные координаты и жадно склеиваем
+// всё, что ближе minDist, в одну группу с числом. Группа из одного
+// участка — это обычный кружок с номером. Разъезжаются они сами: чем
+// ближе зум, тем больше расстояние в пикселях.
+//
+// Жадный проход детерминирован: порядок входного массива фиксирован
+// (порядок участков из API), центр группы пересчитывается по мере
+// набора, поэтому один и тот же зум всегда даёт одну и ту же картинку.
+
+export interface PlotCluster {
+  /** Стабильный ключ для React — номер первого участка группы. */
+  key: string;
+  center: LngLat;
+  plots: Plot[];
+  /** Габариты центров группы — по ним кнопка «разложить» подбирает зум. */
+  bounds: LngLatBounds;
+}
+
+interface Bucket {
+  plots: Plot[];
+  x: number;
+  y: number;
+}
+
 /**
- * Размер самого кадра карты под конкретный посёлок.
- *
- * Раньше кадр был фиксированным (70svh на телефоне, 74vh на десктопе), и
- * посёлок в него вписывался «по контейну»: у «Фаворита» пропорции 1,36:1,
- * а мобильный кадр — 0,6:1, поэтому по ширине посёлок ложился впритык, а по
- * высоте занимал треть — остальное добирали соседние деревни. На десктопе
- * ровно наоборот: кадр 2:1, посёлок упирался в высоту, а по бокам оставалось
- * полкадра окрестностей.
- *
- * Поэтому кадр подгоняем под пропорции посёлка: свободную область (кадр
- * минус отступы под панели) делаем такой же формы, что и bounds. Тогда
- * посёлок заполняет кадр по обеим осям, оставаясь целиком видимым.
- *
- * Ограничители: по ширине не больше доступной и не меньше minW (иначе на
- * широком мониторе вытянутый посёлок сжал бы карту в марку), по высоте — не
- * выше maxH (кадр обязан помещаться в экран без прокрутки) и не ниже minH.
+ * @param radiusOf экранный радиус значка группы из n участков — по нему
+ *   решается, задевают ли две группы друг друга.
+ * @param gap просвет между соседними значками, px.
  */
-export function frameSize(
-  bounds: LngLatBounds,
-  availW: number,
-  maxH: number,
-  pad: Padding,
-  limits: { minW: number; minH: number },
-): { w: number; h: number } {
-  const [[minLon, minLat], [maxLon, maxLat]] = bounds;
+export function clusterPlots(
+  plots: Plot[],
+  zoom: number,
+  radiusOf: (count: number) => number,
+  gap: number,
+): PlotCluster[] {
+  const world = TILE * 2 ** zoom;
+  const n = plots.length;
 
-  const wFrac = Math.max((maxLon - minLon) / 360, 1e-9);
-  const hFrac = Math.max(mercY(minLat) - mercY(maxLat), 1e-9);
-  const aspect = wFrac / hFrac;
+  const xs = new Float64Array(n);
+  const ys = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const [lat, lon] = plots[i].center;
+    xs[i] = ((lon + 180) / 360) * world;
+    ys[i] = mercY(lat) * world;
+  }
 
-  const roomW = Math.max(48, availW - pad.left - pad.right);
-  const roomH = Math.max(48, maxH - pad.top - pad.bottom);
+  // Первый проход — жадный, по одиночному радиусу. Он снимает основную
+  // массу: соседи по улице стоят вплотную и схлопываются сразу.
+  const solo = radiusOf(1) * 2 + gap;
+  const solo2 = solo * solo;
+  const taken = new Uint8Array(n);
+  const buckets: Bucket[] = [];
 
-  const innerW = Math.min(roomW, roomH * aspect);
-  const innerH = innerW / aspect;
+  for (let i = 0; i < n; i++) {
+    if (taken[i]) continue;
+    taken[i] = 1;
+    const b: Bucket = { plots: [plots[i]], x: xs[i], y: ys[i] };
+    let sumX = xs[i];
+    let sumY = ys[i];
+    for (let j = i + 1; j < n; j++) {
+      if (taken[j]) continue;
+      const dx = xs[j] - b.x;
+      const dy = ys[j] - b.y;
+      if (dx * dx + dy * dy > solo2) continue;
+      taken[j] = 1;
+      b.plots.push(plots[j]);
+      sumX += xs[j];
+      sumY += ys[j];
+      b.x = sumX / b.plots.length;
+      b.y = sumY / b.plots.length;
+    }
+    buckets.push(b);
+  }
 
-  return {
-    w: Math.round(Math.min(availW, Math.max(limits.minW, innerW + pad.left + pad.right))),
-    h: Math.round(Math.min(maxH, Math.max(limits.minH, innerH + pad.top + pad.bottom))),
-  };
+  // Второй этап. Значок группы крупнее одиночного кружка, а центр группы
+  // уезжает к её середине — из-за этого после первого прохода соседний
+  // одиночка всё ещё может оказаться под значком. Досклеиваем, пока
+  // пересечения есть; пять проходов с запасом хватает даже на плотную
+  // сетку, а бесконечного цикла при этом заведомо нет.
+  for (let pass = 0; pass < 5; pass++) {
+    let merged = false;
+    for (let i = 0; i < buckets.length; i++) {
+      for (let j = i + 1; j < buckets.length; j++) {
+        const a = buckets[i];
+        const c = buckets[j];
+        const need = radiusOf(a.plots.length) + radiusOf(c.plots.length) + gap;
+        const dx = a.x - c.x;
+        const dy = a.y - c.y;
+        if (dx * dx + dy * dy > need * need) continue;
+        const total = a.plots.length + c.plots.length;
+        a.x = (a.x * a.plots.length + c.x * c.plots.length) / total;
+        a.y = (a.y * a.plots.length + c.y * c.plots.length) / total;
+        a.plots.push(...c.plots);
+        buckets.splice(j, 1);
+        j -= 1;
+        merged = true;
+      }
+    }
+    if (!merged) break;
+  }
+
+  return buckets.map((b) => {
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+    let minLon = Infinity;
+    let maxLon = -Infinity;
+    for (const p of b.plots) {
+      const [lat, lon] = p.center;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+    }
+    return {
+      key: b.plots[0].number,
+      center: [(b.x / world) * 360 - 180, invMercY(b.y / world)] as LngLat,
+      plots: b.plots,
+      bounds: [
+        [minLon, minLat],
+        [maxLon, maxLat],
+      ] as LngLatBounds,
+    };
+  });
 }
 
 /** Уникальные УТП по всем участкам — из них собираем фильтр «Преимущества». */

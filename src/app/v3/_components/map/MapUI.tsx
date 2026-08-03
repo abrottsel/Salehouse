@@ -1,29 +1,39 @@
 "use client";
 
 /**
- * Интерфейс поверх карты генплана: фильтры, легенда с «глазами»,
- * колонка управления, карточка участка, шторка для мобильного.
+ * Интерфейс поверх карты генплана: верхняя панель, фильтры, легенда,
+ * колонка управления, карточка участка, превью для мобильного.
+ *
+ * Геометрия снята с генплана Земекс на 430×932 и повторена один в один:
+ * круглые кнопки 48×48, вертикальный шаг колонки 60, отступы 12–14,
+ * чип «Фильтры» 134×48 со шрифтом 16/600, кнопка навигации 52×52,
+ * кнопка-«ещё» 38×38. Оформление наше: тёмное стекло вместо их белых
+ * кнопок, изумрудный акцент вместо их зелёного, скругления панелей
+ * 24–28px вместо их 20.
  *
  * Всё здесь — чистая презентация: состояние живёт в PlotMapDark.
  */
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Check,
-  ChevronDown,
   Eye,
   EyeOff,
   Layers,
   LocateFixed,
   Map as MapIcon,
   Maximize2,
+  Minimize2,
   Minus,
+  Home,
   Plus,
   RotateCcw,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
-import { useRef, type ReactNode } from "react";
+import { useRef, type CSSProperties, type ReactNode } from "react";
 
+import { glassStyle } from "../ui/primitives";
 import { money } from "../shared";
 import {
   RESERVED_COLOR,
@@ -34,149 +44,199 @@ import {
   type PlotKind,
 } from "./types";
 
-/** Стекло панелей — тот же рецепт, что у карточек /v3. */
-const GLASS = {
-  backdropFilter: "blur(18px) saturate(1.5)",
-  WebkitBackdropFilter: "blur(18px) saturate(1.5)",
-  background: "linear-gradient(160deg, rgba(14,18,24,0.90), rgba(9,12,16,0.95))",
+/** Стекло панелей. Тени глубже, чем у прототипа: подложка светлая. */
+const GLASS: CSSProperties = {
+  ...glassStyle,
   boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.14), 0 24px 60px -18px rgba(0,0,0,0.85)",
-} as const;
+    "inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -0.5px 0 rgba(255,255,255,0.05), 0 10px 28px -6px rgba(3,8,19,0.45)",
+};
 
-const CHIP_BASE =
-  "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition-colors";
+/** Шаг колонки управления у Земекс — 60px при кнопке 48. */
+const RAIL_GAP = 12;
 
 // ─────────────────────────────────────────────────────────────────
-// Фильтры
+// Круглая кнопка карты
 // ─────────────────────────────────────────────────────────────────
 
-export type ChipId = "area" | "price" | "status" | "utp" | null;
+export function MapRoundButton({
+  size = 48,
+  tone = "glass",
+  active = false,
+  label,
+  title,
+  onClick,
+  children,
+}: {
+  size?: number;
+  tone?: "glass" | "accent" | "dim";
+  active?: boolean;
+  label: string;
+  title?: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  const style: CSSProperties =
+    tone === "accent"
+      ? {
+          width: size,
+          height: size,
+          background: "#10b981",
+          color: "#04140c",
+          boxShadow: "0 4px 16px rgba(16,185,129,0.45)",
+        }
+      : tone === "dim"
+        ? {
+            width: size,
+            height: size,
+            background: "rgba(10,16,26,0.5)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            boxShadow: "0 6px 18px rgba(3,8,19,0.28)",
+          }
+        : { width: size, height: size, ...GLASS };
 
-export function FilterBar({
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={title ?? label}
+      className={`grid shrink-0 place-items-center rounded-full transition-transform active:scale-95 ${
+        tone === "accent"
+          ? ""
+          : active
+            ? "text-emerald-300"
+            : "text-white/80 hover:text-white"
+      }`}
+      style={style}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Фильтры: чип 134×48 + панель
+// ─────────────────────────────────────────────────────────────────
+
+export function FilterChip({
   open,
-  onOpen,
+  active,
+  onClick,
+}: {
+  open: boolean;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={open}
+      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full text-[16px] font-semibold transition-colors"
+      style={{
+        width: 134,
+        height: 48,
+        ...(active
+          ? {
+              background: "#10b981",
+              color: "#04140c",
+              boxShadow: "0 4px 16px rgba(16,185,129,0.45)",
+            }
+          : { ...GLASS, color: "rgba(255,255,255,0.9)" }),
+      }}
+    >
+      <SlidersHorizontal className="h-[18px] w-[18px]" />
+      Фильтры
+    </button>
+  );
+}
+
+export function FilterPanel({
   filters,
   onChange,
   onReset,
   hasFilters,
   utpOptions,
   matchCount,
+  onClose,
 }: {
-  open: ChipId;
-  onOpen: (id: ChipId) => void;
   filters: Filters;
   onChange: (next: Filters) => void;
   onReset: () => void;
   hasFilters: boolean;
   utpOptions: string[];
   matchCount: number;
+  onClose: () => void;
 }) {
-  const chip = (id: Exclude<ChipId, null>, label: string, on: boolean) => (
-    <button
-      type="button"
-      onClick={() => onOpen(open === id ? null : id)}
-      aria-expanded={open === id}
-      className={`${CHIP_BASE} ${
-        on
-          ? "bg-emerald-400 text-[#08120c] shadow-[0_6px_20px_-6px_rgba(52,211,153,0.8)]"
-          : "bg-[#0e1218]/85 text-white/80 ring-1 ring-white/12 hover:bg-[#161c25]/90"
-      }`}
-    >
-      {label}
-      <ChevronDown
-        className={`h-3.5 w-3.5 transition-transform ${open === id ? "rotate-180" : ""}`}
-      />
-    </button>
-  );
-
-  const areaOn = filters.areaMin !== "" || filters.areaMax !== "";
-  const priceOn = filters.priceMin !== "" || filters.priceMax !== "";
-
   return (
-    <div className="pointer-events-auto relative">
-      <div
-        className="flex items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        {chip("area", "Площадь", areaOn)}
-        {chip("price", "Цена", priceOn)}
-        {chip("status", "Статус", filters.statuses.length > 0)}
-        {utpOptions.length > 0 && chip("utp", "Преимущества", filters.utp.length > 0)}
-        {hasFilters && (
-          <>
-            <button
-              type="button"
-              onClick={onReset}
-              className={`${CHIP_BASE} bg-white/[0.07] text-white/65 ring-1 ring-white/12 hover:text-white`}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Сбросить
-            </button>
-            {/* Счётчик держим в самой строке чипов: выпадашка чипа
-                накрывает всё, что под строкой, и результат прятался. */}
-            <span
-              className={`${CHIP_BASE} bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-400/25`}
-            >
-              <span className="tabular-nums">{matchCount}</span> подходит
-            </span>
-          </>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: 14, scale: 0.99 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 12, scale: 0.99 }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      className="pointer-events-auto flex max-h-full w-full flex-col overflow-hidden rounded-[28px] sm:w-[340px]"
+      style={GLASS}
+    >
+      <div className="flex items-center justify-between gap-3 px-5 pt-4">
+        <span className="text-[15px] font-extrabold text-white/90">Фильтры</span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Закрыть фильтры"
+          className="-mr-1 grid h-9 w-9 place-items-center rounded-full text-white/55 hover:bg-white/10 hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-      <AnimatePresence>
-        {open === "area" && (
-          <Popup key="area" title="Площадь, соток" onClose={() => onOpen(null)}>
-            <RangeRow
-              from={filters.areaMin}
-              to={filters.areaMax}
-              onFrom={(v) => onChange({ ...filters, areaMin: v })}
-              onTo={(v) => onChange({ ...filters, areaMax: v })}
-              placeholderFrom="от"
-              placeholderTo="до"
-            />
-          </Popup>
-        )}
-        {open === "price" && (
-          <Popup key="price" title="Цена участка, млн ₽" onClose={() => onOpen(null)}>
-            <RangeRow
-              from={filters.priceMin}
-              to={filters.priceMax}
-              onFrom={(v) => onChange({ ...filters, priceMin: v })}
-              onTo={(v) => onChange({ ...filters, priceMax: v })}
-              placeholderFrom="от"
-              placeholderTo="до"
-            />
-          </Popup>
-        )}
-        {open === "status" && (
-          <Popup key="status" title="Статус" onClose={() => onOpen(null)}>
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-4 pt-3">
+        <Group title="Площадь, соток">
+          <RangeRow
+            from={filters.areaMin}
+            to={filters.areaMax}
+            onFrom={(v) => onChange({ ...filters, areaMin: v })}
+            onTo={(v) => onChange({ ...filters, areaMax: v })}
+          />
+        </Group>
+
+        <Group title="Цена участка, млн ₽">
+          <RangeRow
+            from={filters.priceMin}
+            to={filters.priceMax}
+            onFrom={(v) => onChange({ ...filters, priceMin: v })}
+            onTo={(v) => onChange({ ...filters, priceMax: v })}
+          />
+        </Group>
+
+        <Group title="Статус">
+          <div className="space-y-1">
+            {(
+              [
+                ["free", "Свободен"],
+                ["reserved", "Забронирован"],
+              ] as [PlotKind, string][]
+            ).map(([id, label]) => (
+              <CheckRow
+                key={id}
+                label={label}
+                checked={filters.statuses.includes(id)}
+                onToggle={() =>
+                  onChange({
+                    ...filters,
+                    statuses: filters.statuses.includes(id)
+                      ? filters.statuses.filter((s) => s !== id)
+                      : [...filters.statuses, id],
+                  })
+                }
+              />
+            ))}
+          </div>
+        </Group>
+
+        {utpOptions.length > 0 && (
+          <Group title="Преимущества">
             <div className="space-y-1">
-              {(
-                [
-                  ["free", "Свободен"],
-                  ["reserved", "Забронирован"],
-                ] as [PlotKind, string][]
-              ).map(([id, label]) => (
-                <CheckRow
-                  key={id}
-                  label={label}
-                  checked={filters.statuses.includes(id)}
-                  onToggle={() =>
-                    onChange({
-                      ...filters,
-                      statuses: filters.statuses.includes(id)
-                        ? filters.statuses.filter((s) => s !== id)
-                        : [...filters.statuses, id],
-                    })
-                  }
-                />
-              ))}
-            </div>
-          </Popup>
-        )}
-        {open === "utp" && (
-          <Popup key="utp" title="Преимущества" onClose={() => onOpen(null)}>
-            <div className="max-h-[240px] space-y-1 overflow-y-auto">
               {utpOptions.map((u) => (
                 <CheckRow
                   key={u}
@@ -193,45 +253,41 @@ export function FilterBar({
                 />
               ))}
             </div>
-          </Popup>
+          </Group>
         )}
-      </AnimatePresence>
+      </div>
 
-    </div>
-  );
-}
-
-function Popup({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.16 }}
-      className="absolute left-0 top-full z-30 mt-2 w-[268px] rounded-[20px] p-4"
-      style={GLASS}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <span className="text-[13px] font-extrabold text-white/90">{title}</span>
+      <div className="flex items-center gap-2 border-t border-white/10 px-5 py-3">
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white/[0.07] px-4 text-[13px] font-bold text-white/70 ring-1 ring-white/12 transition-colors hover:text-white"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Сбросить
+          </button>
+        )}
         <button
           type="button"
           onClick={onClose}
-          aria-label="Закрыть"
-          className="-mr-1 -mt-1 grid h-7 w-7 place-items-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+          className="h-11 flex-1 rounded-full bg-emerald-500 text-[14px] font-bold text-[#04140c] transition-colors hover:bg-emerald-400"
         >
-          <X className="h-3.5 w-3.5" />
+          Показать <span className="tabular-nums">{matchCount}</span>
         </button>
       </div>
-      <div className="mt-3">{children}</div>
     </motion.div>
+  );
+}
+
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/40">
+        {title}
+      </div>
+      {children}
+    </div>
   );
 }
 
@@ -240,18 +296,14 @@ function RangeRow({
   to,
   onFrom,
   onTo,
-  placeholderFrom,
-  placeholderTo,
 }: {
   from: string;
   to: string;
   onFrom: (v: string) => void;
   onTo: (v: string) => void;
-  placeholderFrom: string;
-  placeholderTo: string;
 }) {
   const cls =
-    "h-10 w-full rounded-xl bg-black/35 px-3 text-[13px] font-bold tabular-nums text-white ring-1 ring-white/15 outline-none transition-shadow placeholder:font-normal placeholder:text-white/40 focus:ring-2 focus:ring-emerald-400/70";
+    "h-11 w-full rounded-2xl bg-black/35 px-3 text-[14px] font-bold tabular-nums text-white ring-1 ring-white/15 outline-none transition-shadow placeholder:font-normal placeholder:text-white/40 focus:ring-2 focus:ring-emerald-400/70";
   return (
     <div className="flex items-center gap-2">
       <input
@@ -259,8 +311,8 @@ function RangeRow({
         inputMode="decimal"
         value={from}
         onChange={(e) => onFrom(e.target.value)}
-        placeholder={placeholderFrom}
-        aria-label={placeholderFrom}
+        placeholder="от"
+        aria-label="от"
         className={cls}
       />
       <span className="text-white/30">—</span>
@@ -269,8 +321,8 @@ function RangeRow({
         inputMode="decimal"
         value={to}
         onChange={(e) => onTo(e.target.value)}
-        placeholder={placeholderTo}
-        aria-label={placeholderTo}
+        placeholder="до"
+        aria-label="до"
         className={cls}
       />
     </div>
@@ -291,7 +343,7 @@ function CheckRow({
       type="button"
       onClick={onToggle}
       aria-pressed={checked}
-      className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/[0.06]"
+      className="flex w-full items-center gap-2.5 rounded-2xl px-2 py-2.5 text-left transition-colors hover:bg-white/[0.06]"
     >
       <span
         className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-md transition-colors ${
@@ -300,10 +352,40 @@ function CheckRow({
       >
         {checked && <Check className="h-3 w-3 text-[#08120c]" strokeWidth={3.5} />}
       </span>
-      <span className={`text-[13px] ${checked ? "font-bold text-white" : "text-white/70"}`}>
+      <span className={`text-[14px] ${checked ? "font-bold text-white" : "text-white/70"}`}>
         {label}
       </span>
     </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Иконка дома на проданном участке
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * У эталона на каждом проданном участке нарисован домик — сразу видно,
+ * что там уже построились. Форма нарочно грубая: на общем плане клетка
+ * участка 10–11px, тонкие детали в ней превращаются в кашу.
+ */
+export function HouseGlyph({ size, muted = false }: { size: number; muted?: boolean }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="block"
+      style={{ filter: muted ? "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" : "none" }}
+    >
+      <path
+        d="M12 3 22 11.2h-3.2V21H5.2v-9.8H2z"
+        fill={muted ? "rgba(255,255,255,0.72)" : "#d3dae4"}
+        stroke={muted ? "rgba(15,23,42,0.55)" : "#8d99ab"}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -334,7 +416,7 @@ export function LegendPanel({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.98 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-auto w-[248px] rounded-[22px] p-3.5"
+      className="pointer-events-auto w-[252px] rounded-[24px] p-3.5"
       style={GLASS}
     >
       <div className="flex items-start justify-between gap-2">
@@ -364,14 +446,13 @@ export function LegendPanel({
               onClick={() => onToggle(i)}
               aria-pressed={!off}
               title={off ? "Показать участки этой цены" : "Скрыть участки этой цены"}
-              className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-left transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2 rounded-xl px-1.5 py-1.5 text-left transition-colors hover:bg-white/[0.06]"
             >
               <span
                 className={`h-3.5 w-3.5 shrink-0 rounded-full transition-opacity ${off ? "opacity-25" : ""}`}
                 style={{
                   background: tierColor(i),
-                  boxShadow: "0 0 0 1px rgba(0,0,0,0.45), 0 0 10px -2px currentColor",
-                  color: tierColor(i),
+                  boxShadow: "0 0 0 1px rgba(255,255,255,0.55)",
                 }}
               />
               <span
@@ -411,20 +492,31 @@ export function LegendPanel({
                   className="h-3.5 w-3.5 shrink-0 rounded-full"
                   style={{
                     background: RESERVED_COLOR,
-                    boxShadow: "0 0 0 1px rgba(0,0,0,0.45)",
+                    boxShadow: "0 0 0 1px rgba(255,255,255,0.55)",
                   }}
                 />
-                <span className="text-[12px] text-white/70">Резерв</span>
+                <span className="text-[12px] text-white/70">Бронь</span>
               </div>
             )}
             {hasSold && (
               <div className="flex items-center gap-2 px-1.5">
-                <span className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[3px] ring-1 ring-white/25">
-                  <span className="text-[7px] font-bold leading-none text-white/40">№</span>
+                <span className="grid h-3.5 w-3.5 shrink-0 place-items-center">
+                  <HouseGlyph size={14} />
                 </span>
-                <span className="text-[12px] text-white/70">Продан</span>
+                <span className="text-[12px] text-white/70">Продан, построен дом</span>
               </div>
             )}
+            <div className="flex items-center gap-2 px-1.5">
+              <span
+                className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full text-[8px] font-extrabold text-white"
+                style={{ background: "#111827", boxShadow: "0 0 0 1.5px #cbd5e1" }}
+              >
+                5
+              </span>
+              <span className="text-[12px] text-white/70">
+                Несколько участков рядом — нажмите
+              </span>
+            </div>
           </div>
         </>
       )}
@@ -439,91 +531,70 @@ export function LegendPanel({
 export function ControlRail({
   satellite,
   onToggleBase,
-  legendOpen,
-  onToggleLegend,
   onZoomIn,
   onZoomOut,
   onLocate,
   onHome,
+  fullscreen,
+  onToggleFullscreen,
   locating,
 }: {
   satellite: boolean;
   onToggleBase: () => void;
-  legendOpen: boolean;
-  onToggleLegend: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onLocate: () => void;
   onHome: () => void;
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
   locating: boolean;
 }) {
-  const btn =
-    "grid h-10 w-10 place-items-center text-white/75 transition-colors hover:bg-white/[0.12] hover:text-white active:scale-95";
   return (
-    <div className="pointer-events-auto flex flex-col items-end gap-2">
-      <div className="overflow-hidden rounded-[18px]" style={GLASS}>
-        <button
-          type="button"
-          onClick={onToggleBase}
-          aria-label={satellite ? "Переключить на схему" : "Переключить на спутник"}
-          title={satellite ? "Схема" : "Спутник"}
-          className={btn}
-        >
-          {satellite ? <MapIcon className="h-[18px] w-[18px]" /> : <Layers className="h-[18px] w-[18px]" />}
-        </button>
-        <div className="mx-2 h-px bg-white/10" />
-        <button
-          type="button"
-          onClick={onToggleLegend}
-          aria-label="Легенда"
-          aria-pressed={legendOpen}
-          title="Легенда"
-          className={`${btn} ${legendOpen ? "bg-white/[0.14] text-emerald-300" : ""}`}
-        >
-          <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" aria-hidden="true">
-            <circle cx="6" cy="7" r="2.4" fill="currentColor" />
-            <circle cx="6" cy="16" r="2.4" fill="currentColor" />
-            <path
-              d="M11 7h8M11 16h8"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div className="overflow-hidden rounded-[18px]" style={GLASS}>
-        <button type="button" onClick={onZoomIn} aria-label="Приблизить" className={btn}>
-          <Plus className="h-[18px] w-[18px]" strokeWidth={2.4} />
-        </button>
-        <div className="mx-2 h-px bg-white/10" />
-        <button type="button" onClick={onZoomOut} aria-label="Отдалить" className={btn}>
-          <Minus className="h-[18px] w-[18px]" strokeWidth={2.4} />
-        </button>
-      </div>
-
-      <div className="overflow-hidden rounded-[18px]" style={GLASS}>
-        <button
-          type="button"
-          onClick={onLocate}
-          aria-label="Моё местоположение"
-          title="Моё местоположение"
-          className={`${btn} ${locating ? "animate-pulse text-emerald-300" : ""}`}
-        >
-          <LocateFixed className="h-[18px] w-[18px]" />
-        </button>
-        <div className="mx-2 h-px bg-white/10" />
-        <button
-          type="button"
-          onClick={onHome}
-          aria-label="Показать посёлок целиком"
-          title="К посёлку"
-          className={`${btn} text-emerald-300 hover:text-emerald-200`}
-        >
-          <Maximize2 className="h-[18px] w-[18px]" />
-        </button>
-      </div>
+    <div
+      className="pointer-events-auto flex flex-col items-center"
+      style={{ gap: RAIL_GAP }}
+    >
+      <MapRoundButton label="Приблизить" onClick={onZoomIn}>
+        <Plus className="h-[20px] w-[20px]" strokeWidth={2.4} />
+      </MapRoundButton>
+      <MapRoundButton label="Отдалить" onClick={onZoomOut}>
+        <Minus className="h-[20px] w-[20px]" strokeWidth={2.4} />
+      </MapRoundButton>
+      <MapRoundButton
+        label={satellite ? "Переключить на схему" : "Переключить на спутник"}
+        title={satellite ? "Схема" : "Спутник"}
+        onClick={onToggleBase}
+        active={satellite}
+      >
+        {satellite ? (
+          <MapIcon className="h-[20px] w-[20px]" />
+        ) : (
+          <Layers className="h-[20px] w-[20px]" />
+        )}
+      </MapRoundButton>
+      <MapRoundButton label="Показать посёлок целиком" title="К посёлку" onClick={onHome}>
+        <Home className="h-[20px] w-[20px]" />
+      </MapRoundButton>
+      <MapRoundButton
+        size={52}
+        tone="accent"
+        label="Моё местоположение"
+        onClick={onLocate}
+      >
+        <LocateFixed className={`h-[21px] w-[21px] ${locating ? "animate-pulse" : ""}`} />
+      </MapRoundButton>
+      <MapRoundButton
+        size={38}
+        tone="dim"
+        label={fullscreen ? "Выйти из полноэкранной карты" : "Открыть на весь экран"}
+        onClick={onToggleFullscreen}
+      >
+        {fullscreen ? (
+          <Minimize2 className="h-[16px] w-[16px] text-white/85" />
+        ) : (
+          <Maximize2 className="h-[16px] w-[16px] text-white/85" />
+        )}
+      </MapRoundButton>
     </div>
   );
 }
@@ -554,9 +625,7 @@ export function PlotCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 18, scale: 0.98 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      // max-h-full: кадр карты теперь считается под пропорции посёлка и в
-      // альбомной ориентации бывает низким — карточка обязана в него влезть.
-      className="pointer-events-auto max-h-full w-full overflow-y-auto rounded-[22px] p-4 sm:w-[302px]"
+      className="pointer-events-auto max-h-full w-full overflow-y-auto rounded-[28px] p-4 sm:w-[320px]"
       style={GLASS}
     >
       <div className="flex items-start justify-between gap-2">
@@ -640,7 +709,7 @@ export function PlotCard({
         <button
           type="button"
           onClick={onBook}
-          className="mt-3.5 h-11 w-full rounded-full bg-emerald-500 text-[13px] font-bold text-[#06130c] transition-all hover:-translate-y-0.5 hover:bg-emerald-400"
+          className="mt-3.5 h-12 w-full rounded-full bg-emerald-500 text-[14px] font-bold text-[#06130c] transition-all hover:-translate-y-0.5 hover:bg-emerald-400"
         >
           Забронировать
         </button>
@@ -650,24 +719,23 @@ export function PlotCard({
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Состояния и шторка
+// Состояния и превью
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Мобильная шторка. Карта под ней уже отрисована и показывает генплан —
- * это превью, а не картинка-заглушка. Пока шторка на месте, карта не
- * получает касаний и страница листается как обычно.
+ * Превью на телефоне. Карта под ним уже отрисована и показывает генплан,
+ * но касаний не получает — страница листается как обычно. Тап открывает
+ * полноэкранный режим, как «Смотреть генплан» у Земекс.
  *
- * Осознанно без framer-motion. Появление и уход шторки шли через
- * AnimatePresence, а он снимает узел только по завершении exit-анимации —
- * то есть по rAF. В фоновой или задросселенной вкладке rAF не тикает, и
- * подпись «Коснитесь…» оставалась висеть поверх уже интерактивной карты.
- * Монтирование/размонтирование должно быть детерминированным.
+ * Осознанно без framer-motion. Появление и уход шли через AnimatePresence,
+ * а он снимает узел только по завершении exit-анимации — то есть по rAF.
+ * В фоновой или задросселенной вкладке rAF не тикает, и подпись оставалась
+ * висеть поверх уже интерактивной карты.
  *
  * Открываем по pointerup рядом с точкой нажатия, а не по click: на телефоне
  * браузер гасит click, если палец сместился на пару пикселей или страница
  * успела прокрутиться, и тап «не срабатывал». Порог в 14px оставляет
- * настоящий свайп-скролл странице — шторка при нём не снимается.
+ * настоящий свайп-скролл странице.
  */
 export function TouchGate({ onOpen }: { onOpen: () => void }) {
   const down = useRef<{ x: number; y: number } | null>(null);
@@ -689,22 +757,24 @@ export function TouchGate({ onOpen }: { onOpen: () => void }) {
         down.current = null;
       }}
       onClick={onOpen}
-      className="absolute inset-0 z-40 grid place-items-center bg-[#0b0e13]/35"
-      aria-label="Открыть карту"
+      className="absolute inset-0 z-40 flex items-end justify-center bg-[#0b0e13]/12 pb-16"
+      aria-label="Открыть карту на весь экран"
     >
       <span
-        className="rounded-full px-4 py-2.5 text-[13px] font-bold text-white"
-        style={GLASS}
+        className="inline-flex items-center gap-2 rounded-full px-5 text-[15px] font-bold text-white"
+        style={{ height: 48, ...GLASS }}
       >
-        Коснитесь, чтобы открыть карту
+        <Maximize2 className="h-[18px] w-[18px]" />
+        Смотреть генплан
       </span>
     </button>
   );
 }
 
+/** Каркас пустых состояний. Габариты те же, что у карты, — без скачка вёрстки. */
 export function MapShell({ children }: { children: ReactNode }) {
   return (
-    <div className="grid h-[70svh] max-h-[760px] min-h-[430px] place-items-center rounded-[28px] bg-white/[0.03] p-6 text-center ring-1 ring-white/10 sm:h-[74vh]">
+    <div className="ml-[calc(50%-50vw)] grid h-[100svh] w-screen place-items-center bg-white/[0.03] px-6 text-center ring-1 ring-white/10 sm:ml-0 sm:h-[min(calc(100svh-56px),860px)] sm:min-h-[520px] sm:w-full sm:rounded-[28px]">
       {children}
     </div>
   );
@@ -743,7 +813,7 @@ export function MapError({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-4 h-10 rounded-full bg-white/[0.09] px-5 text-[12px] font-bold text-white/85 ring-1 ring-white/15 transition-colors hover:bg-white/[0.16]"
+            className="mt-4 h-11 rounded-full bg-white/[0.09] px-5 text-[13px] font-bold text-white/85 ring-1 ring-white/15 transition-colors hover:bg-white/[0.16]"
           >
             Попробовать ещё раз
           </button>
