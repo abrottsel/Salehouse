@@ -7,6 +7,8 @@ import {
   useRef,
   useState,
   type ComponentType,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -34,12 +36,18 @@ import {
   EMPTY_FILTERS,
   filtersActive,
   fitView,
+  lngLatToScreen,
   medianPlotSpan,
   passesFilters,
+  plotBoxes,
   plotKind,
   plotPixels,
+  pointInRing,
   RESERVED_COLOR,
   ringToLngLat,
+  screenToLngLat,
+  SOLD_COLOR,
+  SOLD_FILL,
   textOn,
   tierColor,
   type Filters,
@@ -61,11 +69,20 @@ import {
  *   • Подложка СВЕТЛАЯ схема, а не спутник. На спутнике нарезка участков
  *     не видна вообще — зелёно-серое месиво. На схеме видно все клетки:
  *     белая заливка, тонкий серый контур. Спутник остаётся тумблером.
- *   • Цвет живёт в КРУЖКАХ, не в заливке: статус и цену несут маркеры с
- *     номером, границы участков нейтральные.
- *   • Проданные не исчезают, а уходят в фон: контур клетки + иконка дома
- *     внутри (у эталона ровно так — сразу видно, что там построились),
- *     номер проявляется, когда клетка вырастает настолько, что он влезает.
+ *   • На общем плане НЕТ НИ ОДНОГО НОМЕРА. Это главное, за счёт чего их
+ *     генплан выглядит чистым, а наш прошлый — рябым: у «Фаворита» 480
+ *     участков, и 480 подписей превращали карту в кадастровый просмотрщик.
+ *     Свободные несут только цвет — маленькие точки по цене за сотку.
+ *     Номер проявляется при приближении (см. showNumbers) и тем же цветом,
+ *     что и точка, чтобы связь «точка → номер» не рвалась.
+ *   • Проданные не исчезают, а уходят в фон: серая клетка + иконка дома
+ *     внутри (у эталона ровно так — сразу видно, что там построились).
+ *     Серый и есть признак статуса, номер у них тоже серый и тоже только
+ *     на близком зуме.
+ *   • Наведение курсора показывает номер: подсветка контура клетки плюс
+ *     пилюля с номером. Попадание считаем сами (см. onMapMouseMove) —
+ *     ymaps3 отдаёт hover только маркерам, а подсвечивать надо и клетки
+ *     проданных, у которых маркера нет.
  *   • Карта во весь экран, а не карточкой в странице: на телефоне кадр
  *     100svh во всю ширину, тап открывает полноэкранный режим без шапки.
  *   • Колесо мыши не зумит: behaviors без scrollZoom, ровно как у них
@@ -148,10 +165,25 @@ const PADDING_MOBILE: Padding = { top: 118, right: 34, bottom: 74, left: 34 };
  * район: рисуем только контуры, маркеры проданных не мешаются.
  */
 const SOLD_GLYPH_PX = 9;
-/** С этой ширины клетки под иконкой дома помещается ещё и номер. */
-const SOLD_NUMBER_PX = 19;
 
-/** Диаметр кружка участка. Замер с генплана Земекс: 32×32 при шрифте 16. */
+/**
+ * Когда показывать номера участков.
+ *
+ * Порог обязан быть ОТНОСИТЕЛЬНЫМ, а не «клетка шире N пикселей»: на
+ * 1440×900 общий план «Фаворита» даёт клетку под 45px, на 430×932 — 15px.
+ * Абсолютный порог означал бы «на десктопе номера видны сразу», то есть
+ * ровно ту рябь, из-за которой их и убрали. Считаем от посадки «домой»:
+ * пока пользователь не приблизился хотя бы на ступень зума — номеров нет.
+ *
+ * 0.7 подобрано под округление zoomStep до 0,5: одно нажатие «+» всегда
+ * даёт минимум +0.75 к шагу, а сама посадка — максимум +0.25. То есть на
+ * общем плане номеров не будет никогда, а после первого нажатия — будут.
+ */
+const NUMBER_ZOOM_DELTA = 0.7;
+/** И страховка снизу: в клетку уже 24px номер физически не влезает. */
+const NUMBER_MIN_PX = 24;
+
+/** Диаметр кружка выбранного участка. Замер с генплана Земекс: 32×32. */
 const CIRCLE_D = 32;
 
 function circleDiameter(zoom: number): number {
@@ -163,6 +195,48 @@ function numberFont(d: number, len: number): number {
   const k = len >= 4 ? 0.34 : len === 3 ? 0.42 : 0.5;
   return Math.max(9, Math.round(d * k * 10) / 10);
 }
+
+/**
+ * Диаметр цветной точки свободного участка. Мельче прежнего кружка с
+ * номером (32px) — точки на общем плане почти не задевают друг друга,
+ * поэтому и группировать приходится втрое реже.
+ */
+function dotDiameter(cellPx: number): number {
+  return Math.max(11, Math.min(18, Math.round(cellPx * 0.42)));
+}
+
+/** Кегль номера рядом с точкой. */
+function labelFont(cellPx: number): number {
+  return Math.max(10, Math.min(14, Math.round(cellPx * 0.3)));
+}
+
+/**
+ * Обводка подписи. Номер красим в цвет тира, а цветной текст на светлой
+ * схеме сам по себе не читается — держим его в белом ореоле (на спутнике
+ * в чёрном).
+ */
+function labelHalo(satellite: boolean): string {
+  return satellite
+    ? "0 1px 3px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.9)"
+    : "0 0 3px #fff, 0 0 3px #fff, 0 1px 2px #fff, 0 -1px 2px #fff";
+}
+
+/**
+ * Кастомизация схемы: гасим подписи точечных объектов.
+ *
+ * Зачем: в «Фаворите» адреса домов зарегистрированы по номерам участков, и
+ * схема Яндекса печатает свой слой тех же серых цифр поверх нашей нарезки.
+ * Свои номера с общего плана мы убрали, а эти оставались — и рябь никуда не
+ * девалась. Проверено перебором: подписи домов не отсекаются ни по тегу
+ * building, ни по structure/address — они приходят с тегом admin, поэтому
+ * режем именно текст точечных подписей целиком.
+ *
+ * Что при этом остаётся: иконки POI (label.icon не тронут), названия улиц и
+ * рек — это линейные подписи, они другого типа.
+ */
+const SCHEME_NO_POINT_LABELS = [
+  { types: "point", elements: "label.text", stylers: [{ visibility: "off" }] },
+] as const;
 
 /** Плашка названия — то же стекло, что у кнопок, только не круглое. */
 const PILL = {
@@ -180,6 +254,28 @@ function hasCenter(p: Plot): boolean {
 /** [lat, lon] центра участка → порядок, в котором ymaps3 ждёт координаты. */
 function centerLngLat(p: Plot): LngLat {
   return [p.center[1], p.center[0]];
+}
+
+/** Цвет участка: бронь синяя, проданный серый, остальные — по цене. */
+function plotAccent(kind: PlotKind, tier: number): string {
+  if (kind === "reserved") return RESERVED_COLOR;
+  if (kind === "sold") return SOLD_COLOR;
+  return tierColor(tier);
+}
+
+/** Что сейчас под курсором. Группу подписываем количеством, не номером. */
+type Hover =
+  | { kind: "plot"; plot: Plot }
+  | { kind: "cluster"; cluster: PlotCluster };
+
+function sameHover(a: Hover | null, b: Hover | null): boolean {
+  if (a === null || b === null) return a === b;
+  if (a.kind !== b.kind) return false;
+  return a.kind === "plot" && b.kind === "plot"
+    ? a.plot.number === b.plot.number
+    : a.kind === "cluster" && b.kind === "cluster"
+      ? a.cluster.key === b.cluster.key
+      : false;
 }
 
 /**
@@ -209,6 +305,9 @@ export default function PlotMapDark({
   const [attempt, setAttempt] = useState(0);
 
   const [selected, setSelected] = useState<Plot | null>(null);
+  /** Под курсором. На тач-устройствах всегда null — там номер даёт тап. */
+  const [hover, setHover] = useState<Hover | null>(null);
+  const [canHover, setCanHover] = useState(false);
   const [booking, setBooking] = useState(false);
   /** Схема по умолчанию: на спутнике нарезки участков не видно вообще. */
   const [satellite, setSatellite] = useState(false);
@@ -365,6 +464,17 @@ export default function PlotMapDark({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
+  // Наведение есть только там, где есть настоящий курсор. На телефоне
+  // синтетический hover от тапа залипал бы подсветкой на случайной клетке.
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => setCanHover(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   const openFullscreen = useCallback(() => {
     touchedRef.current = false;
     setFiltersOpen(false);
@@ -494,6 +604,21 @@ export default function PlotMapDark({
   const circleD = circleDiameter(zoomStep);
   /** Ширина клетки участка на экране — от неё зависит вид проданных. */
   const cellPx = plotPixels(plotSpan, zoomStep);
+  /** Диаметр цветной точки свободного участка на этом зуме. */
+  const dotD = dotDiameter(cellPx);
+
+  /** Зум посадки «домой» — от него отсчитывается «приблизился». */
+  const homeZoom = useMemo(
+    () => (bounds && frame ? fitView(bounds, frame, frame.pad, ZOOM_RANGE).zoom : null),
+    [bounds, frame],
+  );
+
+  /**
+   * Номера участков. На общем плане их нет ни у кого — ни у свободных, ни
+   * у проданных: это и есть главная правка после сверки с эталоном.
+   */
+  const showNumbers =
+    homeZoom !== null && zoomStep >= homeZoom + NUMBER_ZOOM_DELTA && cellPx >= NUMBER_MIN_PX;
 
   const selectedNumber = selected?.number ?? null;
 
@@ -508,18 +633,24 @@ export default function PlotMapDark({
     );
   }, [data, matched, selectedNumber]);
 
+  /** Диаметр значка: точка участка или чуть большее кольцо группы. */
+  const badgeDiameter = useCallback(
+    (count: number) => (count > 1 ? dotD + 7 + Math.min(6, count) : dotD),
+    [dotD],
+  );
+
   /**
-   * Радиус значка группы: у одиночки это сам кружок, у группы — он же
-   * плюс прибавка на количество, и в обоих случаях ещё белое кольцо.
-   * clusterPlots по этому радиусу и решает, что склеивать.
+   * Радиус значка вместе с белой обводкой — по нему clusterPlots решает,
+   * что склеивать. Точки мельче прежних кружков с номером, поэтому и
+   * групп теперь заметно меньше: большинство свободных стоит поодиночке.
    */
   const badgeRadius = useCallback(
-    (count: number) => (circleD + (count > 1 ? Math.min(10, count) : 0)) / 2 + 4,
-    [circleD],
+    (count: number) => badgeDiameter(count) / 2 + 2,
+    [badgeDiameter],
   );
 
   const clusters = useMemo(
-    () => clusterPlots(pickable, zoomStep, badgeRadius, 4),
+    () => clusterPlots(pickable, zoomStep, badgeRadius, 3),
     [pickable, zoomStep, badgeRadius],
   );
 
@@ -549,6 +680,94 @@ export default function PlotMapDark({
     [frame, plotSpan, applyView],
   );
 
+  // ── попадание курсора/пальца по карте ──────────────────────
+  // Считаем сами и наведение, и выбор. Причины две:
+  //   1) ymaps3 отдаёт события мыши только объектам со своим DOM, то есть
+  //      маркерам, — а подсветить и выбрать нужно любую клетку, включая
+  //      проданную, у которой на общем плане маркер маленький (домик) или
+  //      его нет вовсе;
+  //   2) клик по самому полигону в векторном слое доходит не всегда, и
+  //      раньше это прикрывал крупный маркер с номером в каждой клетке.
+  //      Номера убраны — прикрывать стало нечем, поэтому выбор участка
+  //      теперь honest hit-test, а не надежда на попадание в значок.
+  // Проекция здесь та же, что в fitView и группировке, поэтому попадание
+  // совпадает с картинкой пиксель в пиксель. Порядок проверки — как на
+  // экране: сначала точки (они сверху и крупнее своей клетки), потом сами
+  // клетки.
+
+  /** Габариты клеток — грубый отсев перед ray casting. */
+  const boxes = useMemo(() => (data ? plotBoxes(data.plots) : []), [data]);
+
+  const hitTest = useCallback(
+    (clientX: number, clientY: number, rect: DOMRect): Hover | null => {
+      const cam = cameraRef.current;
+      if (!cam || rect.width < 1 || rect.height < 1) return null;
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const size = { w: rect.width, h: rect.height };
+
+      let found: Hover | null = null;
+      let best = Infinity;
+      for (const cl of clusters) {
+        const s = lngLatToScreen(cl.center, cam, size);
+        const r = badgeRadius(cl.plots.length) + 3;
+        const d2 = (s.x - x) ** 2 + (s.y - y) ** 2;
+        if (d2 > r * r || d2 >= best) continue;
+        best = d2;
+        found =
+          cl.plots.length === 1
+            ? { kind: "plot", plot: cl.plots[0] }
+            : { kind: "cluster", cluster: cl };
+      }
+      if (found) return found;
+
+      const [lon, lat] = screenToLngLat(x, y, cam, size);
+      for (const b of boxes) {
+        if (lon < b.minLon || lon > b.maxLon || lat < b.minLat || lat > b.maxLat) continue;
+        if (pointInRing(lon, lat, b.plot.coords)) return { kind: "plot", plot: b.plot };
+      }
+      return null;
+    },
+    [clusters, boxes, badgeRadius],
+  );
+
+  const onMapMouseMove = useCallback(
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      if (!canHover) return;
+      const found = hitTest(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
+      setHover((prev) => (sameHover(prev, found) ? prev : found));
+    },
+    [canHover, hitTest],
+  );
+
+  const clearHover = useCallback(() => setHover(null), []);
+
+  /**
+   * Где нажали. Нужно, чтобы отличить выбор участка от перетаскивания
+   * карты: браузер и после драга шлёт click, а карта при этом уехала.
+   */
+  const pressRef = useRef<{ x: number; y: number } | null>(null);
+
+  const onMapPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    pressRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  const onMapClick = useCallback(
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      const start = pressRef.current;
+      pressRef.current = null;
+      // Сдвинулись больше чем на 6px — это был драг, а не выбор.
+      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6) return;
+
+      const found = hitTest(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
+      if (!found) return;
+      if (found.kind === "plot") selectPlot(found.plot);
+      else expandCluster(found.cluster);
+    },
+    [hitTest, selectPlot, expandCluster],
+  );
+
   // ── полигоны ───────────────────────────────────────────────
   // Нарезка обязана читаться: у проданных белая клетка с серым контуром,
   // у подходящих под фильтр — заливка цветом тира.
@@ -566,7 +785,7 @@ export default function PlotMapDark({
       const kind = kinds.get(p.number) ?? "other";
       const hit = matched.has(p.number);
       const sel = selectedNumber === p.number;
-      const accent = kind === "reserved" ? RESERVED_COLOR : tierColor(p.priceTier);
+      const accent = plotAccent(kind, p.priceTier);
 
       let fill = "#ffffff";
       let fillOpacity = idleFill;
@@ -574,6 +793,14 @@ export default function PlotMapDark({
       let strokeWidth = 1;
       let strokeOpacity = 0.9;
 
+      // Проданные — серые. Не «белые как все, только с домиком»: серая
+      // заливка и есть тот признак статуса, который просил заказчик, и
+      // читается он на любом зуме, без легенды и без номера.
+      if (kind === "sold") {
+        fill = SOLD_FILL;
+        fillOpacity = satellite ? 0.34 : 0.3;
+        strokeColor = satellite ? "#cbd5e1" : "#78889c";
+      }
       if (hit) {
         fill = accent;
         fillOpacity = 0.28;
@@ -605,13 +832,39 @@ export default function PlotMapDark({
     });
   }, [C, data, kinds, matched, selectedNumber, satellite, selectPlot]);
 
-  // ── проданные: домик в клетке, номер — когда клетка подросла ──
+  /**
+   * Подсветка клетки под курсором. Отдельным слоем поверх, а не сменой
+   * стиля в polygons: иначе каждое движение мыши перерисовывало бы все
+   * 480 полигонов посёлка.
+   */
+  const hoverShape = useMemo(() => {
+    if (!C || !hover || hover.kind !== "plot") return null;
+    const p = hover.plot;
+    if (!p.coords || p.coords.length < 3) return null;
+    const { YMapFeature } = C;
+    return (
+      <YMapFeature
+        geometry={{ type: "Polygon", coordinates: [ringToLngLat(p.coords)] }}
+        style={{
+          fill: "#0f172a",
+          fillOpacity: 0.08,
+          stroke: [
+            { color: satellite ? "#ffffff" : "#0f172a", width: 2.6, opacity: 0.95 },
+          ],
+          cursor: "pointer",
+        }}
+        onClick={() => selectPlot(p)}
+      />
+    );
+  }, [C, hover, satellite, selectPlot]);
+
+  // ── проданные: серый домик в серой клетке, номер — на близком зуме ──
   const soldMarkers = useMemo(() => {
     if (!C || !data || cellPx < SOLD_GLYPH_PX) return null;
     const { YMapMarker } = C;
     const glyph = Math.max(8, Math.min(16, Math.round(cellPx * 0.46)));
-    const showNumber = cellPx >= SOLD_NUMBER_PX;
-    const fs = Math.max(8, Math.min(12, Math.round(cellPx * 0.34)));
+    const fs = labelFont(cellPx);
+    const halo = labelHalo(satellite);
 
     return data.plots.map((p) => {
       if (matched.has(p.number) || p.number === selectedNumber) return null;
@@ -623,15 +876,20 @@ export default function PlotMapDark({
           zIndex={80}
           onClick={() => selectPlot(p)}
         >
-          <span className="flex -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none flex-col items-center leading-none">
-            <HouseGlyph size={glyph} muted={satellite} />
-            {showNumber && (
+          {/* Нулевой якорь: домик обязан стоять точно в центре клетки, а
+              номер — под ним, не утаскивая домик вверх. */}
+          <span className="relative block h-0 w-0 cursor-pointer select-none">
+            <span className="absolute block" style={{ left: -glyph / 2, top: -glyph / 2 }}>
+              <HouseGlyph size={glyph} muted={satellite} />
+            </span>
+            {showNumbers && (
               <span
-                className="mt-[1px] font-semibold tabular-nums"
+                className="absolute left-0 block -translate-x-1/2 whitespace-nowrap font-semibold leading-none tabular-nums"
                 style={{
+                  top: glyph / 2 + 2,
                   fontSize: fs,
-                  color: satellite ? "rgba(255,255,255,0.85)" : "#64748b",
-                  textShadow: satellite ? "0 1px 3px rgba(0,0,0,0.9)" : "none",
+                  color: satellite ? "rgba(255,255,255,0.88)" : SOLD_COLOR,
+                  textShadow: halo,
                 }}
               >
                 {p.number}
@@ -641,18 +899,20 @@ export default function PlotMapDark({
         </YMapMarker>
       );
     });
-  }, [C, data, matched, selectedNumber, cellPx, satellite, selectPlot]);
+  }, [C, data, matched, selectedNumber, cellPx, showNumbers, satellite, selectPlot]);
 
-  // ── свободные: кружок с номером, слипшиеся — одной группой ──
+  // ── свободные: цветная точка, номер только на близком зуме ──
   const freeMarkers = useMemo(() => {
     if (!C) return null;
     const { YMapMarker } = C;
+    const fs = labelFont(cellPx);
+    const halo = labelHalo(satellite);
 
     return clusters.map((cl) => {
       if (cl.plots.length === 1) {
         const p = cl.plots[0];
         const kind = kinds.get(p.number) ?? "other";
-        const accent = kind === "reserved" ? RESERVED_COLOR : tierColor(p.priceTier);
+        const accent = plotAccent(kind, p.priceTier);
         return (
           <YMapMarker
             key={`f-${cl.key}`}
@@ -660,33 +920,46 @@ export default function PlotMapDark({
             zIndex={300}
             onClick={() => selectPlot(p)}
           >
-            <span
-              className="block cursor-pointer select-none rounded-full text-center font-extrabold tabular-nums transition-transform hover:scale-110"
-              style={{
-                width: circleD,
-                height: circleD,
-                lineHeight: `${circleD}px`,
-                fontSize: numberFont(circleD, p.number.length),
-                marginLeft: -circleD / 2,
-                marginTop: -circleD / 2,
-                background: accent,
-                color: textOn(accent),
-                boxShadow:
-                  "0 0 0 1.5px rgba(255,255,255,0.95), 0 2px 9px rgba(15,23,42,0.35)",
-              }}
-            >
-              {p.number}
+            <span className="relative block h-0 w-0 cursor-pointer select-none">
+              <span
+                className="absolute block rounded-full transition-transform hover:scale-125"
+                style={{
+                  left: -dotD / 2,
+                  top: -dotD / 2,
+                  width: dotD,
+                  height: dotD,
+                  background: accent,
+                  boxShadow:
+                    "0 0 0 1.5px rgba(255,255,255,0.95), 0 2px 6px rgba(15,23,42,0.35)",
+                }}
+              />
+              {/* Номер тем же цветом, что и точка: связь «эта точка = этот
+                  номер» должна читаться без легенды. */}
+              {showNumbers && (
+                <span
+                  className="absolute left-0 block -translate-x-1/2 whitespace-nowrap font-extrabold leading-none tabular-nums"
+                  style={{
+                    top: dotD / 2 + 2,
+                    fontSize: fs,
+                    color: accent,
+                    textShadow: halo,
+                  }}
+                >
+                  {p.number}
+                </span>
+              )}
             </span>
           </YMapMarker>
         );
       }
 
-      // Группа: тёмная «монета» с количеством в кольце из цветов тиров,
-      // которые в неё попали. Силуэт специально другой, чем у кружка
-      // участка, — иначе «5» не отличить от участка № 5, — а кольцо не даёт
-      // потерять главное: по какой цене тут стоят участки.
-      const d = circleD + Math.min(10, cl.plots.length);
-      const inner = d - 7;
+      // Группа слипшихся точек. Без цифры: «23» на карте участков читается
+      // как «участок № 23» — ровно та путаница, из-за которой номера и
+      // убрали. Отличает её от точки силуэт — это кольцо, а не диск, — а
+      // цвета в кольце говорят, по какой цене внутри участки. Сколько их
+      // именно, показывает подсказка при наведении.
+      const d = badgeDiameter(cl.plots.length);
+      const hole = Math.max(4, Math.round(d * 0.34));
       return (
         <YMapMarker
           key={`c-${cl.key}`}
@@ -703,27 +976,34 @@ export default function PlotMapDark({
               marginTop: -d / 2,
               background: tierRing(cl),
               boxShadow:
-                "0 0 0 1.5px rgba(255,255,255,0.95), 0 3px 12px rgba(15,23,42,0.4)",
+                "0 0 0 1.5px rgba(255,255,255,0.95), 0 2px 8px rgba(15,23,42,0.4)",
             }}
             title={`${cl.plots.length} свободных участка рядом — нажмите, чтобы разложить`}
           >
             <span
-              className="block rounded-full text-center font-extrabold tabular-nums text-white"
+              className="block rounded-full"
               style={{
-                width: inner,
-                height: inner,
-                lineHeight: `${inner}px`,
-                fontSize: numberFont(inner, String(cl.plots.length).length),
-                background: "#111827",
+                width: hole,
+                height: hole,
+                background: satellite ? "rgba(15,23,42,0.85)" : "#ffffff",
               }}
-            >
-              {cl.plots.length}
-            </span>
+            />
           </span>
         </YMapMarker>
       );
     });
-  }, [C, clusters, kinds, circleD, selectPlot, expandCluster]);
+  }, [
+    C,
+    clusters,
+    kinds,
+    dotD,
+    badgeDiameter,
+    cellPx,
+    showNumbers,
+    satellite,
+    selectPlot,
+    expandCluster,
+  ]);
 
   // ── состояния ──────────────────────────────────────────────
   if (dataError || bundle.kind === "blocked") {
@@ -762,12 +1042,14 @@ export default function PlotMapDark({
   const selectedKind: PlotKind = selected
     ? (kinds.get(selected.number) ?? "other")
     : "other";
-  const selectedAccent = selected
-    ? selectedKind === "reserved"
-      ? RESERVED_COLOR
-      : tierColor(selected.priceTier)
-    : "#94a3b8";
+  const selectedAccent = selected ? plotAccent(selectedKind, selected.priceTier) : "#94a3b8";
   const selectedD = circleD + 8;
+
+  /** Цвет пилюли с номером под курсором — тот же, что у точки участка. */
+  const hoverInk =
+    hover && hover.kind === "plot"
+      ? plotAccent(kinds.get(hover.plot.number) ?? "other", hover.plot.priceTier)
+      : "#0f172a";
 
   /**
    * Содержимое кадра. Один и тот же узел живёт либо в странице, либо в
@@ -776,7 +1058,13 @@ export default function PlotMapDark({
    */
   const surface = (
     <div ref={setViewEl} className="absolute inset-0 overflow-hidden">
-      <div className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}>
+      <div
+        className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}
+        onMouseMove={onMapMouseMove}
+        onMouseLeave={clearHover}
+        onPointerDown={onMapPointerDown}
+        onClick={onMapClick}
+      >
         <YMap
           location={
             location ?? initialLocationRef.current ?? { center: [37.6173, 55.7558], zoom: 9 }
@@ -791,8 +1079,14 @@ export default function PlotMapDark({
           zoomRounding="smooth"
         >
           {/* Светлая схема — единственная подложка, на которой видно
-              нарезку участков. Спутник кладётся сверху по тумблеру. */}
-          <YMapDefaultSchemeLayer theme="light" />
+              нарезку участков. Спутник кладётся сверху по тумблеру.
+
+              Подписи домов у самой Яндекс-схемы гасим: в «Фаворите»
+              зарегистрированы адреса по номерам участков, и схема печатает
+              их поверх нарезки. Это те же серые цифры, из-за которых карта
+              и выглядела кадастровым просмотрщиком, только чужие — свои мы
+              уже убрали. Названия улиц и рек остаются. */}
+          <YMapDefaultSchemeLayer theme="light" customization={SCHEME_NO_POINT_LABELS} />
           {satellite && <YMapDefaultSatelliteLayer />}
           <YMapDefaultFeaturesLayer zIndex={2000} />
 
@@ -811,8 +1105,37 @@ export default function PlotMapDark({
           )}
 
           {polygons}
+          {hoverShape}
           {soldMarkers}
           {freeMarkers}
+
+          {/* Номер под курсором. На общем плане это единственный способ
+              узнать номер, не открывая карточку, — и ради него номера с
+              карты и убраны. */}
+          {hover && (
+            <YMapMarker
+              coordinates={
+                hover.kind === "plot" ? centerLngLat(hover.plot) : hover.cluster.center
+              }
+              zIndex={1400}
+            >
+              <span className="pointer-events-none relative block h-0 w-0">
+                <span
+                  className="absolute left-0 block -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-2 py-[3.5px] text-[12px] font-extrabold leading-none tabular-nums"
+                  style={{
+                    top: -(dotD / 2 + 6),
+                    background: "#ffffff",
+                    color: hoverInk,
+                    boxShadow: `0 0 0 1.5px ${hoverInk}, 0 4px 12px rgba(15,23,42,0.3)`,
+                  }}
+                >
+                  {hover.kind === "plot"
+                    ? `№ ${hover.plot.number}`
+                    : `Участков рядом: ${hover.cluster.plots.length}`}
+                </span>
+              </span>
+            </YMapMarker>
+          )}
 
           {selected && hasCenter(selected) && (
             <YMapMarker coordinates={centerLngLat(selected)} zIndex={1000}>

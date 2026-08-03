@@ -75,6 +75,15 @@ export const TIER_COLORS = [
  */
 export const RESERVED_COLOR = "#001eff";
 
+/**
+ * Проданные. Серый — единственный признак статуса: заливка клетки,
+ * контур, домик и номер берут его же, поэтому «продано» читается без
+ * заглядывания в легенду и не спорит с цветами тиров.
+ */
+export const SOLD_COLOR = "#64748b";
+/** Заливка клетки проданного — тот же серый, приглушённый до фона. */
+export const SOLD_FILL = "#94a3b8";
+
 export function tierColor(tier: number): string {
   return TIER_COLORS[tier % TIER_COLORS.length];
 }
@@ -207,6 +216,89 @@ export function fitView(
   const my = cy * world - (pad.top - pad.bottom) / 2;
 
   return { center: [(mx / world) * 360 - 180, invMercY(my / world)], zoom };
+}
+
+// ── экран ↔ карта ───────────────────────────────────────────────
+// Наведение курсора мы разбираем сами: ymaps3 отдаёт hover только тому,
+// у кого есть свой DOM (маркеры), а нам нужно подсвечивать и клетки
+// проданных, у которых на общем плане никакого маркера нет. Проекция та
+// же самая, по которой считается fitView и группировка, — поэтому
+// попадание совпадает с картинкой пиксель в пиксель.
+
+/** Точка карты → пиксель кадра (0,0 — левый верхний угол). */
+export function lngLatToScreen(
+  point: LngLat,
+  view: { center: LngLat; zoom: number },
+  size: { w: number; h: number },
+): { x: number; y: number } {
+  const world = TILE * 2 ** view.zoom;
+  return {
+    x:
+      (((point[0] + 180) / 360) - ((view.center[0] + 180) / 360)) * world +
+      size.w / 2,
+    y: (mercY(point[1]) - mercY(view.center[1])) * world + size.h / 2,
+  };
+}
+
+/** Пиксель кадра → точка карты. */
+export function screenToLngLat(
+  x: number,
+  y: number,
+  view: { center: LngLat; zoom: number },
+  size: { w: number; h: number },
+): LngLat {
+  const world = TILE * 2 ** view.zoom;
+  const wx = ((view.center[0] + 180) / 360) * world + (x - size.w / 2);
+  const wy = mercY(view.center[1]) * world + (y - size.h / 2);
+  return [(wx / world) * 360 - 180, invMercY(wy / world)];
+}
+
+/** Классический ray casting. Кольцо в порядке [lat, lon], как у нас в Plot. */
+export function pointInRing(
+  lon: number,
+  lat: number,
+  ring: [number, number][],
+): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [latI, lonI] = ring[i];
+    const [latJ, lonJ] = ring[j];
+    if (latI > lat === latJ > lat) continue;
+    if (lon < ((lonJ - lonI) * (lat - latI)) / (latJ - latI) + lonI) inside = !inside;
+  }
+  return inside;
+}
+
+export interface PlotBox {
+  plot: Plot;
+  minLon: number;
+  maxLon: number;
+  minLat: number;
+  maxLat: number;
+}
+
+/**
+ * Габариты каждого участка — грубый отсев перед ray casting: на 480
+ * участках «Фаворита» без него курсор считал бы полигоны целиком.
+ */
+export function plotBoxes(plots: Plot[]): PlotBox[] {
+  const out: PlotBox[] = [];
+  for (const plot of plots) {
+    if (!plot.coords || plot.coords.length < 3) continue;
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+    let minLon = Infinity;
+    let maxLon = -Infinity;
+    for (const [lat, lon] of plot.coords) {
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+    }
+    if (!Number.isFinite(minLat) || !Number.isFinite(minLon)) continue;
+    out.push({ plot, minLon, maxLon, minLat, maxLat });
+  }
+  return out;
 }
 
 // ── экранный размер участка ─────────────────────────────────────

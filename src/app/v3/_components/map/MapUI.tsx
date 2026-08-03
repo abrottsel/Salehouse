@@ -37,6 +37,7 @@ import { glassStyle } from "../ui/primitives";
 import { money } from "../shared";
 import {
   RESERVED_COLOR,
+  SOLD_COLOR,
   tierColor,
   textOn,
   type Filters,
@@ -500,18 +501,29 @@ export function LegendPanel({
             )}
             {hasSold && (
               <div className="flex items-center gap-2 px-1.5">
-                <span className="grid h-3.5 w-3.5 shrink-0 place-items-center">
-                  <HouseGlyph size={14} />
+                {/* Серая клетка с домиком — ровно то, что видно на карте. */}
+                <span
+                  className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[3px]"
+                  style={{
+                    background: "rgba(148,163,184,0.45)",
+                    boxShadow: `0 0 0 1px ${SOLD_COLOR}`,
+                  }}
+                >
+                  <HouseGlyph size={11} />
                 </span>
                 <span className="text-[12px] text-white/70">Продан, построен дом</span>
               </div>
             )}
             <div className="flex items-center gap-2 px-1.5">
+              {/* Кольцо, а не диск: так группа отличается от точки участка. */}
               <span
-                className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full text-[8px] font-extrabold text-white"
-                style={{ background: "#111827", boxShadow: "0 0 0 1.5px #cbd5e1" }}
+                className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full"
+                style={{
+                  background: "conic-gradient(from -90deg, #e66b19 0% 50%, #19dae6 50% 100%)",
+                  boxShadow: "0 0 0 1px rgba(255,255,255,0.55)",
+                }}
               >
-                5
+                <span className="block h-[5px] w-[5px] rounded-full bg-white" />
               </span>
               <span className="text-[12px] text-white/70">
                 Несколько участков рядом — нажмите
