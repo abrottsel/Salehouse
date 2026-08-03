@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 
 /**
@@ -31,13 +32,13 @@ export default function MapDisclosure() {
         </div>
       </div>
 
-      <a
-        href="/oferta"
+      <Link
+        href="/v3/oferta"
         className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 self-start rounded-full bg-white/[0.07] px-4 text-[12px] font-bold text-emerald-300 ring-1 ring-emerald-400/25 transition-colors hover:bg-white/[0.13] sm:self-auto"
       >
         Условия оферты
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </Link>
     </div>
   );
 }

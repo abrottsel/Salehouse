@@ -207,6 +207,9 @@ export default function MortgageCalc() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            // data-float-guard — под полупрозрачной подложкой модалки
+            // плавающие мессенджеры не должны просвечивать.
+            data-float-guard
             className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto bg-black/70 p-3 sm:items-center sm:p-6"
             style={lite ? undefined : { backdropFilter: "blur(6px)" }}
             onClick={() => setFormOpen(false)}

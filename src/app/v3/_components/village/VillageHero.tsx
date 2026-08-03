@@ -102,7 +102,9 @@ export default function VillageHero({
 
   return (
     <section
-      className="relative -mt-20 h-[100svh] min-h-[600px] w-full select-none overflow-hidden bg-black"
+      // v3-on-dark: герой — фото во весь экран с плотной вуалью, подписи
+      // остаются белыми и в дневной теме.
+      className="v3-on-dark relative -mt-20 h-[100svh] min-h-[600px] w-full select-none overflow-hidden bg-black"
       style={{ touchAction: "pan-y" }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}

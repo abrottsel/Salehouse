@@ -104,6 +104,10 @@ export default function ZemexxFrame({
     <>
       <div
         ref={hostRef}
+        // data-float-guard: плавающие мессенджеры уходят с кадра карты.
+        // Кнопка «Забронировать» живёт внутри фрейма Земекс, снаружи её
+        // не измерить — уступаем всей карте целиком.
+        data-float-guard
         className="relative overflow-hidden rounded-[24px] ring-1 ring-white/10"
       >
         <div className={inlineInteractive ? "" : "pointer-events-none"}>

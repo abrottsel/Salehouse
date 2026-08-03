@@ -32,9 +32,22 @@ export default function LivePhoto({
         />
       </div>
 
-      {/* Затемнение под текст — слева плотнее, чтобы заголовок читался */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0b0e13]/92 via-[#0b0e13]/70 to-[#0b0e13]/40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e13] via-transparent to-[#0b0e13]/60" />
+      {/* Вуаль под текст — слева плотнее, чтобы заголовок читался. Цвет берётся
+          из переменных темы: днём она светлая, ночью тёмная, фото одно и то же. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, var(--v3-veil-strong), var(--v3-veil-mid) 55%, var(--v3-veil-soft))",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to top, var(--v3-veil-solid), transparent 50%, var(--v3-veil-top))",
+        }}
+      />
 
       {/* Фирменная подсветка поверх фото */}
       <div

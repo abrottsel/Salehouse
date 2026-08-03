@@ -1466,7 +1466,10 @@ export default function PlotMapDark({
           «маленькой карточкой», из-за которой генплан не читался. */}
       <div
         style={frameStyle}
-        className="relative ml-[calc(50%-50vw)] h-[100svh] w-screen overflow-hidden bg-[var(--map-frame-bg)] sm:ml-0 sm:h-[min(calc(100svh-56px),860px)] sm:min-h-[520px] sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-white/10"
+        // data-float-guard: плавающие мессенджеры уходят с кадра карты —
+        // там свои контролы и карточка участка с «Забронировать».
+        data-float-guard
+        className="v3-on-dark relative ml-[calc(50%-50vw)] h-[100svh] w-screen overflow-hidden bg-[var(--map-frame-bg)] sm:ml-0 sm:h-[min(calc(100svh-56px),860px)] sm:min-h-[520px] sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-white/10"
       >
         {!fullscreen && surface}
       </div>

@@ -11,8 +11,8 @@ import { LEGAL } from "@/lib/legal";
  * Предыдущая версия была высокой трёхколоночной простынёй, заказчик
  * сказал, что на проде лучше. Здесь та же компактная карточка: одна
  * строка «логотип · навигация · контакты», под ней тонкая юридическая
- * полоска и дисклеймер. Отличия от прода только два: ссылки ведут
- * внутрь /v3, и взята сразу тёмная палитра (на /v3 светлой темы нет).
+ * полоска и дисклеймер. Отличие от прода одно: ссылки ведут внутрь /v3.
+ * Карточка тёмная в обеих темах — как на боевом сайте.
  *
  * Год — константа: new Date() в рендере разъезжается между сервером
  * и клиентом.
@@ -51,9 +51,13 @@ export default function SiteFooter() {
   // а это примерно 38px. Отступ общий для всех страниц /v3, поэтому свой
   // нижний отступ страницы больше не держат.
   return (
-    <footer className="pb-4 pt-8">
+    // data-float-guard — плавающие мессенджеры уходят, когда доезжают
+    // до подвала (см. FloatingMessengers).
+    <footer data-float-guard className="pb-4 pt-8">
       <div className="mx-auto max-w-[1920px] px-3 sm:px-4 lg:px-6">
-        <div className="overflow-hidden rounded-3xl bg-[#121821] text-white ring-1 ring-white/10">
+        {/* v3-on-dark — подвал остаётся тёмной карточкой и в дневной теме
+            (как на проде): переменные палитры внутри него не подменяются. */}
+        <div className="v3-on-dark overflow-hidden rounded-3xl bg-[#121821] text-white ring-1 ring-white/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
 
@@ -136,11 +140,11 @@ export default function SiteFooter() {
           <div className="-mt-1 flex flex-col justify-between gap-2 px-5 pb-4 text-[11px] text-gray-500 sm:flex-row sm:items-center sm:px-6">
             <span>{LEGAL_LINE}</span>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <Link href="/privacy" className="transition-colors hover:text-gray-300">
+              <Link href="/v3/privacy" className="transition-colors hover:text-gray-300">
                 Политика
               </Link>
               <span className="opacity-40">·</span>
-              <Link href="/oferta" className="transition-colors hover:text-gray-300">
+              <Link href="/v3/oferta" className="transition-colors hover:text-gray-300">
                 Оферта
               </Link>
               <span className="opacity-40">·</span>

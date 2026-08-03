@@ -1,5 +1,146 @@
 /* Стили ветки /v3. Подключаются только в её layout, globals.css не трогаем. */
 
+/* ═══ Тема: день / ночь ═════════════════════════════════════════════════
+   Класс `dark` на <html> уже ставит анти-FOUC скрипт в src/app/layout.tsx
+   (ручной выбор из localStorage v2-theme, иначе авто по часам). Здесь /v3
+   только начинает его уважать — свой механизм не заводим.
+
+   Ветка целиком свёрстана «белым по тёмному»: text-white/60, bg-white/[0.07],
+   ring-white/12, text-emerald-300. Tailwind v4 разворачивает такие утилиты не
+   в литералы, а в var(--color-white) / var(--color-emerald-300). Поэтому
+   светлая тема здесь — подмена полутора десятков переменных на корне ветки,
+   а не переписывание десяти тысяч строк разметки: text-white/60 сам собой
+   становится чернилами в 60%, а bg-white/[0.07] — светло-серой подложкой.
+
+   Тёмные острова (фото-герой посёлка, карта, подвал, кнопки на сплошном
+   emerald) остаются тёмными в обеих темах — им переменные возвращаются
+   классом .v3-on-dark. */
+
+.v3-scope {
+  --v3-page: #0b0e13;
+  --v3-veil-strong: rgba(11, 14, 19, 0.92);
+  --v3-veil-mid: rgba(11, 14, 19, 0.7);
+  --v3-veil-soft: rgba(11, 14, 19, 0.4);
+  --v3-veil-top: rgba(11, 14, 19, 0.6);
+  --v3-veil-solid: #0b0e13;
+  --v3-glass: linear-gradient(160deg, rgba(18, 23, 30, 0.8), rgba(10, 13, 18, 0.88));
+  --v3-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.05), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+  --v3-scrollbar: rgba(255, 255, 255, 0.14);
+
+  /* Не чистый белый. На полотне #0b0e13 контраст #fff даёт 19.3:1 — глаз
+     от такого «звенит», буквы начинает распирать ореолом. AAA для длинного
+     текста требует всего 7:1. Мягкий #e6ecf3 оставляет 16.3:1 — с огромным
+     запасом по читаемости, но без рези.
+
+     Подменяем именно переменную, а не правим разметку: вся ветка свёрстана
+     утилитами text-white/60 и bg-white/[0.07], и Tailwind v4 разворачивает
+     их в var(--color-white). Одна строка вместо тысяч правок. */
+  --color-white: #e6ecf3;
+
+  color-scheme: dark;
+}
+
+/* Полотно вынесено из .v3-scope отдельным классом: порталы (модалка поиска
+   рендерится в body, вне вёрстки ветки) берут палитру, но не заливку. */
+.v3-canvas {
+  background-color: var(--v3-page);
+  /* Резкая смена полотна режет глаз, четверти секунды хватает. */
+  transition: background-color 0.25s ease;
+}
+
+html:not(.dark) .v3-scope {
+  --v3-page: #eef2f0;
+  /* Днём вуаль светлая и заметно жиже ночной: текст на фото стал чернильным,
+     ему хватает подложки слева, а само фото должно остаться фотографией. */
+  --v3-veil-strong: rgba(238, 242, 240, 0.88);
+  --v3-veil-mid: rgba(238, 242, 240, 0.5);
+  --v3-veil-soft: rgba(238, 242, 240, 0.12);
+  --v3-veil-top: rgba(238, 242, 240, 0.5);
+  --v3-veil-solid: #eef2f0;
+  --v3-glass: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 248, 0.96));
+  --v3-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -0.5px 0 rgba(12, 23, 18, 0.06), 0 24px 60px -28px rgba(12, 23, 18, 0.22);
+  --v3-scrollbar: rgba(12, 23, 18, 0.18);
+
+  color-scheme: light;
+
+  /* Чернила вместо белил — разворачивает всю палитру ветки разом. */
+  --color-white: #0c1712;
+
+  /* Акцентные -200/-300/-400 на светлом фоне не читаются: уводим в -600/-700. */
+  --color-emerald-200: var(--color-emerald-700);
+  --color-emerald-300: var(--color-emerald-700);
+  --color-emerald-400: var(--color-emerald-600);
+  --color-lime-300: oklch(53.2% 0.129 126.665);
+  --color-teal-300: var(--color-teal-600);
+  --color-sky-300: var(--color-sky-600);
+  --color-blue-300: var(--color-blue-600);
+  --color-violet-300: var(--color-violet-600);
+  --color-rose-300: var(--color-rose-600);
+  --color-red-300: var(--color-red-600);
+  --color-red-400: var(--color-red-600);
+  --color-amber-300: var(--color-amber-600);
+  --color-amber-400: var(--color-amber-600);
+  --color-yellow-300: var(--color-yellow-600);
+  --color-slate-200: var(--color-slate-600);
+  --color-slate-300: var(--color-slate-600);
+  --color-zinc-300: var(--color-zinc-600);
+}
+
+/* Острова, которые остаются тёмными при любой теме. Значения — дефолты
+   Tailwind v4, восстановленные буквально: вычислить их из уже подменённых
+   переменных на том же элементе нельзя. */
+html:not(.dark) .v3-scope .v3-on-dark,
+html:not(.dark) .v3-scope [class~="bg-emerald-500"],
+html:not(.dark) .v3-scope [class~="bg-emerald-500/85"],
+html:not(.dark) .v3-scope [class~="bg-emerald-600"],
+html:not(.dark) .v3-scope [class~="from-emerald-600"] {
+  --v3-glass: linear-gradient(160deg, rgba(18, 23, 30, 0.8), rgba(10, 13, 18, 0.88));
+  --v3-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.05), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+  --v3-scrollbar: rgba(255, 255, 255, 0.14);
+
+  /* Тот же мягкий белый, что в ночной теме: эти острова (подвал, фото-герой,
+     карта) тоже стоят на тёмном, и чистый #fff режет на них ровно так же. */
+  --color-white: #e6ecf3;
+  --color-emerald-200: oklch(90.5% 0.093 164.15);
+  --color-emerald-300: oklch(84.5% 0.143 164.978);
+  --color-emerald-400: oklch(76.5% 0.177 163.223);
+  --color-lime-300: oklch(89.7% 0.196 126.665);
+  --color-teal-300: oklch(85.5% 0.138 181.071);
+  --color-sky-300: oklch(82.8% 0.111 230.318);
+  --color-blue-300: oklch(80.9% 0.105 251.813);
+  --color-violet-300: oklch(81.1% 0.111 293.571);
+  --color-rose-300: oklch(81% 0.117 11.638);
+  --color-red-300: oklch(80.8% 0.114 19.571);
+  --color-red-400: oklch(70.4% 0.191 22.216);
+  --color-amber-300: oklch(87.9% 0.169 91.605);
+  --color-amber-400: oklch(82.8% 0.189 84.429);
+  --color-yellow-300: oklch(90.5% 0.182 98.111);
+  --color-slate-200: oklch(92.9% 0.013 255.508);
+  --color-slate-300: oklch(86.9% 0.022 252.894);
+  --color-zinc-300: oklch(87.1% 0.006 286.286);
+}
+
+/* Текст острова наследуется от корня ветки, а там днём стоят чернила.
+   Подмены переменной мало — цвет у предка уже вычислен, поэтому острову
+   он задаётся напрямую. Потомки со своим text-* этим не задеты. */
+html:not(.dark) .v3-scope .v3-on-dark {
+  color: #fff;
+}
+
+/* Шапка прозрачна до прокрутки и живёт поверх геро. Ночью белые надписи
+   читаются на любом фото, днём чернильные — только на светлой вуали
+   главной; над фото-героем посёлка они пропадают. Поэтому днём под
+   шапкой всегда стекло. */
+html:not(.dark) .v3-scope .v3-nav {
+  background: var(--v3-glass);
+  box-shadow: var(--v3-glass-shadow);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+}
+
 @keyframes v3-drift {
   0%,
   100% {
@@ -159,6 +300,110 @@
   color: rgba(255, 255, 255, 0.82) !important;
 }
 
+/* ── Юридические документы (/v3/oferta, /v3/privacy) ─────────── */
+
+/* Колонка в 70 символов и увеличенный интерлиньяж: юридический текст
+   читают подряд, а не по диагонали, и на широком экране длинная строка
+   заставляет искать начало следующей.
+
+   Цвета взяты не литералами, а через --color-white / --color-emerald-*:
+   светлая тема ветки разворачивается именно подменой этих переменных
+   (см. .v3-scope выше), и литеральный белый остался бы белым на белом. */
+.v3-legal {
+  max-width: 70ch;
+  font-size: 15px;
+  line-height: 1.85;
+  color: color-mix(in oklab, var(--color-white) 66%, transparent);
+}
+
+@media (min-width: 640px) {
+  .v3-legal {
+    font-size: 16px;
+  }
+}
+
+.v3-legal p {
+  margin-top: 1em;
+}
+
+.v3-legal p:first-child,
+.v3-legal ul:first-child,
+.v3-legal ol:first-child {
+  margin-top: 0;
+}
+
+.v3-legal strong {
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.v3-legal a {
+  color: var(--color-emerald-300);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-emerald-300) 40%, transparent);
+  text-underline-offset: 3px;
+  /* Почта и длинные адреса иначе распирают колонку и дают
+     горизонтальный скролл на 430px. */
+  overflow-wrap: anywhere;
+  transition: color 0.15s;
+}
+
+.v3-legal a:hover {
+  color: var(--color-emerald-200);
+  text-decoration-color: var(--color-emerald-200);
+}
+
+.v3-legal ul,
+.v3-legal ol {
+  margin-top: 1em;
+  padding-left: 0;
+  list-style: none;
+}
+
+.v3-legal li {
+  position: relative;
+  margin-top: 0.6em;
+  padding-left: 1.7em;
+}
+
+.v3-legal ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.45em;
+  top: 0.78em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-emerald-400) 80%, transparent);
+}
+
+.v3-legal ol {
+  counter-reset: v3-legal-item;
+}
+
+.v3-legal ol > li {
+  counter-increment: v3-legal-item;
+}
+
+.v3-legal ol > li::before {
+  content: counter(v3-legal-item) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--color-emerald-300) 90%, transparent);
+}
+
+.v3-legal code {
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+  font-size: 0.88em;
+  background: color-mix(in oklab, var(--color-white) 7%, transparent);
+  color: color-mix(in oklab, var(--color-white) 85%, transparent);
+  overflow-wrap: anywhere;
+}
+
 /* Ползунки фильтров в тёмной теме */
 .v3-range {
   accent-color: #34d399;
@@ -169,8 +414,35 @@
   width: 6px;
 }
 .v3-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--v3-scrollbar, rgba(255, 255, 255, 0.14));
   border-radius: 999px;
+}
+
+/* Юридические страницы набраны литеральными rgba(255,255,255,…) — на светлом
+   полотне они исчезают, поэтому перекрашиваются отдельно. */
+html:not(.dark) .v3-scope .v3-legal {
+  color: rgba(12, 23, 18, 0.72);
+}
+html:not(.dark) .v3-scope .v3-legal strong {
+  color: #0c1712;
+}
+html:not(.dark) .v3-scope .v3-legal a {
+  color: #047857;
+  text-decoration-color: rgba(4, 120, 87, 0.45);
+}
+html:not(.dark) .v3-scope .v3-legal a:hover {
+  color: #065f46;
+  text-decoration-color: #065f46;
+}
+html:not(.dark) .v3-scope .v3-legal ol > li::before {
+  color: rgba(4, 120, 87, 0.95);
+}
+html:not(.dark) .v3-scope .v3-legal ul > li::before {
+  background: rgba(5, 150, 105, 0.85);
+}
+html:not(.dark) .v3-scope .v3-legal code {
+  background: rgba(12, 23, 18, 0.07);
+  color: rgba(12, 23, 18, 0.85);
 }
 .v3-scroll::-webkit-scrollbar-track {
   background: transparent;

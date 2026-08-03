@@ -21,8 +21,23 @@ const CHANNELS: {
 }[] = [
   { Icon: Phone, label: "Телефон", value: LEGAL.phone, href: `tel:${LEGAL.phoneRaw}` },
   { Icon: Mail, label: "Почта", value: LEGAL.email, href: `mailto:${LEGAL.email}` },
-  { Icon: Send, label: "Telegram", value: "Написать в чат", href: LEGAL.telegram, external: true },
-  { Icon: MessageSquare, label: "MAX", value: "Написать в чат", href: LEGAL.max, external: true },
+  // У обоих мессенджеров стояло «Написать в чат» — два одинаковых значения
+  // рядом читались как ошибка вёрстки. Telegram показывает свой хэндл,
+  // MAX — что за ссылкой чат-бот (там хэндла нет, только числовой id).
+  {
+    Icon: Send,
+    label: "Telegram",
+    value: `@${LEGAL.telegramHandle}`,
+    href: LEGAL.telegram,
+    external: true,
+  },
+  {
+    Icon: MessageSquare,
+    label: "MAX",
+    value: "Чат-бот ЗемПлюс",
+    href: LEGAL.max,
+    external: true,
+  },
 ];
 
 const REQUISITES = [

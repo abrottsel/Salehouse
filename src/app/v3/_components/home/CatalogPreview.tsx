@@ -2,15 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { MouseEvent } from "react";
 import { ArrowRight, MapPin, Ruler } from "lucide-react";
 import { SectionTitle } from "../ui/primitives";
 import { Reveal, StaggerItem, StaggerList } from "../ui/motion";
 import { useTier } from "../../_lib/perf";
+import FavoriteHeartDark from "../FavoriteHeartDark";
+import RouteChipDark from "../RouteChipDark";
 import { TOP_VILLAGES, VILLAGE_COUNT, panel, plural, rub } from "./common";
 
+const REST_COUNT = VILLAGE_COUNT - TOP_VILLAGES.length;
+
 /**
- * Превью каталога: шесть готовых посёлков с наибольшим выбором.
- * Полный список — на /v3/catalog.
+ * Превью каталога: шесть посёлков разных стадий готовности (выборку
+ * см. в common.ts). Полный список — на /v3/catalog.
  */
 export default function CatalogPreview({
   liveAvailable,
@@ -20,15 +25,25 @@ export default function CatalogPreview({
 } = {}) {
   const lite = useTier() === "lite";
 
+  /**
+   * Сердечко и чип маршрута лежат внутри карточки-ссылки. Сердечко гасит
+   * клик само, а чипу обработчик не нужен — глушим на самой ссылке всё,
+   * что пришло из помеченной накладки. Так не приходится вешать onClick
+   * на статичный элемент.
+   */
+  const blockNavFromOverlay = (e: MouseEvent<HTMLAnchorElement>) => {
+    if ((e.target as HTMLElement).closest("[data-card-overlay]")) e.preventDefault();
+  };
+
   return (
     <section className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle
             eyebrow="Каталог"
-            title="Посёлки, готовые"
-            accent="к переезду"
-            sub="Готовность 100% и самый большой выбор свободных участков. Коммуникации подведены, дороги сделаны — можно строиться сразу."
+            title="Посёлки в продаже"
+            accent="прямо сейчас"
+            sub={`Готовые к переезду и те, что ещё достраиваются: в строящихся выбор участков шире, а цена ниже. Всего у нас ${VILLAGE_COUNT} ${plural(VILLAGE_COUNT, "посёлок", "посёлка", "посёлков")} — в каталоге есть фильтры по цене, площади и направлению.`}
             className="max-w-[46ch]"
           />
           <Link
@@ -42,68 +57,112 @@ export default function CatalogPreview({
       </Reveal>
 
       <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TOP_VILLAGES.map((v, i) => (
-          <StaggerItem key={v.slug} className="h-full">
-            <Link href={`/v3/village/${v.slug}`} className="group block h-full">
-              <article
-                className="flex h-full flex-col overflow-hidden rounded-[24px] transition-transform duration-300 group-hover:-translate-y-1.5"
-                style={panel(lite)}
+        {TOP_VILLAGES.map((v, i) => {
+          const available = liveAvailable?.[v.slug] ?? v.plotsAvailable;
+          const ready = v.readiness >= 100;
+
+          return (
+            <StaggerItem key={v.slug} className="h-full">
+              <Link
+                href={`/v3/village/${v.slug}`}
+                onClick={blockNavFromOverlay}
+                className="group block h-full"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={v.photos[0]}
-                    alt={`Посёлок ${v.name}`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    priority={i < 2}
-                    className="object-cover transition-transform duration-[600ms] group-hover:scale-[1.06]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e13] via-[#0b0e13]/25 to-transparent" />
+                <article
+                  className="flex h-full flex-col overflow-hidden rounded-[24px] transition-transform duration-300 group-hover:-translate-y-1.5"
+                  style={panel(lite)}
+                >
+                  {/* v3-on-dark: всё поверх фото должно оставаться белым и в
+                      светлой теме — там --color-white подменён на тёмный. */}
+                  <div className="v3-on-dark relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      src={v.photos[0]}
+                      alt={`Посёлок ${v.name}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      priority={i < 2}
+                      className="object-cover transition-transform duration-[600ms] group-hover:scale-[1.06]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e13] via-[#0b0e13]/25 to-transparent" />
 
-                  <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold text-white/90 ring-1 ring-white/20 backdrop-blur-sm">
-                    Готовность {v.readiness}%
-                  </span>
-                  <span className="absolute right-3 top-3 rounded-full bg-emerald-500/85 px-2.5 py-1 text-[11px] font-bold text-white ring-1 ring-emerald-300/40">
-                    {liveAvailable?.[v.slug] ?? v.plotsAvailable}{" "}
-                    {plural(liveAvailable?.[v.slug] ?? v.plotsAvailable, "свободный", "свободных", "свободных")}
-                  </span>
-
-                  <h3 className="absolute inset-x-4 bottom-3 text-[22px] font-extrabold leading-tight tracking-[-0.01em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
-                    {v.name}
-                  </h3>
-                </div>
-
-                <div className="flex flex-1 flex-col gap-3 p-5">
-                  <div className="flex items-center gap-1.5 text-[13px] text-white/55">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                    <span className="truncate">
-                      {v.direction} · {v.distance} км от МКАД
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold text-white/90 ring-1 ring-white/20 backdrop-blur-sm">
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          ready ? "bg-emerald-400" : "bg-amber-400"
+                        }`}
+                      />
+                      {ready ? "Готовый" : `Готовность ${v.readiness}%`}
                     </span>
-                  </div>
 
-                  <div className="flex items-center gap-1.5 text-[13px] text-white/45">
-                    <Ruler className="h-3.5 w-3.5 shrink-0" />
-                    от {v.areaFrom} до {v.areaTo} соток
-                  </div>
-
-                  <div className="mt-auto flex items-end justify-between border-t border-white/[0.08] pt-4">
-                    <div className="leading-tight">
-                      <div className="text-[11px] uppercase tracking-widest text-white/35">от</div>
-                      <div className="text-[20px] font-extrabold text-emerald-300">
-                        {rub(v.priceFrom)} ₽
-                      </div>
-                      <div className="text-[11px] text-white/35">за сотку</div>
+                    <div className="absolute right-3 top-3" data-card-overlay>
+                      <FavoriteHeartDark slug={v.slug} />
                     </div>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] ring-1 ring-white/15 transition-colors group-hover:bg-emerald-500 group-hover:ring-emerald-400">
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
+
+                    {/* Чипы над названием, а не в углу: имя посёлка бывает
+                        в две строки, и в углу они бы наехали друг на друга. */}
+                    <div className="absolute inset-x-4 bottom-3">
+                      <div className="flex flex-wrap items-center gap-1.5" data-card-overlay>
+                        <span className="inline-flex h-7 items-center rounded-full bg-emerald-500/90 px-2.5 text-[11px] font-bold text-[#06120c] ring-1 ring-emerald-300/40">
+                          {available} {plural(available, "свободный", "свободных", "свободных")}
+                        </span>
+                        <RouteChipDark villageCoords={v.coords} villageName={v.name} />
+                      </div>
+                      <h3 className="mt-1.5 text-[22px] font-extrabold leading-tight tracking-[-0.01em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+                        {v.name}
+                      </h3>
+                    </div>
                   </div>
-                </div>
-              </article>
-            </Link>
-          </StaggerItem>
-        ))}
+
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <div className="flex items-center gap-1.5 text-[13px] text-white/55">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                      <span className="truncate">
+                        {v.direction} · {v.distance} км от МКАД
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-[13px] text-white/45">
+                      <Ruler className="h-3.5 w-3.5 shrink-0" />
+                      от {v.areaFrom} до {v.areaTo} соток
+                    </div>
+
+                    <div className="mt-auto flex items-end justify-between border-t border-white/[0.08] pt-4">
+                      <div className="leading-tight">
+                        <div className="text-[11px] uppercase tracking-widest text-white/35">от</div>
+                        <div className="text-[20px] font-extrabold text-emerald-300">
+                          {rub(v.priceFrom)} ₽
+                        </div>
+                        <div className="text-[11px] text-white/35">за сотку</div>
+                      </div>
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] ring-1 ring-white/15 transition-colors group-hover:bg-emerald-500 group-hover:ring-emerald-400">
+                        <ArrowRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            </StaggerItem>
+          );
+        })}
       </StaggerList>
+
+      <Reveal>
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <Link
+            href="/v3/catalog"
+            className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-full bg-emerald-500 px-8 text-[15px] font-bold text-white shadow-[0_10px_30px_-8px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5 hover:bg-emerald-400 active:scale-[0.98] sm:w-auto"
+          >
+            <span className="grid h-7 min-w-[34px] place-items-center rounded-full bg-black/25 px-2 text-[12px] font-extrabold tabular-nums">
+              +{REST_COUNT}
+            </span>
+            Показать все посёлки
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <p className="text-[12px] text-white/40">
+            Показано {TOP_VILLAGES.length} из {VILLAGE_COUNT} посёлков
+          </p>
+        </div>
+      </Reveal>
     </section>
   );
 }

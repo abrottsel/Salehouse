@@ -163,6 +163,8 @@ export default function ViewingForm({ villageName }: { villageName: string }) {
 
                 <button
                   type="submit"
+                  // data-float-guard — плавающие мессенджеры уходят с кнопки.
+                  data-float-guard
                   className="mt-1 inline-flex h-13 items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 text-[15px] font-bold text-white shadow-[0_10px_30px_-8px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5 hover:bg-emerald-400 active:scale-[0.98]"
                 >
                   <CalendarCheck className="h-5 w-5" />

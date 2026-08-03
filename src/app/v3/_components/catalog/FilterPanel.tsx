@@ -225,6 +225,9 @@ export default function FilterPanel({ filters, onChange, onReset, found, lite }:
         {sheetOpen && (
           <motion.div
             key="filters-backdrop"
+            // data-float-guard — плавающие мессенджеры не просвечивают
+            // сквозь полупрозрачную подложку шторки фильтров.
+            data-float-guard
             className="fixed inset-0 z-[60] bg-black/65 lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

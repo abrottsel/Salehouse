@@ -167,16 +167,20 @@ export default function LocalLeadForm({
         </p>
       )}
 
-      <CTA type="submit" className="w-full">
-        {pending ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Секунду…
-          </>
-        ) : (
-          submitLabel
-        )}
-      </CTA>
+      {/* data-float-guard: кнопка во всю ширину, плавающие мессенджеры
+          обязаны с неё уйти (см. FloatingMessengers). */}
+      <div data-float-guard>
+        <CTA type="submit" className="w-full">
+          {pending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Секунду…
+            </>
+          ) : (
+            submitLabel
+          )}
+        </CTA>
+      </div>
 
       {note && <p className="text-center text-[12px] leading-relaxed text-white/35">{note}</p>}
     </form>

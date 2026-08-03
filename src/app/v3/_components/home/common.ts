@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { villages } from "@/lib/data";
+import { villages, type Village } from "@/lib/data";
 import { glassStyle } from "../ui/primitives";
 
 /**
@@ -23,13 +23,50 @@ export const DISTANCE_MIN = Math.min(...villages.map((v) => v.distance));
 export const READY_COUNT = villages.filter((v) => v.readiness === 100).length;
 
 /**
- * Шестёрка для превью каталога: сначала полностью готовые, внутри —
- * у кого больше свободных участков. Сортировка детерминированная,
- * никакого рандома: разметка сервера и клиента обязана совпасть.
+ * Шестёрка для превью каталога.
+ *
+ * Было: топ-6 по готовности — наверх всплывали одни стопроцентные, и
+ * витрина врала, будто строящихся посёлков у нас нет. Стало: выборка
+ * по стадиям — по два посёлка из «готовых», «на финише» и «в стройке»,
+ * внутри стадии первым идёт тот, где больше свободных участков (там и
+ * выбор шире, и карточка полезнее). Тай-брейк по slug — чтобы порядок
+ * не зависел от порядка строк в data.ts.
+ *
+ * Сравниваем slug не через localeCompare: у сервера и браузера бывают
+ * разные ICU-данные, а разметка обязана совпасть. Никакого random и
+ * new Date по той же причине.
  */
-export const TOP_VILLAGES = [...villages]
-  .sort((a, b) => b.readiness - a.readiness || b.plotsAvailable - a.plotsAvailable)
-  .slice(0, 6);
+const PREVIEW_SIZE = 6;
+const PER_STAGE = 2;
+
+/** 0 — готов, 1 — на финише, 2 — в стройке. */
+function stage(v: Village): 0 | 1 | 2 {
+  if (v.readiness >= 100) return 0;
+  if (v.readiness >= 85) return 1;
+  return 2;
+}
+
+function byOffer(a: Village, b: Village) {
+  return b.plotsAvailable - a.plotsAvailable || (a.slug < b.slug ? -1 : 1);
+}
+
+function pickPreview(): Village[] {
+  const stages: Village[][] = [[], [], []];
+  for (const v of villages) stages[stage(v)].push(v);
+  for (const s of stages) s.sort(byOffer);
+
+  const picked = stages.flatMap((s) => s.slice(0, PER_STAGE));
+  // Стадия может опустеть (например, все посёлки достроены) — добираем
+  // недостающее лучшим из оставшихся, чтобы в блоке всегда было шесть.
+  if (picked.length < PREVIEW_SIZE) {
+    const rest = stages.flatMap((s) => s.slice(PER_STAGE)).sort(byOffer);
+    picked.push(...rest.slice(0, PREVIEW_SIZE - picked.length));
+  }
+
+  return picked.sort((a, b) => b.readiness - a.readiness || byOffer(a, b));
+}
+
+export const TOP_VILLAGES = pickPreview();
 
 export const rub = (n: number) => n.toLocaleString("ru-RU");
 

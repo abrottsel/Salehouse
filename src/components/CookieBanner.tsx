@@ -50,6 +50,7 @@ export default function CookieBanner() {
     <div
       role="region"
       aria-label="Cookie consent"
+      data-cookie-banner
       className="fixed inset-x-0 bottom-0 z-[100] p-2 sm:p-3 pointer-events-none"
     >
       <div
