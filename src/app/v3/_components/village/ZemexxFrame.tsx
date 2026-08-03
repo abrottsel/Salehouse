@@ -1,26 +1,34 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MousePointerClick } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Expand, MousePointerClick, X } from "lucide-react";
 import RouteBadgeDark from "../RouteBadgeDark";
 import ShowRouteButton from "@/components/ShowRouteButton";
 import { glassStyle } from "../ui/primitives";
 
 /**
- * Фрейм карты Земекс — один в один как на боевой странице посёлка,
- * плюс решение проблемы со скроллом.
+ * Фрейм карты Земекс — как на боевой странице, плюс решение проблемы
+ * со скроллом. Поведение РАЗНОЕ на мышке и на пальце, и это намеренно.
  *
- * Суть проблемы: фрейм чужого домена, залезть внутрь и отключить там
- * зум колесом нельзя — межсайтовые ограничения браузера. Поэтому
- * лечим снаружи: пока карта «спит», поверх неё лежит прозрачный щит.
- * Колесо и палец попадают в щит, а не во фрейм, и страница прокручивается
- * нормально. По клику щит убирается, фрейм оживает и работает как
- * обычно — можно и зумить, и таскать.
+ * Фрейм на чужом домене: отключить в нём зум колесом мы не можем,
+ * межсайтовые ограничения. Лечим снаружи.
  *
- * Обратно карта засыпает, когда курсор ушёл с неё или страницу
- * прокрутили дальше: иначе один раз кликнув, пользователь навсегда
- * теряет возможность пролистать страницу мимо карты.
+ * Десктоп. Поверх спящей карты лежит прозрачный щит, колесо попадает
+ * в него и страница прокручивается. Клик будит карту, уход курсора
+ * усыпляет обратно. С мышкой это работает: увести курсор можно всегда.
+ *
+ * Телефон. Здесь такой приём даёт тупик, и первая версия в него попала:
+ * разбудил карту тапом — фрейм забирает все касания, страницу не
+ * пролистать, а «усыпить при прокрутке» не срабатывает, потому что
+ * прокрутки и нет. Выйти можно было только перезагрузкой страницы.
+ * Поэтому на телефоне карта внутри страницы не оживает вовсе: тап
+ * открывает её на весь экран с явной кнопкой закрытия. Скролл страницы
+ * не отнимается ни на секунду.
  */
+
+const MOBILE_QUERY = "(max-width: 639px)";
+
 export default function ZemexxFrame({
   src,
   villageName,
@@ -30,96 +38,145 @@ export default function ZemexxFrame({
   villageName: string;
   villageCoords: [number, number];
 }) {
-  const [awake, setAwake] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [awake, setAwake] = useState(false); // только десктоп
+  const [fullscreen, setFullscreen] = useState(false); // только телефон
+  const [mounted, setMounted] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const apply = () => setIsMobile(mq.matches);
+    // Первое чтение — таймером, а не прямо в теле эффекта: синхронный
+    // setState там даёт каскадный рендер, react-hooks на это ругается.
+    const t = setTimeout(() => {
+      setMounted(true);
+      apply();
+    }, 0);
+    mq.addEventListener("change", apply);
+    return () => {
+      clearTimeout(t);
+      mq.removeEventListener("change", apply);
+    };
+  }, []);
 
   const sleep = useCallback(() => setAwake(false), []);
 
+  // Десктоп: увели курсор — карта засыпает.
   useEffect(() => {
-    if (!awake) return;
-
-    // Ушли курсором с карты — усыпляем.
+    if (!awake || isMobile) return;
     const host = hostRef.current;
     host?.addEventListener("mouseleave", sleep);
+    return () => host?.removeEventListener("mouseleave", sleep);
+  }, [awake, isMobile, sleep]);
 
-    // Прокрутили страницу так, что карта почти скрылась — тоже усыпляем.
-    // Без этого на телефоне карта остаётся «живой» за пределами экрана
-    // и перехватывает жесты при возврате.
-    const onScroll = () => {
-      const r = host?.getBoundingClientRect();
-      if (!r) return;
-      const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
-      if (visible < r.height * 0.35) sleep();
+  // Полный экран: гасим прокрутку страницы под ним и закрываем по Escape.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-
+    document.addEventListener("keydown", onKey);
     return () => {
-      host?.removeEventListener("mouseleave", sleep);
-      window.removeEventListener("scroll", onScroll);
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
     };
-  }, [awake, sleep]);
+  }, [fullscreen]);
+
+  const frame = (extraClass: string) => (
+    <iframe
+      src={src}
+      allow="fullscreen"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+      referrerPolicy="no-referrer-when-downgrade"
+      title={`Карта участков — ${villageName}`}
+      className={`block w-full border-0 ${extraClass}`}
+    />
+  );
+
+  // Карта интерактивна только когда её явно включили: на десктопе —
+  // разбудили кликом, на телефоне — открыли на весь экран.
+  const inlineInteractive = awake && !isMobile;
 
   return (
-    <div
-      ref={hostRef}
-      className="relative overflow-hidden rounded-[24px] ring-1 ring-white/10"
-    >
-      <iframe
-        src={src}
-        width="100%"
-        height="850"
-        allow="fullscreen"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-        referrerPolicy="no-referrer-when-downgrade"
-        title={`Карта участков — ${villageName}`}
-        className={`block w-full border-0 min-h-[560px] sm:min-h-[750px] lg:min-h-[85vh] ${
-          awake ? "" : "pointer-events-none"
-        }`}
-      />
-
-      {/* Щит. Держит скролл страницы, пока карту не разбудили. */}
-      {!awake && (
-        <button
-          type="button"
-          onClick={() => setAwake(true)}
-          aria-label="Включить карту участков"
-          className="group absolute inset-0 flex cursor-pointer items-end justify-center bg-transparent pb-6 sm:items-center sm:pb-0"
-        >
-          <span
-            style={glassStyle}
-            className="pointer-events-none flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 max-sm:opacity-100"
-          >
-            <MousePointerClick className="h-4 w-4 text-emerald-300" />
-            Нажмите, чтобы работать с картой
-          </span>
-        </button>
-      )}
-
-      {/* «Дорога к мечте» — поверх фрейма, как на боевой странице.
-          Слой не ловит клики целиком: их ловит только сама кнопка,
-          иначе он перекрыл бы карту.
-
-          Отступ сверху не случайный: у самого фрейма Земекс в правом
-          верхнем углу свои контролы, в том числе «Спутник». Прижатый
-          к верху бейдж их накрывал — на боевой странице он по этой же
-          причине сидит ниже. Атрибут data-frame-overlay нужен кнопке
-          «Путь»: она ищет его, чтобы встать слева от бейджа. */}
+    <>
       <div
-        data-frame-overlay
-        className="pointer-events-none absolute right-3 top-16 z-30 flex justify-end sm:right-5 sm:top-20"
+        ref={hostRef}
+        className="relative overflow-hidden rounded-[24px] ring-1 ring-white/10"
       >
-        <div className="pointer-events-auto">
-          <RouteBadgeDark
-            villageCoords={villageCoords}
-            villageName={villageName}
-            align="right"
-          />
+        <div className={inlineInteractive ? "" : "pointer-events-none"}>
+          {frame("h-[560px] sm:h-[750px] lg:h-[85vh]")}
         </div>
+
+        {!inlineInteractive && (
+          <button
+            type="button"
+            onClick={() => (isMobile ? setFullscreen(true) : setAwake(true))}
+            aria-label={
+              isMobile ? "Открыть карту участков на весь экран" : "Включить карту участков"
+            }
+            className="group absolute inset-0 flex cursor-pointer items-end justify-center bg-transparent pb-6 sm:items-center sm:pb-0"
+          >
+            <span
+              style={glassStyle}
+              className="pointer-events-none flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-bold text-white/90 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100"
+            >
+              {isMobile ? (
+                <>
+                  <Expand className="h-4 w-4 text-emerald-300" />
+                  Открыть карту на весь экран
+                </>
+              ) : (
+                <>
+                  <MousePointerClick className="h-4 w-4 text-emerald-300" />
+                  Нажмите, чтобы работать с картой
+                </>
+              )}
+            </span>
+          </button>
+        )}
+
+        {/* «Дорога к мечте» поверх фрейма. Отступ сверху не случайный:
+            у самого фрейма Земекс в правом верхнем углу свои контролы,
+            в том числе «Спутник», и прижатый к верху бейдж их накрывал.
+            data-frame-overlay нужен кнопке «Путь» — она ищет его, чтобы
+            встать слева. */}
+        <div
+          data-frame-overlay
+          className="pointer-events-none absolute right-3 top-16 z-30 flex justify-end sm:right-5 sm:top-20"
+        >
+          <div className="pointer-events-auto">
+            <RouteBadgeDark
+              villageCoords={villageCoords}
+              villageName={villageName}
+              align="right"
+            />
+          </div>
+        </div>
+
+        <ShowRouteButton villageCoords={villageCoords} villageName={villageName} />
       </div>
 
-      {/* Кнопка «Путь» — боевой компонент, взят как есть. Показывается
-          только если у человека сохранён домашний адрес. */}
-      <ShowRouteButton villageCoords={villageCoords} villageName={villageName} />
-    </div>
+      {mounted &&
+        fullscreen &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] bg-[#0b0e13]">
+            {frame("h-[100dvh]")}
+            <button
+              type="button"
+              onClick={() => setFullscreen(false)}
+              aria-label="Закрыть карту"
+              style={glassStyle}
+              className="absolute right-3 top-3 z-10 flex h-12 items-center gap-2 rounded-full px-4 text-[14px] font-bold text-white"
+            >
+              <X className="h-4 w-4" />
+              Закрыть
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
