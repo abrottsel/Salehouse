@@ -15,24 +15,32 @@ import { useTier } from "../../../_lib/perf";
 export default function AuroraPlus() {
   const tier = useTier();
 
+  // Звёзды раскиданы по всей площади, а не по эллипсу вокруг центра: при
+  // узком телефонном экране прежняя раскладка сгоняла их за заголовок и под
+  // нижнее затемнение, и на экране не оставалось почти ничего.
   const stars = useMemo(
     () =>
-      Array.from({ length: 46 }, (_, i) => {
-        const a = (i * 137.508) % 360;
-        const r = ((i * 61) % 100) / 100;
+      Array.from({ length: 90 }, (_, i) => {
+        // Две золотые последовательности — равномерно и без Math.random().
+        const x = ((i * 0.618033988749895) % 1) * 100;
+        const y = ((i * 0.7548776662466927) % 1) * 72; // низ занят затемнением
         return {
-          left: `${(Math.cos((a * Math.PI) / 180) * r * 0.52 + 0.5) * 100}%`,
-          top: `${(Math.sin((a * Math.PI) / 180) * r * 0.52 + 0.5) * 100}%`,
-          size: 1.6 + ((i * 7) % 4) * 0.7,
+          left: `${x}%`,
+          top: `${y}%`,
+          size: 2 + ((i * 7) % 4),
           delay: `${((i * 13) % 40) / 10}s`,
-          dur: `${2.6 + ((i * 17) % 26) / 10}s`,
+          dur: `${2.4 + ((i * 17) % 26) / 10}s`,
         };
       }),
     [],
   );
 
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      data-tier={tier}
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
       <div
         className="absolute inset-0"
         style={{

@@ -30,6 +30,7 @@ import {
   EMPTY_FILTERS,
   filtersActive,
   fitView,
+  frameSize,
   passesFilters,
   plotKind,
   RESERVED_COLOR,
@@ -90,6 +91,7 @@ interface Reactified {
     mode?: "vector" | "raster";
     behaviors?: readonly string[];
     zoomRange?: { min: number; max: number };
+    zoomRounding?: "snap" | "smooth" | "auto";
     children?: ReactNode;
   }>;
   YMapDefaultSchemeLayer: ComponentType<Record<string, unknown>>;
@@ -122,8 +124,21 @@ const BEHAVIORS = ["drag", "pinchZoom", "dblClick"] as const;
 const ZOOM_RANGE = { min: 3, max: 20 } as const;
 
 /** Запас под панели, чтобы «домой» не прятал края посёлка под интерфейс. */
-const PADDING_DESKTOP = { top: 88, right: 76, bottom: 56, left: 24 };
-const PADDING_MOBILE = { top: 84, right: 62, bottom: 52, left: 14 };
+const PADDING_DESKTOP = { top: 84, right: 72, bottom: 52, left: 20 };
+const PADDING_MOBILE = { top: 78, right: 58, bottom: 44, left: 10 };
+
+/**
+ * Границы самого кадра карты.
+ *
+ * maxH — потолок высоты: генплан обязан помещаться в экран ноутбука и
+ * телефона без прокрутки, поэтому считаем от высоты окна, а не от svh в
+ * классах (там же адресная строка iOS).
+ * minW нужен только широкому экрану: у вытянутого вверх посёлка кадр по
+ * пропорциям вышел бы совсем узким, и карта стала бы маркой посреди тёмной
+ * полосы. На телефоне кадр всегда во всю ширину секции.
+ */
+const FRAME_DESKTOP = { vhShare: 0.74, maxH: 760, minH: 440, minW: 420, minWShare: 0.34 };
+const FRAME_MOBILE = { vhShare: 0.72, maxH: 640, minH: 360, minW: 0, minWShare: 1 };
 
 /**
  * Размер кружка по зуму. У Земекс он фиксированный 25px, но их генплан
@@ -179,12 +194,12 @@ export default function PlotMapDark({
   const touchedRef = useRef(false);
   const gateDismissedRef = useRef(false);
 
-  /** Реальный размер контейнера карты. Считаем посадку от него, а не от
-   *  window: контейнер может смонтироваться нулевым (скрытая вкладка,
-   *  ленивый блок) — тогда fitBounds по нулю даёт зум «вся страна». */
-  const [shellEl, setShellEl] = useState<HTMLDivElement | null>(null);
-  const sizeRef = useRef({ w: 0, h: 0 });
-  const [narrow, setNarrow] = useState(false);
+  /** Ширина места под карту (секция, а не сам кадр — иначе замер и размер
+   *  кадра зациклятся) и высота окна. Из этих двух чисел и габаритов
+   *  посёлка считается и размер кадра, и посадка в него. */
+  const [hostEl, setHostEl] = useState<HTMLDivElement | null>(null);
+  const [hostW, setHostW] = useState(0);
+  const [viewportH, setViewportH] = useState(0);
 
   // ── данные Земекс ──────────────────────────────────────────
   useEffect(() => {
@@ -250,15 +265,29 @@ export default function PlotMapDark({
     [],
   );
 
+  /**
+   * Кадр карты под этот посёлок: его пропорции повторяют пропорции границ
+   * посёлка, поэтому после посадки он занимает почти весь кадр, а не треть.
+   */
+  const frame = useMemo(() => {
+    if (!bounds || hostW < 1 || viewportH < 1) return null;
+    const wide = hostW >= 640;
+    const pad = wide ? PADDING_DESKTOP : PADDING_MOBILE;
+    const f = wide ? FRAME_DESKTOP : FRAME_MOBILE;
+    const maxH = Math.min(Math.round(viewportH * f.vhShare), f.maxH);
+    const size = frameSize(bounds, hostW, maxH, pad, {
+      minW: Math.max(f.minW, Math.round(hostW * f.minWShare)),
+      minH: Math.min(f.minH, maxH),
+    });
+    return { ...size, pad, wide };
+  }, [bounds, hostW, viewportH]);
+
   const fitVillage = useCallback(
     (animate: boolean) => {
-      if (!bounds) return;
-      const size = sizeRef.current;
-      if (size.w < 1 || size.h < 1) return;
-      const pad = size.w >= 640 ? PADDING_DESKTOP : PADDING_MOBILE;
-      applyView(fitView(bounds, size, pad, ZOOM_RANGE), animate);
+      if (!bounds || !frame) return;
+      applyView(fitView(bounds, frame, frame.pad, ZOOM_RANGE), animate);
     },
-    [bounds, applyView],
+    [bounds, frame, applyView],
   );
 
   /**
@@ -275,32 +304,38 @@ export default function PlotMapDark({
     };
   }
 
-  // Стартовое состояние = «домой». Считаем его от реального размера
-  // контейнера: он же ловит и поворот телефона, и ресайз окна, и
-  // переход из нулевой ширины (скрытая вкладка, ленивый блок).
-  // Пока пользователь ничего не двигал — пересобираем посадку под кадр.
+  // Ширину места под карту берём с секции: она не зависит от того, какой
+  // кадр мы из неё же и посчитаем. Нулевую ширину (скрытая вкладка, ленивый
+  // блок) пропускаем — посадка по нулю дала бы зум «вся страна».
   useEffect(() => {
-    if (!shellEl || typeof ResizeObserver === "undefined") return;
-    let t: ReturnType<typeof setTimeout>;
+    if (!hostEl || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver((entries) => {
-      const r = entries[0]?.contentRect;
-      if (!r) return;
-      const prev = sizeRef.current;
-      sizeRef.current = { w: r.width, h: r.height };
-      if (r.width < 1 || r.height < 1) return;
-      setNarrow(r.width < 640);
-      const grew =
-        prev.w < 1 || Math.abs(prev.w - r.width) > 32 || Math.abs(prev.h - r.height) > 32;
-      if (!grew || touchedRef.current) return;
-      clearTimeout(t);
-      t = setTimeout(() => fitVillage(false), 160);
+      const w = entries[0]?.contentRect.width ?? 0;
+      if (w < 1) return;
+      setHostW((prev) => (Math.abs(prev - w) < 1 ? prev : w));
     });
-    ro.observe(shellEl);
+    ro.observe(hostEl);
+    return () => ro.disconnect();
+  }, [hostEl]);
+
+  useEffect(() => {
+    const sync = () => setViewportH(window.innerHeight);
+    sync();
+    window.addEventListener("resize", sync);
+    window.addEventListener("orientationchange", sync);
     return () => {
-      clearTimeout(t);
-      ro.disconnect();
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
     };
-  }, [shellEl, fitVillage]);
+  }, []);
+
+  // Стартовое состояние = «домой». Пересобираем посадку на каждый новый
+  // кадр (первый замер, поворот телефона, ресайз окна) — пока пользователь
+  // сам ничего не двигал.
+  useEffect(() => {
+    if (!frame || touchedRef.current) return;
+    fitVillage(false);
+  }, [frame, fitVillage]);
 
   // ── мобильная шторка ───────────────────────────────────────
   // Ставим только после монтирования: на сервере ширины нет, а рисовать
@@ -468,7 +503,7 @@ export default function PlotMapDark({
   const markers = useMemo(() => {
     if (!C || !data) return null;
     const { YMapMarker } = C;
-    const size = circleSize(zoomBucket, narrow);
+    const size = circleSize(zoomBucket, frame ? !frame.wide : false);
     const showSoldNumbers = zoomBucket >= 17;
 
     return data.plots.map((p) => {
@@ -527,30 +562,36 @@ export default function PlotMapDark({
         </YMapMarker>
       );
     });
-  }, [C, data, kinds, matched, selectedNumber, zoomBucket, narrow, selectPlot]);
+  }, [C, data, kinds, matched, selectedNumber, zoomBucket, frame, selectPlot]);
 
   // ── состояния ──────────────────────────────────────────────
   if (dataError || bundle.kind === "blocked") {
     return (
-      <MapError
-        title="Карта участков недоступна"
-        detail={
-          dataError
-            ? `Данные Земекс не пришли (${dataError}). Так бывает, если у сервиса Земекс перерыв или сеть режет запрос — на проде карта работает.`
-            : bundle.kind === "blocked"
-              ? `Яндекс.Карты не загрузились: ${bundle.error}. Обычно это приватный режим Safari или блокировщик — откройте страницу в обычном окне.`
-              : ""
-        }
-        onRetry={() => {
-          resetYmaps3Loader();
-          setAttempt((n) => n + 1);
-        }}
-      />
+      <div ref={setHostEl} className="w-full">
+        <MapError
+          title="Карта участков недоступна"
+          detail={
+            dataError
+              ? `Данные Земекс не пришли (${dataError}). Так бывает, если у сервиса Земекс перерыв или сеть режет запрос — на проде карта работает.`
+              : bundle.kind === "blocked"
+                ? `Яндекс.Карты не загрузились: ${bundle.error}. Обычно это приватный режим Safari или блокировщик — откройте страницу в обычном окне.`
+                : ""
+          }
+          onRetry={() => {
+            resetYmaps3Loader();
+            setAttempt((n) => n + 1);
+          }}
+        />
+      </div>
     );
   }
 
   if (!data || bundle.kind !== "ready") {
-    return <MapSkeleton label="Загружаем генплан…" />;
+    return (
+      <div ref={setHostEl} className="w-full">
+        <MapSkeleton label="Загружаем генплан…" />
+      </div>
+    );
   }
 
   const {
@@ -569,141 +610,157 @@ export default function PlotMapDark({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-[28px] bg-[#0b0e13] ring-1 ring-white/10">
-        {/* Высота подобрана так, чтобы генплан целиком помещался в экран
-            ноутбука и телефона: svh не скачет от адресной строки iOS. */}
+      <div ref={setHostEl} className="w-full">
         <div
-          ref={setShellEl}
-          className="relative h-[70svh] max-h-[760px] min-h-[430px] sm:h-[74vh]"
+          className="relative mx-auto overflow-hidden rounded-[28px] bg-[#0b0e13] ring-1 ring-white/10"
+          style={frame ? { width: frame.w } : undefined}
         >
-          <div className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}>
-            <YMap
-              location={
-                location ?? initialLocationRef.current ?? { center: [37.6173, 55.7558], zoom: 9 }
-              }
-              mode="vector"
-              behaviors={BEHAVIORS}
-              zoomRange={ZOOM_RANGE}
-            >
-              {/* Схема всегда смонтирована — на ней держится векторный
-                  конвейер. Спутник кладётся сверху, features — над обоими. */}
-              <YMapDefaultSchemeLayer theme="dark" />
-              {satellite && <YMapDefaultSatelliteLayer />}
-              <YMapDefaultFeaturesLayer zIndex={2000} />
+          {/* Кадр подогнан под пропорции этого посёлка (frameSize): он
+              заполняет его почти целиком и при этом помещается в экран
+              ноутбука и телефона. Классы — запасной вариант на тот кадр,
+              пока ширина секции ещё не замерена. */}
+          <div
+            className="relative h-[70svh] max-h-[760px] min-h-[430px] sm:h-[74vh]"
+            style={
+              // min-h/max-h из классов перебивают инлайновый height, поэтому
+              // при известном кадре гасим и их.
+              frame ? { height: frame.h, minHeight: frame.h, maxHeight: frame.h } : undefined
+            }
+          >
+            <div className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}>
+              <YMap
+                location={
+                  location ?? initialLocationRef.current ?? { center: [37.6173, 55.7558], zoom: 9 }
+                }
+                mode="vector"
+                behaviors={BEHAVIORS}
+                zoomRange={ZOOM_RANGE}
+                /* Дробный зум обязателен: посадка почти никогда не попадает
+                   в целое число, а при zoomRounding="auto" карта без
+                   WebGL уходит в растр и округляет зум ВВЕРХ — посёлок
+                   при этом обрезается по краям. */
+                zoomRounding="smooth"
+              >
+                {/* Схема всегда смонтирована — на ней держится векторный
+                    конвейер. Спутник кладётся сверху, features — над обоими. */}
+                <YMapDefaultSchemeLayer theme="dark" />
+                {satellite && <YMapDefaultSatelliteLayer />}
+                <YMapDefaultFeaturesLayer zIndex={2000} />
 
-              {data.villageCoords.length >= 3 && (
-                <YMapFeature
-                  geometry={{
-                    type: "Polygon",
-                    coordinates: [ringToLngLat(data.villageCoords)],
-                  }}
-                  style={{
-                    fill: "#34d399",
-                    fillOpacity: 0.02,
-                    stroke: [{ color: "#34d399", width: 1.8, opacity: 0.6 }],
-                  }}
-                />
-              )}
+                {data.villageCoords.length >= 3 && (
+                  <YMapFeature
+                    geometry={{
+                      type: "Polygon",
+                      coordinates: [ringToLngLat(data.villageCoords)],
+                    }}
+                    style={{
+                      fill: "#34d399",
+                      fillOpacity: 0.02,
+                      stroke: [{ color: "#34d399", width: 1.8, opacity: 0.6 }],
+                    }}
+                  />
+                )}
 
-              {polygons}
-              {markers}
+                {polygons}
+                {markers}
 
-              {me && (
-                <YMapMarker coordinates={me} zIndex={1200}>
-                  <span className="relative block h-0 w-0">
-                    <span className="absolute -left-2 -top-2 block h-4 w-4 rounded-full bg-sky-400 shadow-[0_0_0_2px_#fff,0_0_18px_rgba(56,189,248,0.9)]" />
-                  </span>
-                </YMapMarker>
-              )}
+                {me && (
+                  <YMapMarker coordinates={me} zIndex={1200}>
+                    <span className="relative block h-0 w-0">
+                      <span className="absolute -left-2 -top-2 block h-4 w-4 rounded-full bg-sky-400 shadow-[0_0_0_2px_#fff,0_0_18px_rgba(56,189,248,0.9)]" />
+                    </span>
+                  </YMapMarker>
+                )}
 
-              <YMapListener onUpdate={onMapUpdate} />
-              <YMapListener onActionEnd={onActionEnd} />
-            </YMap>
-          </div>
-
-          {/* ── фильтры + счётчик слева сверху ── */}
-          <div className="pointer-events-none absolute left-3 right-[62px] top-3 z-20 sm:left-5 sm:right-[92px] sm:top-5">
-            <div className="pointer-events-auto mb-2 inline-flex items-center gap-2 rounded-full bg-[#0e1218]/85 px-3 py-1.5 text-[11.5px] ring-1 ring-white/12 backdrop-blur-md">
-              <span className="font-extrabold text-white/90">{data.villageName}</span>
-              <span className="h-3 w-px bg-white/15" />
-              <span className="font-bold tabular-nums text-emerald-300">
-                {data.statistics.free}
-              </span>
-              <span className="text-white/45">
-                свободно из <span className="tabular-nums">{data.plots.length}</span>
-              </span>
+                <YMapListener onUpdate={onMapUpdate} />
+                <YMapListener onActionEnd={onActionEnd} />
+              </YMap>
             </div>
 
-            <FilterBar
-              open={openChip}
-              onOpen={setOpenChip}
-              filters={filters}
-              onChange={setFilters}
-              onReset={() => {
-                setFilters(EMPTY_FILTERS);
-                setHiddenTiers(new Set());
-              }}
-              hasFilters={hasFilters}
-              utpOptions={utpOptions}
-              matchCount={matched.size}
-            />
-          </div>
+            {/* ── фильтры + счётчик слева сверху ── */}
+            <div className="pointer-events-none absolute left-3 right-[62px] top-3 z-20 sm:left-5 sm:right-[92px] sm:top-5">
+              <div className="pointer-events-auto mb-2 inline-flex items-center gap-2 rounded-full bg-[#0e1218]/85 px-3 py-1.5 text-[11.5px] ring-1 ring-white/12 backdrop-blur-md">
+                <span className="font-extrabold text-white/90">{data.villageName}</span>
+                <span className="h-3 w-px bg-white/15" />
+                <span className="font-bold tabular-nums text-emerald-300">
+                  {data.statistics.free}
+                </span>
+                <span className="text-white/45">
+                  свободно из <span className="tabular-nums">{data.plots.length}</span>
+                </span>
+              </div>
 
-          {/* ── колонка управления справа ── */}
-          <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
-            <ControlRail
-              satellite={satellite}
-              onToggleBase={() => setSatellite((v) => !v)}
-              legendOpen={legendOpen}
-              onToggleLegend={() => setLegendOpen((v) => !v)}
-              onZoomIn={() => zoomBy(1)}
-              onZoomOut={() => zoomBy(-1)}
-              onLocate={locate}
-              onHome={() => {
-                touchedRef.current = false;
-                setSelected(null);
-                fitVillage(true);
-              }}
-              locating={locating}
-            />
-          </div>
+              <FilterBar
+                open={openChip}
+                onOpen={setOpenChip}
+                filters={filters}
+                onChange={setFilters}
+                onReset={() => {
+                  setFilters(EMPTY_FILTERS);
+                  setHiddenTiers(new Set());
+                }}
+                hasFilters={hasFilters}
+                utpOptions={utpOptions}
+                matchCount={matched.size}
+              />
+            </div>
 
-          {/* ── легенда слева снизу, выше плашки «Открыть Яндекс Карты» ── */}
-          <div className="pointer-events-none absolute bottom-[58px] left-3 z-20 sm:bottom-[64px] sm:left-5">
-            <AnimatePresence>
-              {legendOpen && data.priceTiers.length > 0 && (
-                <LegendPanel
-                  tiers={data.priceTiers}
-                  hidden={hiddenTiers}
-                  onToggle={toggleTier}
-                  counts={tierCounts}
-                  hasReserved={data.statistics.reserved > 0}
-                  hasSold={data.statistics.sold > 0}
-                  onClose={() => setLegendOpen(false)}
-                />
-              )}
-            </AnimatePresence>
-          </div>
+            {/* ── колонка управления справа ── */}
+            <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
+              <ControlRail
+                satellite={satellite}
+                onToggleBase={() => setSatellite((v) => !v)}
+                legendOpen={legendOpen}
+                onToggleLegend={() => setLegendOpen((v) => !v)}
+                onZoomIn={() => zoomBy(1)}
+                onZoomOut={() => zoomBy(-1)}
+                onLocate={locate}
+                onHome={() => {
+                  touchedRef.current = false;
+                  setSelected(null);
+                  fitVillage(true);
+                }}
+                locating={locating}
+              />
+            </div>
 
-          {/* ── карточка участка ── */}
-          {/* Приподняты над обязательной плашкой копирайта Яндекса —
-              её перекрывать нельзя, а она сидит по низу карты. */}
-          <div className="pointer-events-none absolute bottom-[46px] left-3 right-3 z-30 flex justify-end sm:left-auto sm:right-5">
-            <AnimatePresence>
-              {selected && (
-                <PlotCard
-                  plot={selected}
-                  kind={selectedKind}
-                  onClose={() => setSelected(null)}
-                  onBook={() => setBooking(true)}
-                  canBook={selectedKind === "free" && Boolean(bookingUrl)}
-                />
-              )}
-            </AnimatePresence>
-          </div>
+            {/* ── легенда слева снизу, выше плашки «Открыть Яндекс Карты» ── */}
+            <div className="pointer-events-none absolute bottom-[58px] left-3 z-20 sm:bottom-[64px] sm:left-5">
+              <AnimatePresence>
+                {legendOpen && data.priceTiers.length > 0 && (
+                  <LegendPanel
+                    tiers={data.priceTiers}
+                    hidden={hiddenTiers}
+                    onToggle={toggleTier}
+                    counts={tierCounts}
+                    hasReserved={data.statistics.reserved > 0}
+                    hasSold={data.statistics.sold > 0}
+                    onClose={() => setLegendOpen(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
 
-          {/* ── мобильная шторка ── */}
-          <AnimatePresence>
+            {/* ── карточка участка ── */}
+            {/* Приподняты над обязательной плашкой копирайта Яндекса —
+                её перекрывать нельзя, а она сидит по низу карты. */}
+            <div className="pointer-events-none absolute bottom-[46px] left-3 right-3 top-3 z-30 flex items-end justify-end sm:left-auto sm:right-5">
+              <AnimatePresence>
+                {selected && (
+                  <PlotCard
+                    plot={selected}
+                    kind={selectedKind}
+                    onClose={() => setSelected(null)}
+                    onBook={() => setBooking(true)}
+                    canBook={selectedKind === "free" && Boolean(bookingUrl)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ── мобильная шторка ── */}
+            {/* Без AnimatePresence: узел должен исчезать сразу по тапу, а не
+                после exit-анимации, которая в фоновой вкладке не тикает. */}
             {gated && (
               <TouchGate
                 onOpen={() => {
@@ -712,7 +769,7 @@ export default function PlotMapDark({
                 }}
               />
             )}
-          </AnimatePresence>
+          </div>
         </div>
       </div>
 

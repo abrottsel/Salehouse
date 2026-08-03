@@ -116,11 +116,11 @@ export function boundsOf(data: VillageMap): LngLatBounds | null {
 
   if (!Number.isFinite(minLat) || !Number.isFinite(minLon)) return null;
 
-  // Небольшой геозапас поверх пиксельного padding: если рантайм ymaps3
-  // проигнорирует padding (в типах его нет, хоть он и работает),
-  // посёлок всё равно не упрётся в края.
-  const padLat = Math.max((maxLat - minLat) * 0.06, 0.00035);
-  const padLon = Math.max((maxLon - minLon) * 0.06, 0.00055);
+  // Небольшой геозапас поверх пиксельного padding. Держим его маленьким:
+  // каждый процент здесь — это процент, на который посёлок ужимается в
+  // кадре, а кадр мы и так сажаем по границам посёлка.
+  const padLat = Math.max((maxLat - minLat) * 0.025, 0.00015);
+  const padLon = Math.max((maxLon - minLon) * 0.025, 0.00025);
 
   return [
     [minLon - padLon, minLat - padLat],
@@ -195,6 +195,49 @@ export function fitView(
   const my = cy * world - (pad.top - pad.bottom) / 2;
 
   return { center: [(mx / world) * 360 - 180, invMercY(my / world)], zoom };
+}
+
+/**
+ * Размер самого кадра карты под конкретный посёлок.
+ *
+ * Раньше кадр был фиксированным (70svh на телефоне, 74vh на десктопе), и
+ * посёлок в него вписывался «по контейну»: у «Фаворита» пропорции 1,36:1,
+ * а мобильный кадр — 0,6:1, поэтому по ширине посёлок ложился впритык, а по
+ * высоте занимал треть — остальное добирали соседние деревни. На десктопе
+ * ровно наоборот: кадр 2:1, посёлок упирался в высоту, а по бокам оставалось
+ * полкадра окрестностей.
+ *
+ * Поэтому кадр подгоняем под пропорции посёлка: свободную область (кадр
+ * минус отступы под панели) делаем такой же формы, что и bounds. Тогда
+ * посёлок заполняет кадр по обеим осям, оставаясь целиком видимым.
+ *
+ * Ограничители: по ширине не больше доступной и не меньше minW (иначе на
+ * широком мониторе вытянутый посёлок сжал бы карту в марку), по высоте — не
+ * выше maxH (кадр обязан помещаться в экран без прокрутки) и не ниже minH.
+ */
+export function frameSize(
+  bounds: LngLatBounds,
+  availW: number,
+  maxH: number,
+  pad: Padding,
+  limits: { minW: number; minH: number },
+): { w: number; h: number } {
+  const [[minLon, minLat], [maxLon, maxLat]] = bounds;
+
+  const wFrac = Math.max((maxLon - minLon) / 360, 1e-9);
+  const hFrac = Math.max(mercY(minLat) - mercY(maxLat), 1e-9);
+  const aspect = wFrac / hFrac;
+
+  const roomW = Math.max(48, availW - pad.left - pad.right);
+  const roomH = Math.max(48, maxH - pad.top - pad.bottom);
+
+  const innerW = Math.min(roomW, roomH * aspect);
+  const innerH = innerW / aspect;
+
+  return {
+    w: Math.round(Math.min(availW, Math.max(limits.minW, innerW + pad.left + pad.right))),
+    h: Math.round(Math.min(maxH, Math.max(limits.minH, innerH + pad.top + pad.bottom))),
+  };
 }
 
 /** Уникальные УТП по всем участкам — из них собираем фильтр «Преимущества». */

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Уровень эффектов под устройство.
@@ -29,33 +29,52 @@ function detect(): Tier {
   if (nav.connection?.saveData) return "lite";
   if (/2g|slow-2g/.test(nav.connection?.effectiveType ?? "")) return "lite";
 
-  // Мало ядер или мало памяти — почти наверняка старый телефон.
-  if (typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency <= 4) return "lite";
-  if (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4) return "lite";
+  // Пороги намеренно низкие. Safari на iPhone отдаёт 4 ядра даже на свежих
+  // моделях, а deviceMemory не отдаёт вовсе — прежние «<= 4» записывали в
+  // слабые современные айфоны и гасили на них все эффекты.
+  if (typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency <= 2) return "lite";
+  if (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 2) return "lite";
 
   // iOS 15 и старше: Safari не отдаёт deviceMemory, ловим по версии.
   const m = navigator.userAgent.match(/OS (\d+)_/);
   if (m && Number(m[1]) < 16) return "lite";
 
-  // backdrop-filter без префикса — грубый признак свежего движка.
-  if (typeof CSS !== "undefined" && !CSS.supports?.("backdrop-filter", "blur(1px)")) return "lite";
+  // Признак совсем древнего движка — отсутствие backdrop-filter в любом виде.
+  // Проверять только беспрефиксный вариант нельзя: Safari до 18-й поддерживает
+  // исключительно -webkit-backdrop-filter, и такая проверка записывала в
+  // «слабые» все айфоны разом — то есть ровно ту платформу, где основной трафик.
+  if (typeof CSS !== "undefined" && CSS.supports) {
+    const hasBackdrop =
+      CSS.supports("backdrop-filter", "blur(1px)") ||
+      CSS.supports("-webkit-backdrop-filter", "blur(1px)");
+    if (!hasBackdrop) return "lite";
+  }
 
   return "full";
 }
 
 let cached: Tier | null = null;
-const noopSubscribe = () => () => {};
 
 /**
- * Серверный снимок всегда "lite" — на сервере ни матчмедиа, ни навигатора
- * нет, и первый клиентский кадр обязан совпасть с серверным, иначе
- * гидрация ругается. Реальный уровень React подставит сразу после неё.
- * Детект считаем один раз на вкладку: он не меняется по ходу жизни.
+ * Стартуем с "lite": на сервере ни matchMedia, ни navigator нет, а первый
+ * клиентский кадр обязан совпасть с серверным, иначе ломается гидрация.
+ * Настоящий уровень включаем сразу после монтирования.
+ *
+ * Раньше здесь стоял useSyncExternalStore с подпиской-пустышкой. Так делать
+ * нельзя: подписка никогда не срабатывает, и React после гидрации не
+ * пересчитывал значение — useTier() возвращал "lite" на любом устройстве,
+ * и богатые эффекты не включались вообще ни у кого.
+ *
+ * Именно setTimeout, а не requestAnimationFrame: в фоновой вкладке кадры не
+ * выдаются вовсе, и на rAF уровень так и остался бы заниженным.
  */
 export function useTier(): Tier {
-  return useSyncExternalStore(
-    noopSubscribe,
-    () => (cached ??= detect()),
-    () => "lite" as Tier,
-  );
+  const [tier, setTier] = useState<Tier>("lite");
+
+  useEffect(() => {
+    const id = setTimeout(() => setTier((cached ??= detect())), 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  return tier;
 }

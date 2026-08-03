@@ -22,7 +22,7 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { money } from "../shared";
 import {
@@ -554,7 +554,9 @@ export function PlotCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 18, scale: 0.98 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-auto w-full rounded-[22px] p-4 sm:w-[302px]"
+      // max-h-full: кадр карты теперь считается под пропорции посёлка и в
+      // альбомной ориентации бывает низким — карточка обязана в него влезть.
+      className="pointer-events-auto max-h-full w-full overflow-y-auto rounded-[22px] p-4 sm:w-[302px]"
       style={GLASS}
     >
       <div className="flex items-start justify-between gap-2">
@@ -655,16 +657,38 @@ export function PlotCard({
  * Мобильная шторка. Карта под ней уже отрисована и показывает генплан —
  * это превью, а не картинка-заглушка. Пока шторка на месте, карта не
  * получает касаний и страница листается как обычно.
+ *
+ * Осознанно без framer-motion. Появление и уход шторки шли через
+ * AnimatePresence, а он снимает узел только по завершении exit-анимации —
+ * то есть по rAF. В фоновой или задросселенной вкладке rAF не тикает, и
+ * подпись «Коснитесь…» оставалась висеть поверх уже интерактивной карты.
+ * Монтирование/размонтирование должно быть детерминированным.
+ *
+ * Открываем по pointerup рядом с точкой нажатия, а не по click: на телефоне
+ * браузер гасит click, если палец сместился на пару пикселей или страница
+ * успела прокрутиться, и тап «не срабатывал». Порог в 14px оставляет
+ * настоящий свайп-скролл странице — шторка при нём не снимается.
  */
 export function TouchGate({ onOpen }: { onOpen: () => void }) {
+  const down = useRef<{ x: number; y: number } | null>(null);
+
   return (
-    <motion.button
+    <button
       type="button"
+      onPointerDown={(e) => {
+        down.current = { x: e.clientX, y: e.clientY };
+      }}
+      onPointerUp={(e) => {
+        const start = down.current;
+        down.current = null;
+        if (!start) return;
+        if (Math.abs(e.clientX - start.x) > 14 || Math.abs(e.clientY - start.y) > 14) return;
+        onOpen();
+      }}
+      onPointerCancel={() => {
+        down.current = null;
+      }}
       onClick={onOpen}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.22 }}
       className="absolute inset-0 z-40 grid place-items-center bg-[#0b0e13]/35"
       aria-label="Открыть карту"
     >
@@ -674,7 +698,7 @@ export function TouchGate({ onOpen }: { onOpen: () => void }) {
       >
         Коснитесь, чтобы открыть карту
       </span>
-    </motion.button>
+    </button>
   );
 }
 

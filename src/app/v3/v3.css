@@ -48,17 +48,21 @@
 @keyframes v3-twinkle-bright {
   0%,
   100% {
-    opacity: 0.25;
-    transform: scale(0.9);
+    opacity: 0.45;
+    transform: scale(0.85);
   }
   50% {
     opacity: 1;
-    transform: scale(1.15);
+    transform: scale(1.25);
   }
 }
 .v3-star-bright {
   animation: v3-twinkle-bright 3s ease-in-out infinite;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  /* Двойной ореол: на телефоне при уличной яркости одиночная точка в 2px
+     не читается, её вытягивает именно свечение вокруг. */
+  box-shadow:
+    0 0 4px rgba(255, 255, 255, 1),
+    0 0 12px rgba(167, 243, 208, 0.75);
 }
 
 @keyframes v3-meteor {
