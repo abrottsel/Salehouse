@@ -1,44 +1,41 @@
 import { villages } from "@/lib/data";
-import MapStage from "./_components/MapStage";
+import { extractVillageUuid } from "@/lib/village-stats";
+import PlotMapDark from "./_components/PlotMapDark";
 
 /**
- * /v3 — демо-стенд нового слоя над картой участков.
- *
- * Прод не затронут: сюда ничего не импортируется из боевой страницы
- * посёлка, а боевая страница ничего не берёт отсюда.
+ * /v3 — стенд нового дизайна. Первый собранный кусок: карта участков.
+ * Прод не затронут: ничего не импортируется из боевых страниц и
+ * ничего отсюда в них не используется.
  */
 export default function V3Page() {
   const village = villages.find((v) => v.slug === "favorit") ?? villages[0];
+  const uuid = extractVillageUuid(village.iframeMapUrl, village.mapUuid);
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-12">
-      <header className="mb-7">
-        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/55 ring-1 ring-white/12">
+    <main className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14">
+      <header className="mb-8">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300 ring-1 ring-emerald-400/25">
           демо · v3
         </div>
-        <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-          Новый слой поверх карты участков
+        <h1 className="text-4xl font-extrabold leading-[1.05] sm:text-6xl">
+          Карта участков,
+          <br />
+          <span className="bg-gradient-to-r from-emerald-300 to-lime-300 bg-clip-text text-transparent">
+            на которой видно свободные
+          </span>
         </h1>
-        <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-white/60">
-          Три варианта интерфейса над фреймом Земекс. Фрейм остаётся источником
-          данных и местом брони — меняется только слой поверх него. Посёлок для
-          примера — {village.name}.
+        <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-white/55">
+          Данные и бронирование — из системы Земекс, как и раньше. Изменилось
+          то, как это показано: проданные уходят в фон, свободные светятся,
+          появился фильтр по площади и бюджету и карточка участка с кадастром.
         </p>
       </header>
 
-      <MapStage
-        village={{
-          name: village.name,
-          priceFrom: village.priceFrom,
-          plotsCount: village.plotsCount,
-          plotsAvailable: village.plotsAvailable,
-          areaFrom: village.areaFrom,
-          areaTo: village.areaTo,
-          distance: village.distance,
-          direction: village.direction,
-        }}
-        iframeUrl={village.iframeMapUrl}
-      />
+      {uuid ? (
+        <PlotMapDark uuid={uuid} bookingUrl={village.iframeMapUrl} />
+      ) : (
+        <p className="text-white/50">У посёлка нет карты Земекс.</p>
+      )}
     </main>
   );
 }
