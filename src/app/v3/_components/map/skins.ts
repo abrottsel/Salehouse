@@ -6,9 +6,10 @@
  * Поэтому весь вкус вынесен сюда — палитра, заливки, контуры, подложка, — а
  * PlotMapDark просто читает готовый набор констант.
  *
- * Переключение: `?skin=pastel|contrast|satellite|mono|paper`. Без флага —
- * `current`, то есть ровно то, что стоит сейчас, байт в байт. Когда вариант
- * выберут, лишние скины и флаг удаляются, а выбранный остаётся единственным.
+ * Заказчик посмотрел все шесть и выбрал «Контраст» — он и стоит по умолчанию,
+ * без всякого флага. Остальные скины оставлены живыми: `?skin=current|pastel|
+ * satellite|mono|paper` по-прежнему переключает, пока выбор не закреплён
+ * окончательно. Когда закрепят — лишние скины и флаг удаляются.
  *
  * Правила, которые обязан соблюдать любой скин (из ТЗ, не отступать):
  *   • нарезка участков видна всегда — контур клетки не растворяется в фоне;
@@ -274,9 +275,16 @@ const PASTEL: MapSkin = {
 };
 
 /**
- * «Контраст». Подложка обесцвечена почти в белое, проданные едва читаются
- * бледной клеткой, а свободные заливаются целиком сочным цветом тира.
- * Взгляд цепляется ровно за то, что можно купить.
+ * «Контраст» — вариант заказчика, стоит по умолчанию. Подложка обесцвечена
+ * почти в белое, проданные едва читаются бледной клеткой, а свободные
+ * заливаются целиком сочным цветом тира. Взгляд цепляется ровно за то, что
+ * можно купить.
+ *
+ * Граница посёлка нарочно толстая (1,5 мм ≈ 5,6 CSS-px) и насыщенно-зелёная:
+ * на обесцвеченной подложке она единственная держит контур территории, и
+ * заказчик просил, чтобы «где посёлок» читалось с первого взгляда. Зелёный
+ * взят изумрудный (#059669) — он темнее и холоднее, чем зелёный тир цены
+ * (#22c55e), поэтому рамку не путаешь с заливкой свободного участка.
  */
 const CONTRAST: MapSkin = {
   id: "contrast",
@@ -293,7 +301,7 @@ const CONTRAST: MapSkin = {
     { tags: "road", elements: "geometry.outline", stylers: [{ color: "#e4e8ec" }] },
     { tags: { any: ["poi", "transit"] }, elements: "label", stylers: [{ visibility: "off" }] },
   ],
-  village: { fill: "#94a3b8", fillOpacity: 0.03, stroke: "#94a3b8", strokeWidth: 1.8 },
+  village: { fill: "#059669", fillOpacity: 0.03, stroke: "#059669", strokeWidth: 5.6 },
   idle: {
     fill: "#ffffff",
     fillOpacity: 0.72,
@@ -312,7 +320,9 @@ const CONTRAST: MapSkin = {
   selected: { fillOpacity: 0.86, stroke: "#0f172a" },
   hover: { fill: "#0f172a", fillOpacity: 0.09, stroke: "#0f172a" },
   tiers: TIERS_VIVID,
-  soldGlyph: { fill: "#f1f4f8", stroke: "#d5dce4", opacity: 0.9, scale: 0.88 },
+  // Контурный домик: подложка почти белая, чтобы линия не спорила с нарезкой,
+  // а сама линия — приглушённо-серая, читаемая, но тише любого свободного.
+  soldGlyph: { fill: "#f7f9fb", stroke: "#9aa7b5", opacity: 0.95, scale: 1.02 },
   soldInk: "#a9b4c0",
   dot: { scale: 1.06, shadow: "0 0 0 2px #ffffff, 0 2px 7px rgba(15,23,42,0.32)" },
   halo: HALO_LIGHT,
@@ -458,9 +468,14 @@ export const SKINS: Readonly<Record<SkinId, MapSkin>> = {
   paper: PAPER,
 };
 
+/** Что показываем без флага `?skin=`. Выбор заказчика. */
+export const DEFAULT_SKIN_ID: SkinId = "contrast";
+
 export function skinById(raw: string | null | undefined): MapSkin {
   const id = (raw ?? "").toLowerCase();
-  return (SKIN_IDS as readonly string[]).includes(id) ? SKINS[id as SkinId] : SKINS.current;
+  return (SKIN_IDS as readonly string[]).includes(id)
+    ? SKINS[id as SkinId]
+    : SKINS[DEFAULT_SKIN_ID];
 }
 
 /** Ореол подписи: на спутнике — чёрный, иначе — свой у каждого скина. */

@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, List, X } from "lucide-react";
 
 import { loadYmaps3, resetYmaps3Loader } from "@/lib/ymaps3";
+import { useTier } from "@/app/v3/_lib/perf";
 
 import {
   ControlRail,
@@ -29,6 +30,10 @@ import {
   MapRoundButton,
   MapSkeleton,
   PlotCard,
+  BREATH_CLASS,
+  PULSE_CLASS,
+  PULSE_CSS,
+  pulseDelay,
   TouchGate,
 } from "./map/MapUI";
 import {
@@ -165,6 +170,12 @@ const PADDING_MOBILE: Padding = { top: 118, right: 34, bottom: 74, left: 34 };
  * район: рисуем только контуры, маркеры проданных не мешаются.
  */
 const SOLD_GLYPH_PX = 9;
+
+/**
+ * Слой границы посёлка в векторном слое ymaps3. Единственная фигура, которую
+ * мы поднимаем над вуалью скина, — см. комментарий у самой границы.
+ */
+const VILLAGE_Z = 100;
 
 /**
  * Когда показывать номера участков.
@@ -327,6 +338,14 @@ export default function PlotMapDark({
   bookingUrl?: string;
 }) {
   const skin = useMapSkin();
+  /**
+   * Пульсировать ли свободным участкам. Тот же выключатель, что и у всей
+   * остальной анимации сайта: "lite" приходит при prefers-reduced-motion, на
+   * старых айфонах, слабых андроидах и при экономии трафика. На сервере и в
+   * первом кадре useTier честно отдаёт "lite" — маркеры к этому моменту ещё
+   * не отрисованы, так что лишнего кадра без пульса никто не видит.
+   */
+  const pulsing = useTier() === "full";
   const [bundle, setBundle] = useState<Bundle>({ kind: "loading" });
   const [data, setData] = useState<VillageMap | null>(null);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -915,16 +934,23 @@ export default function PlotMapDark({
     );
   }, [C, hover, skin, selectPlot]);
 
-  // ── проданные: серый домик в серой клетке, номер — на близком зуме ──
+  /**
+   * Проданные: серый домик в серой клетке и НИ ОДНОГО номера.
+   *
+   * Номера здесь были и на близком зуме — заказчик их убрал совсем: «на место
+   * проданных участков серые домики, но только чтобы скрывали номера
+   * участков». Логика простая: номер нужен, чтобы участок назвать менеджеру,
+   * а называть проданный незачем. Номер проданного остался ровно в двух
+   * местах, где его спрашивают осознанно, — в пилюле под курсором и в
+   * карточке участка. Подписи есть только у свободных и брони.
+   */
   const soldMarkers = useMemo(() => {
     if (!C || !data || cellPx < SOLD_GLYPH_PX) return null;
     const { YMapMarker } = C;
     const glyph = Math.max(
       8,
-      Math.min(16, Math.round(cellPx * 0.46 * skin.soldGlyph.scale)),
+      Math.min(20, Math.round(cellPx * 0.46 * skin.soldGlyph.scale)),
     );
-    const fs = labelFont(cellPx);
-    const halo = haloFor(skin, satellite);
 
     return data.plots.map((p) => {
       if (matched.has(p.number) || p.number === selectedNumber) return null;
@@ -936,8 +962,7 @@ export default function PlotMapDark({
           zIndex={80}
           onClick={() => selectPlot(p)}
         >
-          {/* Нулевой якорь: домик обязан стоять точно в центре клетки, а
-              номер — под ним, не утаскивая домик вверх. */}
+          {/* Нулевой якорь: домик обязан стоять точно в центре клетки. */}
           <span className="relative block h-0 w-0 cursor-pointer select-none">
             <span className="absolute block" style={{ left: -glyph / 2, top: -glyph / 2 }}>
               <HouseGlyph
@@ -948,38 +973,54 @@ export default function PlotMapDark({
                 opacity={skin.soldGlyph.opacity}
               />
             </span>
-            {showNumbers && (
-              <span
-                className="absolute left-0 block -translate-x-1/2 whitespace-nowrap font-semibold leading-none tabular-nums"
-                style={{
-                  top: glyph / 2 + 2,
-                  fontSize: fs,
-                  color:
-                    satellite && !skin.veil ? "rgba(255,255,255,0.88)" : skin.soldInk,
-                  textShadow: halo,
-                }}
-              >
-                {p.number}
-              </span>
-            )}
           </span>
         </YMapMarker>
       );
     });
-  }, [C, data, matched, selectedNumber, cellPx, showNumbers, satellite, skin, selectPlot]);
+  }, [C, data, matched, selectedNumber, cellPx, satellite, skin, selectPlot]);
 
-  // ── свободные: цветная точка, номер только на близком зуме ──
+  // ── свободные: цветная точка с пульсом, номер только на близком зуме ──
   const freeMarkers = useMemo(() => {
     if (!C) return null;
     const { YMapMarker } = C;
     const fs = labelFont(cellPx);
     const halo = haloFor(skin, satellite);
 
+    /** Ореол, расходящийся из-под точки. */
+    const pulse = (seed: string, background: string) =>
+      pulsing ? (
+        <span
+          aria-hidden="true"
+          className={`absolute block rounded-full ${PULSE_CLASS}`}
+          style={{
+            left: -dotD / 2,
+            top: -dotD / 2,
+            width: dotD,
+            height: dotD,
+            background,
+            animationDelay: pulseDelay(seed),
+          }}
+        />
+      ) : null;
+
+    /**
+     * Дыхание вешаем на обёртку, а не на саму точку: у точки висит
+     * hover:scale-125, и две анимации transform на одном узле дерутся — при
+     * наведении дыхание схлопывало бы увеличение. Вложенные transform
+     * перемножаются, поэтому обёртка дышит, а точка независимо растёт под
+     * курсором.
+     */
+    const breath = (seed: string): CSSProperties =>
+      pulsing ? { animationDelay: pulseDelay(seed) } : {};
+
     return clusters.map((cl) => {
       if (cl.plots.length === 1) {
         const p = cl.plots[0];
         const kind = kinds.get(p.number) ?? "other";
         const accent = plotAccent(skin, kind, p.priceTier);
+        // Анимируем только свободные. Бронь статична: она не продаётся, и
+        // звать к ней взглядом незачем. Проданные статичны тем более.
+        const live = pulsing && kind === "free";
         return (
           <YMapMarker
             key={`f-${cl.key}`}
@@ -988,17 +1029,22 @@ export default function PlotMapDark({
             onClick={() => selectPlot(p)}
           >
             <span className="relative block h-0 w-0 cursor-pointer select-none">
+              {kind === "free" && pulse(p.number, accent)}
               <span
-                className="absolute block rounded-full transition-transform hover:scale-125"
+                className={`absolute block ${live ? BREATH_CLASS : ""}`}
                 style={{
                   left: -dotD / 2,
                   top: -dotD / 2,
                   width: dotD,
                   height: dotD,
-                  background: accent,
-                  boxShadow: skin.dot.shadow,
+                  ...(live ? breath(p.number) : {}),
                 }}
-              />
+              >
+                <span
+                  className="block h-full w-full rounded-full transition-transform hover:scale-125"
+                  style={{ background: accent, boxShadow: skin.dot.shadow }}
+                />
+              </span>
               {/* Номер тем же цветом, что и точка: связь «эта точка = этот
                   номер» должна читаться без легенды. */}
               {showNumbers && (
@@ -1026,6 +1072,10 @@ export default function PlotMapDark({
       // именно, показывает подсказка при наведении.
       const d = badgeDiameter(cl.plots.length);
       const hole = Math.max(4, Math.round(d * 0.34));
+      const ring = tierRing(skin, cl);
+      // В группе может оказаться и бронь: анимируем, только если внутри есть
+      // хоть один свободный — иначе звали бы к тому, что нельзя купить.
+      const live = pulsing && cl.plots.some((p) => kinds.get(p.number) === "free");
       return (
         <YMapMarker
           key={`c-${cl.key}`}
@@ -1033,27 +1083,36 @@ export default function PlotMapDark({
           zIndex={320}
           onClick={() => expandCluster(cl)}
         >
-          <span
-            className="grid cursor-pointer select-none place-items-center rounded-full transition-transform hover:scale-110"
-            style={{
-              width: d,
-              height: d,
-              marginLeft: -d / 2,
-              marginTop: -d / 2,
-              background: tierRing(skin, cl),
-              boxShadow: skin.dot.shadow,
-            }}
-            title={`${cl.plots.length} свободных участка рядом — нажмите, чтобы разложить`}
-          >
+          {/* Нулевой якорь нужен ради ореола: он позиционируется от центра
+              группы, а само кольцо сдвигается на свой радиус. */}
+          <span className="relative block h-0 w-0">
+            {live && pulse(cl.key, ring)}
             <span
-              className="block rounded-full"
+              className={`absolute block ${live ? BREATH_CLASS : ""}`}
               style={{
-                width: hole,
-                height: hole,
-                background:
-                  satellite && !skin.veil ? "rgba(15,23,42,0.85)" : skin.idle.fill,
+                width: d,
+                height: d,
+                left: -d / 2,
+                top: -d / 2,
+                ...(live ? breath(cl.key) : {}),
               }}
-            />
+            >
+              <span
+                className="grid h-full w-full cursor-pointer select-none place-items-center rounded-full transition-transform hover:scale-110"
+                style={{ background: ring, boxShadow: skin.dot.shadow }}
+                title={`${cl.plots.length} свободных участка рядом — нажмите, чтобы разложить`}
+              >
+                <span
+                  className="block rounded-full"
+                  style={{
+                    width: hole,
+                    height: hole,
+                    background:
+                      satellite && !skin.veil ? "rgba(15,23,42,0.85)" : skin.idle.fill,
+                  }}
+                />
+              </span>
+            </span>
           </span>
         </YMapMarker>
       );
@@ -1068,6 +1127,7 @@ export default function PlotMapDark({
     showNumbers,
     satellite,
     skin,
+    pulsing,
     selectPlot,
     expandCluster,
   ]);
@@ -1133,6 +1193,10 @@ export default function PlotMapDark({
    */
   const surface = (
     <div ref={setViewEl} className="absolute inset-0 overflow-hidden">
+      {/* Ключевые кадры пульса. Держим рядом с картой, а не в globals.css:
+          правки по этой задаче ограничены картой, а стиль нужен ровно её
+          маркерам. Строка константная — гидрация от неё не страдает. */}
+      <style>{PULSE_CSS}</style>
       <div
         className={`absolute inset-0 ${gated ? "pointer-events-none" : ""}`}
         onMouseMove={onMapMouseMove}
@@ -1174,10 +1238,16 @@ export default function PlotMapDark({
                 coordinates: [ringToLngLat(data.villageCoords)],
               }}
               style={{
+                /* Поверх вуали. Без этого вуаль скина (у «Контраста» белая,
+                   0.42) ложится НА границу и съедает цвет: замер по
+                   скриншоту давал вместо #059669 линялый #75c5ac. Поднимаем
+                   только границу — заливки участков остаются ровно там же,
+                   где были, и вид, который утвердил заказчик, не меняется. */
+                zIndex: VILLAGE_Z,
                 fill: skin.village.fill,
                 fillOpacity: skin.village.fillOpacity,
                 stroke: [
-                  { color: skin.village.stroke, width: skin.village.strokeWidth, opacity: 0.95 },
+                  { color: skin.village.stroke, width: skin.village.strokeWidth, opacity: 1 },
                 ],
               }}
             />
