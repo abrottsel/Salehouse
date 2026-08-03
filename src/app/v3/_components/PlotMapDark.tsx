@@ -90,7 +90,6 @@ export default function PlotMapDark({
   const [selected, setSelected] = useState<Plot | null>(null);
   const [booking, setBooking] = useState(false);
   const [satellite, setSatellite] = useState(true);
-  const [freeOnly, setFreeOnly] = useState(true);
   const [areaMax, setAreaMax] = useState<number | null>(null);
   const [budgetMax, setBudgetMax] = useState<number | null>(null);
 
@@ -187,7 +186,10 @@ export default function PlotMapDark({
   const { YMap, YMapDefaultSchemeLayer, YMapDefaultSatelliteLayer, YMapDefaultFeaturesLayer, YMapFeature, YMapMarker } =
     bundle.c;
 
-  const visible = freeOnly ? data.plots.filter((p) => isFree(p.statusName) || p.number === selected?.number) : data.plots;
+  // Рисуем ВСЕ участки всегда. Если прятать проданные, посёлок теряет
+  // очертания и карта читается как пустое поле — иерархию делает
+  // прозрачность, а не фильтрация.
+  const visible = data.plots;
 
   return (
     <>
@@ -197,7 +199,10 @@ export default function PlotMapDark({
             location={{ center: [data.center[1], data.center[0]], zoom: 16 }}
             mode="vector"
           >
-            <YMapDefaultSchemeLayer theme="dark" />
+            {/* Схема всегда смонтирована — на ней держится векторный
+                конвейер; theme только "light"/"dark" из поддержанных,
+                берём проверенный в бою light. Спутник кладётся сверху. */}
+            <YMapDefaultSchemeLayer theme="light" />
             {satellite && <YMapDefaultSatelliteLayer />}
             <YMapDefaultFeaturesLayer zIndex={2000} />
 
@@ -337,14 +342,14 @@ export default function PlotMapDark({
 
             <div className="mt-3 flex gap-2">
               <button
-                onClick={() => setFreeOnly((v) => !v)}
-                className={`h-9 flex-1 rounded-full text-[12px] font-bold transition-colors ${
-                  freeOnly
-                    ? "bg-white/[0.09] text-white/80 ring-1 ring-white/15"
-                    : "bg-emerald-500 text-white"
-                }`}
+                onClick={() => {
+                  setAreaMax(bounds.areaMax);
+                  setBudgetMax(bounds.costMax);
+                  setSelected(null);
+                }}
+                className="h-9 flex-1 rounded-full bg-white/[0.09] text-[12px] font-bold text-white/80 ring-1 ring-white/15 transition-colors hover:bg-white/[0.16]"
               >
-                {freeOnly ? "Показать все" : "Только свободные"}
+                Сбросить фильтр
               </button>
               <button
                 onClick={() => setSatellite((v) => !v)}
