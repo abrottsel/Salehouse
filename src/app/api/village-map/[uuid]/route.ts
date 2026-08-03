@@ -13,6 +13,8 @@ interface RawPlot {
   center?: [number, number];
   kadastr?: string;
   price_tier?: number;
+  /** УТП участка: «У воды», «Меньше соседей» и т.п. Приходит массивом. */
+  utp?: unknown;
 }
 
 interface RawResponse {
@@ -43,6 +45,9 @@ export interface NormalizedPlot {
   center: [number, number];
   kadastr: string;
   priceTier: number;
+  /** УТП участка. Пустой массив, если upstream ничего не прислал —
+   *  поле добавлено к ответу, существующие потребители его игнорируют. */
+  utp: string[];
 }
 
 export interface NormalizedVillageMap {
@@ -58,6 +63,28 @@ export interface NormalizedVillageMap {
     other: number;
   };
   plots: NormalizedPlot[];
+}
+
+/**
+ * УТП приходят от Земекс без стабильной формы: то массив строк, то
+ * массив объектов с name/title/value. Сводим к строкам и молча
+ * выбрасываем всё, что не разобрали, — блок необязательный.
+ */
+function normalizeUtp(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item === "string") {
+      if (item.trim()) out.push(item.trim());
+      continue;
+    }
+    if (item && typeof item === "object") {
+      const o = item as Record<string, unknown>;
+      const label = o.name ?? o.title ?? o.value ?? o.text;
+      if (typeof label === "string" && label.trim()) out.push(label.trim());
+    }
+  }
+  return out;
 }
 
 // Simple in-memory cache
@@ -133,6 +160,7 @@ export async function GET(
         center: p.center ?? [0, 0],
         kadastr: p.kadastr ?? "",
         priceTier: resolveTier(pricePerHundred),
+        utp: normalizeUtp(p.utp),
       };
     });
 

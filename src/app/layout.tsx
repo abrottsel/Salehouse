@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import AIChatWidget from "@/components/AIChatWidget";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
-import ScrollToTop from "@/components/ScrollToTop";
-import SocialFloating from "@/components/SocialFloating";
+import LegacyChrome from "@/components/LegacyChrome";
 import CookieBanner from "@/components/CookieBanner";
 import ViewingModal from "@/components/ViewingModal";
 import MortgageModal from "@/components/MortgageModal";
@@ -103,9 +101,7 @@ export default function RootLayout({
         <ThemeWrapper>
           <FavoritesProvider>
             {children}
-            <AIChatWidget />
-            <ScrollToTop />
-            <SocialFloating />
+            <LegacyChrome />
             <CookieBanner />
             <ViewingModal />
             <MortgageModal />
