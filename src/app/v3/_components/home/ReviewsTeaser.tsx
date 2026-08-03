@@ -23,7 +23,7 @@ export default function ReviewsTeaser() {
   const lite = useTier() === "lite";
 
   return (
-    <section className="mx-auto mt-16 max-w-[1400px] px-4 sm:mt-24 sm:px-6">
+    <section className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <Link
           href="/v3/reviews"

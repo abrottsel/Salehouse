@@ -21,7 +21,7 @@ export default function CatalogPreview({
   const lite = useTier() === "lite";
 
   return (
-    <section className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-28 sm:px-6">
+    <section className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionTitle

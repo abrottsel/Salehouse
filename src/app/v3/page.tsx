@@ -33,7 +33,7 @@ export default async function V3HomePage() {
   const totalAvailable = Object.values(stats).reduce((sum, s) => sum + s.plotsAvailable, 0);
 
   return (
-    <main className="pb-24">
+    <main>
       <Hero plotsAvailable={totalAvailable} />
       <TrustBar />
       <CatalogPreview liveAvailable={liveAvailable} />

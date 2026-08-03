@@ -120,7 +120,7 @@ export default function AdvantagesSection() {
   const lite = useTier() === "lite";
 
   return (
-    <section id="advantages" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-28 sm:px-6">
+    <section id="advantages" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <SectionTitle
           eyebrow="Наши преимущества"

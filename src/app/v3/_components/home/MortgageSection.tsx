@@ -12,7 +12,7 @@ import { SectionTitle } from "../ui/primitives";
  */
 export default function MortgageSection() {
   return (
-    <section id="mortgage" className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-28 sm:px-6">
+    <section id="mortgage" className="mx-auto mt-20 max-w-[1400px] px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <SectionTitle
           eyebrow="Ипотека и рассрочка"

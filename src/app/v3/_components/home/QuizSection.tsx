@@ -332,7 +332,7 @@ export default function QuizSection() {
   const question = step < CONTACT_STEP ? QUESTIONS[step] : null;
 
   return (
-    <section id="quiz" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-28 sm:px-6">
+    <section id="quiz" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <div className="relative overflow-hidden rounded-[28px]">
           <Image src="/hero-v2.jpg" alt="" fill sizes="100vw" className="object-cover" />

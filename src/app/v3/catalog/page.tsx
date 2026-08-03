@@ -44,7 +44,7 @@ export default async function V3CatalogPage() {
   const totalAvailable = Object.values(stats).reduce((sum, s) => sum + s.plotsAvailable, 0);
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto max-w-[1500px] px-4 pt-10 sm:px-6 sm:pt-14">
       <header className="mb-8 sm:mb-10">
         <div className="mb-4">
           <Eyebrow>Каталог посёлков</Eyebrow>

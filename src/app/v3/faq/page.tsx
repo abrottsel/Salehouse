@@ -31,7 +31,7 @@ const faqJsonLd = {
 
 export default function V3FaqPage() {
   return (
-    <main className="mx-auto max-w-[920px] px-4 pb-20 sm:px-6 sm:pb-28">
+    <main className="mx-auto max-w-[920px] px-4 pt-2 sm:px-6 sm:pt-4">
       <PageHero
         eyebrow="Частые вопросы"
         title="Всё, что обычно"

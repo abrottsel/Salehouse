@@ -22,7 +22,7 @@ export default function FavoritesPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6 sm:py-16">
+    <main className="mx-auto max-w-[1400px] px-4 pt-10 sm:px-6 sm:pt-14">
       <FavoritesList catalog={catalog} />
     </main>
   );

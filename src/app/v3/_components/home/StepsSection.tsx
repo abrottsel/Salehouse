@@ -42,7 +42,7 @@ export default function StepsSection() {
   });
 
   return (
-    <section id="steps" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-28 sm:px-6">
+    <section id="steps" className="mx-auto mt-20 max-w-[1400px] scroll-mt-24 px-4 sm:mt-24 sm:px-6">
       <Reveal>
         <SectionTitle
           eyebrow="Как купить участок"

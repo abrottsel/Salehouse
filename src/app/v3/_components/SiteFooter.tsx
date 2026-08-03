@@ -47,8 +47,11 @@ export default function SiteFooter() {
     }
   };
 
+  // pt-8 = 32px: заказчик просил зазор до подвала не больше сантиметра,
+  // а это примерно 38px. Отступ общий для всех страниц /v3, поэтому свой
+  // нижний отступ страницы больше не держат.
   return (
-    <footer className="pb-4 pt-20">
+    <footer className="pb-4 pt-8">
       <div className="mx-auto max-w-[1920px] px-3 sm:px-4 lg:px-6">
         <div className="overflow-hidden rounded-3xl bg-[#121821] text-white ring-1 ring-white/10">
           {/* Тонкая emerald→teal градиентная полоса сверху */}
