@@ -6,7 +6,9 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ComponentType,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -46,10 +48,7 @@ import {
   RESERVED_COLOR,
   ringToLngLat,
   screenToLngLat,
-  SOLD_COLOR,
-  SOLD_FILL,
   textOn,
-  tierColor,
   type Filters,
   type LngLat,
   type LngLatBounds,
@@ -59,6 +58,7 @@ import {
   type PlotKind,
   type VillageMap,
 } from "./map/types";
+import { haloFor, skinById, type MapSkin, type SchemeRule } from "./map/skins";
 
 /**
  * Карта генплана посёлка.
@@ -211,14 +211,22 @@ function labelFont(cellPx: number): number {
 }
 
 /**
- * Обводка подписи. Номер красим в цвет тира, а цветной текст на светлой
- * схеме сам по себе не читается — держим его в белом ореоле (на спутнике
- * в чёрном).
+ * Прямоугольник вуали. Берём заведомо больше любого посёлка: вуаль обязана
+ * выходить за край экрана, иначе на её границе видно шов между приглушённой
+ * и обычной подложкой.
  */
-function labelHalo(satellite: boolean): string {
-  return satellite
-    ? "0 1px 3px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.9)"
-    : "0 0 3px #fff, 0 0 3px #fff, 0 1px 2px #fff, 0 -1px 2px #fff";
+const VEIL_SPAN = 2;
+
+function veilRing(center: LngLat): LngLat[] {
+  const [lon, lat] = center;
+  const lo = Math.max(-85, lat - VEIL_SPAN);
+  const hi = Math.min(85, lat + VEIL_SPAN);
+  return [
+    [lon - VEIL_SPAN, lo],
+    [lon + VEIL_SPAN, lo],
+    [lon + VEIL_SPAN, hi],
+    [lon - VEIL_SPAN, hi],
+  ];
 }
 
 /**
@@ -234,9 +242,29 @@ function labelHalo(satellite: boolean): string {
  * Что при этом остаётся: иконки POI (label.icon не тронут), названия улиц и
  * рек — это линейные подписи, они другого типа.
  */
-const SCHEME_NO_POINT_LABELS = [
+const SCHEME_NO_POINT_LABELS: readonly SchemeRule[] = [
   { types: "point", elements: "label.text", stylers: [{ visibility: "off" }] },
-] as const;
+];
+
+/**
+ * Какой визуальный вариант карты показывать. Временный стенд: `?skin=…`
+ * переключает только палитру и заливки, вся механика карты общая.
+ *
+ * Читаем из window, а не через useSearchParams: тот тянет за собой Suspense
+ * на всю страницу, а нам нужен флаг, которого в проде не будет вовсе.
+ * Первый кадр всегда `current` — иначе рассинхрон с серверной разметкой.
+ */
+const NEVER_CHANGES = () => () => {};
+const readSkinId = () => new URLSearchParams(window.location.search).get("skin");
+const NO_SKIN = () => null;
+
+function useMapSkin(): MapSkin {
+  // useSyncExternalStore, а не setState в эффекте: флаг за время жизни
+  // страницы не меняется, а серверный снимок честно отдаёт null — React сам
+  // перерисует после гидрации, без каскада ре-рендеров.
+  const id = useSyncExternalStore(NEVER_CHANGES, readSkinId, NO_SKIN);
+  return useMemo(() => skinById(id), [id]);
+}
 
 /** Плашка названия — то же стекло, что у кнопок, только не круглое. */
 const PILL = {
@@ -257,10 +285,10 @@ function centerLngLat(p: Plot): LngLat {
 }
 
 /** Цвет участка: бронь синяя, проданный серый, остальные — по цене. */
-function plotAccent(kind: PlotKind, tier: number): string {
+function plotAccent(skin: MapSkin, kind: PlotKind, tier: number): string {
   if (kind === "reserved") return RESERVED_COLOR;
-  if (kind === "sold") return SOLD_COLOR;
-  return tierColor(tier);
+  if (kind === "sold") return skin.soldInk;
+  return skin.tiers[tier % skin.tiers.length];
 }
 
 /** Что сейчас под курсором. Группу подписываем количеством, не номером. */
@@ -282,13 +310,12 @@ function sameHover(a: Hover | null, b: Hover | null): boolean {
  * Кольцо группы: секторами по цветам тиров, которые в неё попали. Один
  * тир — ровный цвет, несколько — видно, что в группе разные ценники.
  */
-function tierRing(cl: PlotCluster): string {
+function tierRing(skin: MapSkin, cl: PlotCluster): string {
+  const ink = (t: number) => skin.tiers[t % skin.tiers.length];
   const tiers = [...new Set(cl.plots.map((p) => p.priceTier))].sort((a, b) => a - b);
-  if (tiers.length === 1) return tierColor(tiers[0]);
+  if (tiers.length === 1) return ink(tiers[0]);
   const step = 100 / tiers.length;
-  const stops = tiers
-    .map((t, i) => `${tierColor(t)} ${i * step}% ${(i + 1) * step}%`)
-    .join(", ");
+  const stops = tiers.map((t, i) => `${ink(t)} ${i * step}% ${(i + 1) * step}%`).join(", ");
   return `conic-gradient(from -90deg, ${stops})`;
 }
 
@@ -299,6 +326,7 @@ export default function PlotMapDark({
   uuid: string;
   bookingUrl?: string;
 }) {
+  const skin = useMapSkin();
   const [bundle, setBundle] = useState<Bundle>({ kind: "loading" });
   const [data, setData] = useState<VillageMap | null>(null);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -309,8 +337,13 @@ export default function PlotMapDark({
   const [hover, setHover] = useState<Hover | null>(null);
   const [canHover, setCanHover] = useState(false);
   const [booking, setBooking] = useState(false);
-  /** Схема по умолчанию: на спутнике нарезки участков не видно вообще. */
-  const [satellite, setSatellite] = useState(false);
+  /**
+   * Схема по умолчанию: на спутнике нарезки участков не видно вообще.
+   * Скин «Спутник» открывается сразу на снимке, поэтому состояние здесь —
+   * не «включён ли спутник», а «переопределил ли человек умолчание скина».
+   */
+  const [satelliteOverride, setSatelliteOverride] = useState<boolean | null>(null);
+  const satellite = satelliteOverride ?? skin.satelliteBase;
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -604,8 +637,13 @@ export default function PlotMapDark({
   const circleD = circleDiameter(zoomStep);
   /** Ширина клетки участка на экране — от неё зависит вид проданных. */
   const cellPx = plotPixels(plotSpan, zoomStep);
-  /** Диаметр цветной точки свободного участка на этом зуме. */
-  const dotD = dotDiameter(cellPx);
+  /**
+   * Диаметр цветной точки свободного участка на этом зуме. Масштаб скина
+   * учитываем здесь, а не при отрисовке: от dotD считается и радиус
+   * попадания курсора, и склейка в группы — они обязаны совпадать с тем,
+   * что человек видит.
+   */
+  const dotD = Math.round(dotDiameter(cellPx) * skin.dot.scale);
 
   /** Зум посадки «домой» — от него отсчитывается «приблизился». */
   const homeZoom = useMemo(
@@ -776,42 +814,39 @@ export default function PlotMapDark({
   const polygons = useMemo(() => {
     if (!C || !data) return null;
     const { YMapFeature } = C;
-    const idleFill = satellite ? 0.2 : 0.6;
-    const idleStroke = satellite ? "#e5edf5" : "#8d99ab";
-    const selStroke = satellite ? "#ffffff" : "#0f172a";
+    // Тумблер спутника на светлом скине: клетки берут снимочный вариант.
+    const sat = satellite ? skin.onSatellite : undefined;
 
     return data.plots.map((p) => {
       if (!p.coords || p.coords.length < 3) return null;
       const kind = kinds.get(p.number) ?? "other";
       const hit = matched.has(p.number);
       const sel = selectedNumber === p.number;
-      const accent = plotAccent(kind, p.priceTier);
+      const accent = plotAccent(skin, kind, p.priceTier);
 
-      let fill = "#ffffff";
-      let fillOpacity = idleFill;
-      let strokeColor = idleStroke;
-      let strokeWidth = 1;
-      let strokeOpacity = 0.9;
+      // Проданные — не «белые как все, только с домиком»: своя заливка и
+      // есть тот признак статуса, который просил заказчик, и читается он на
+      // любом зуме, без легенды и без номера. Насколько тихо — решает скин.
+      const base =
+        kind === "sold" ? (sat?.sold ?? skin.sold) : (sat?.idle ?? skin.idle);
 
-      // Проданные — серые. Не «белые как все, только с домиком»: серая
-      // заливка и есть тот признак статуса, который просил заказчик, и
-      // читается он на любом зуме, без легенды и без номера.
-      if (kind === "sold") {
-        fill = SOLD_FILL;
-        fillOpacity = satellite ? 0.34 : 0.3;
-        strokeColor = satellite ? "#cbd5e1" : "#78889c";
-      }
+      let fill = base.fill;
+      let fillOpacity = base.fillOpacity;
+      let strokeColor = base.stroke;
+      let strokeWidth = base.strokeWidth;
+      let strokeOpacity = base.strokeOpacity;
+
       if (hit) {
         fill = accent;
-        fillOpacity = 0.28;
+        fillOpacity = skin.free.fillOpacity;
         strokeColor = accent;
-        strokeWidth = 1.4;
-        strokeOpacity = 1;
+        strokeWidth = skin.free.strokeWidth;
+        strokeOpacity = skin.free.strokeOpacity;
       }
       if (sel) {
         fill = accent;
-        fillOpacity = 0.5;
-        strokeColor = selStroke;
+        fillOpacity = skin.selected.fillOpacity;
+        strokeColor = sat?.selectedStroke ?? skin.selected.stroke;
         strokeWidth = 2.4;
         strokeOpacity = 1;
       }
@@ -830,7 +865,31 @@ export default function PlotMapDark({
         />
       );
     });
-  }, [C, data, kinds, matched, selectedNumber, satellite, selectPlot]);
+  }, [C, data, kinds, matched, selectedNumber, satellite, skin, selectPlot]);
+
+  /**
+   * Вуаль между подложкой и нарезкой. На спутнике без неё снимок съедает
+   * участки, на схеме она гасит чужую графику Яндекса, чтобы посёлок был
+   * главным на кадре. Рисуется первой — значит, лежит под всеми клетками.
+   */
+  const veil = useMemo(() => {
+    if (!C || !skin.veil || !bounds) return null;
+    const { YMapFeature } = C;
+    const center: LngLat = [
+      (bounds[0][0] + bounds[1][0]) / 2,
+      (bounds[0][1] + bounds[1][1]) / 2,
+    ];
+    return (
+      <YMapFeature
+        geometry={{ type: "Polygon", coordinates: [veilRing(center)] }}
+        style={{
+          fill: skin.veil.color,
+          fillOpacity: skin.veil.opacity,
+          stroke: [{ color: skin.veil.color, width: 0, opacity: 0 }],
+        }}
+      />
+    );
+  }, [C, skin, bounds]);
 
   /**
    * Подсветка клетки под курсором. Отдельным слоем поверх, а не сменой
@@ -846,25 +905,26 @@ export default function PlotMapDark({
       <YMapFeature
         geometry={{ type: "Polygon", coordinates: [ringToLngLat(p.coords)] }}
         style={{
-          fill: "#0f172a",
-          fillOpacity: 0.08,
-          stroke: [
-            { color: satellite ? "#ffffff" : "#0f172a", width: 2.6, opacity: 0.95 },
-          ],
+          fill: skin.hover.fill,
+          fillOpacity: skin.hover.fillOpacity,
+          stroke: [{ color: skin.hover.stroke, width: 2.6, opacity: 0.95 }],
           cursor: "pointer",
         }}
         onClick={() => selectPlot(p)}
       />
     );
-  }, [C, hover, satellite, selectPlot]);
+  }, [C, hover, skin, selectPlot]);
 
   // ── проданные: серый домик в серой клетке, номер — на близком зуме ──
   const soldMarkers = useMemo(() => {
     if (!C || !data || cellPx < SOLD_GLYPH_PX) return null;
     const { YMapMarker } = C;
-    const glyph = Math.max(8, Math.min(16, Math.round(cellPx * 0.46)));
+    const glyph = Math.max(
+      8,
+      Math.min(16, Math.round(cellPx * 0.46 * skin.soldGlyph.scale)),
+    );
     const fs = labelFont(cellPx);
-    const halo = labelHalo(satellite);
+    const halo = haloFor(skin, satellite);
 
     return data.plots.map((p) => {
       if (matched.has(p.number) || p.number === selectedNumber) return null;
@@ -880,7 +940,13 @@ export default function PlotMapDark({
               номер — под ним, не утаскивая домик вверх. */}
           <span className="relative block h-0 w-0 cursor-pointer select-none">
             <span className="absolute block" style={{ left: -glyph / 2, top: -glyph / 2 }}>
-              <HouseGlyph size={glyph} muted={satellite} />
+              <HouseGlyph
+                size={glyph}
+                muted={satellite && !skin.veil}
+                fill={skin.soldGlyph.fill}
+                stroke={skin.soldGlyph.stroke}
+                opacity={skin.soldGlyph.opacity}
+              />
             </span>
             {showNumbers && (
               <span
@@ -888,7 +954,8 @@ export default function PlotMapDark({
                 style={{
                   top: glyph / 2 + 2,
                   fontSize: fs,
-                  color: satellite ? "rgba(255,255,255,0.88)" : SOLD_COLOR,
+                  color:
+                    satellite && !skin.veil ? "rgba(255,255,255,0.88)" : skin.soldInk,
                   textShadow: halo,
                 }}
               >
@@ -899,20 +966,20 @@ export default function PlotMapDark({
         </YMapMarker>
       );
     });
-  }, [C, data, matched, selectedNumber, cellPx, showNumbers, satellite, selectPlot]);
+  }, [C, data, matched, selectedNumber, cellPx, showNumbers, satellite, skin, selectPlot]);
 
   // ── свободные: цветная точка, номер только на близком зуме ──
   const freeMarkers = useMemo(() => {
     if (!C) return null;
     const { YMapMarker } = C;
     const fs = labelFont(cellPx);
-    const halo = labelHalo(satellite);
+    const halo = haloFor(skin, satellite);
 
     return clusters.map((cl) => {
       if (cl.plots.length === 1) {
         const p = cl.plots[0];
         const kind = kinds.get(p.number) ?? "other";
-        const accent = plotAccent(kind, p.priceTier);
+        const accent = plotAccent(skin, kind, p.priceTier);
         return (
           <YMapMarker
             key={`f-${cl.key}`}
@@ -929,8 +996,7 @@ export default function PlotMapDark({
                   width: dotD,
                   height: dotD,
                   background: accent,
-                  boxShadow:
-                    "0 0 0 1.5px rgba(255,255,255,0.95), 0 2px 6px rgba(15,23,42,0.35)",
+                  boxShadow: skin.dot.shadow,
                 }}
               />
               {/* Номер тем же цветом, что и точка: связь «эта точка = этот
@@ -974,9 +1040,8 @@ export default function PlotMapDark({
               height: d,
               marginLeft: -d / 2,
               marginTop: -d / 2,
-              background: tierRing(cl),
-              boxShadow:
-                "0 0 0 1.5px rgba(255,255,255,0.95), 0 2px 8px rgba(15,23,42,0.4)",
+              background: tierRing(skin, cl),
+              boxShadow: skin.dot.shadow,
             }}
             title={`${cl.plots.length} свободных участка рядом — нажмите, чтобы разложить`}
           >
@@ -985,7 +1050,8 @@ export default function PlotMapDark({
               style={{
                 width: hole,
                 height: hole,
-                background: satellite ? "rgba(15,23,42,0.85)" : "#ffffff",
+                background:
+                  satellite && !skin.veil ? "rgba(15,23,42,0.85)" : skin.idle.fill,
               }}
             />
           </span>
@@ -1001,6 +1067,7 @@ export default function PlotMapDark({
     cellPx,
     showNumbers,
     satellite,
+    skin,
     selectPlot,
     expandCluster,
   ]);
@@ -1042,14 +1109,22 @@ export default function PlotMapDark({
   const selectedKind: PlotKind = selected
     ? (kinds.get(selected.number) ?? "other")
     : "other";
-  const selectedAccent = selected ? plotAccent(selectedKind, selected.priceTier) : "#94a3b8";
+  const selectedAccent = selected
+    ? plotAccent(skin, selectedKind, selected.priceTier)
+    : "#94a3b8";
   const selectedD = circleD + 8;
 
   /** Цвет пилюли с номером под курсором — тот же, что у точки участка. */
   const hoverInk =
     hover && hover.kind === "plot"
-      ? plotAccent(kinds.get(hover.plot.number) ?? "other", hover.plot.priceTier)
+      ? plotAccent(skin, kinds.get(hover.plot.number) ?? "other", hover.plot.priceTier)
       : "#0f172a";
+
+  /** Базовая кастомизация схемы плюс то, что добавляет скин. */
+  const schemeCustomization = [...SCHEME_NO_POINT_LABELS, ...skin.scheme];
+
+  /** Фон кадра: виден, пока грузятся тайлы, и по краям посёлка. */
+  const frameStyle = { "--map-frame-bg": skin.frameBg } as CSSProperties;
 
   /**
    * Содержимое кадра. Один и тот же узел живёт либо в странице, либо в
@@ -1086,9 +1161,11 @@ export default function PlotMapDark({
               их поверх нарезки. Это те же серые цифры, из-за которых карта
               и выглядела кадастровым просмотрщиком, только чужие — свои мы
               уже убрали. Названия улиц и рек остаются. */}
-          <YMapDefaultSchemeLayer theme="light" customization={SCHEME_NO_POINT_LABELS} />
+          <YMapDefaultSchemeLayer theme="light" customization={schemeCustomization} />
           {satellite && <YMapDefaultSatelliteLayer />}
           <YMapDefaultFeaturesLayer zIndex={2000} />
+
+          {veil}
 
           {data.villageCoords.length >= 3 && (
             <YMapFeature
@@ -1097,9 +1174,11 @@ export default function PlotMapDark({
                 coordinates: [ringToLngLat(data.villageCoords)],
               }}
               style={{
-                fill: "#22c55e",
-                fillOpacity: 0.04,
-                stroke: [{ color: "#16a34a", width: 2.4, opacity: 0.95 }],
+                fill: skin.village.fill,
+                fillOpacity: skin.village.fillOpacity,
+                stroke: [
+                  { color: skin.village.stroke, width: skin.village.strokeWidth, opacity: 0.95 },
+                ],
               }}
             />
           )}
@@ -1252,7 +1331,7 @@ export default function PlotMapDark({
       >
         <ControlRail
           satellite={satellite}
-          onToggleBase={() => setSatellite((v) => !v)}
+          onToggleBase={() => setSatelliteOverride(!satellite)}
           onZoomIn={() => zoomBy(1)}
           onZoomOut={() => zoomBy(-1)}
           onLocate={locate}
@@ -1279,6 +1358,7 @@ export default function PlotMapDark({
               hasReserved={data.statistics.reserved > 0}
               hasSold={data.statistics.sold > 0}
               onClose={() => setLegendOpen(false)}
+              palette={skin.tiers}
             />
           )}
         </AnimatePresence>
@@ -1296,6 +1376,7 @@ export default function PlotMapDark({
               onClose={() => setSelected(null)}
               onBook={() => setBooking(true)}
               canBook={selectedKind === "free" && Boolean(bookingUrl)}
+              palette={skin.tiers}
             />
           )}
         </AnimatePresence>
@@ -1313,14 +1394,19 @@ export default function PlotMapDark({
       {/* Кадр в странице. На телефоне он во всю ширину окна и во всю его
           высоту — прежние 70svh в скруглённой карточке и были той самой
           «маленькой карточкой», из-за которой генплан не читался. */}
-      <div className="relative ml-[calc(50%-50vw)] h-[100svh] w-screen overflow-hidden bg-[#e8edf3] sm:ml-0 sm:h-[min(calc(100svh-56px),860px)] sm:min-h-[520px] sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-white/10">
+      <div
+        style={frameStyle}
+        className="relative ml-[calc(50%-50vw)] h-[100svh] w-screen overflow-hidden bg-[var(--map-frame-bg)] sm:ml-0 sm:h-[min(calc(100svh-56px),860px)] sm:min-h-[520px] sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-white/10"
+      >
         {!fullscreen && surface}
       </div>
 
       {fullscreen &&
         typeof document !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-[90] bg-[#e8edf3]">{surface}</div>,
+          <div style={frameStyle} className="fixed inset-0 z-[90] bg-[var(--map-frame-bg)]">
+            {surface}
+          </div>,
           document.body,
         )}
 

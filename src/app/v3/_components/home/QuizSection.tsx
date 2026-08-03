@@ -349,9 +349,9 @@ export default function QuizSection() {
             />
           )}
 
-          <div className="relative flex items-center justify-center px-3 py-8 sm:px-8 sm:py-12">
+          <div className="relative flex items-center justify-center px-3 py-5 sm:px-8 sm:py-9">
             <div
-              className="w-full max-w-3xl rounded-[24px] px-4 py-6 sm:px-8 sm:py-8"
+              className="w-full max-w-3xl rounded-[24px] px-4 py-5 sm:px-8 sm:py-7"
               style={panel(lite)}
             >
               {done ? (
@@ -397,7 +397,12 @@ export default function QuizSection() {
 
                   {/* Высота зафиксирована снизу, чтобы панель не прыгала при
                       смене экранов. */}
-                  <div className="min-h-[326px] sm:min-h-[268px]">
+                  {/* Минимальная высота держит карточку от прыжков между
+                      шагами, но раньше была выставлена по самому длинному
+                      шагу — и под коротким вопросом оставалось 80px пустоты.
+                      Опущена до высоты сетки вариантов: скачок между шагами
+                      сглаживает анимация, а дыры внизу больше нет. */}
+                  <div className="min-h-[192px] sm:min-h-[212px]">
                     <AnimatePresence mode="wait" custom={dir} initial={false}>
                       <motion.div
                         key={step}

@@ -38,8 +38,8 @@ import { money } from "../shared";
 import {
   RESERVED_COLOR,
   SOLD_COLOR,
-  tierColor,
   textOn,
+  TIER_COLORS,
   type Filters,
   type Plot,
   type PlotKind,
@@ -369,7 +369,20 @@ function CheckRow({
  * что там уже построились. Форма нарочно грубая: на общем плане клетка
  * участка 10–11px, тонкие детали в ней превращаются в кашу.
  */
-export function HouseGlyph({ size, muted = false }: { size: number; muted?: boolean }) {
+export function HouseGlyph({
+  size,
+  muted = false,
+  fill = "#d3dae4",
+  stroke = "#8d99ab",
+  opacity = 1,
+}: {
+  size: number;
+  muted?: boolean;
+  /** Цвета задаёт скин карты — на кремовой подложке серый домик выпадает. */
+  fill?: string;
+  stroke?: string;
+  opacity?: number;
+}) {
   return (
     <svg
       width={size}
@@ -377,12 +390,15 @@ export function HouseGlyph({ size, muted = false }: { size: number; muted?: bool
       viewBox="0 0 24 24"
       aria-hidden="true"
       className="block"
-      style={{ filter: muted ? "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" : "none" }}
+      style={{
+        opacity,
+        filter: muted ? "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" : "none",
+      }}
     >
       <path
         d="M12 3 22 11.2h-3.2V21H5.2v-9.8H2z"
-        fill={muted ? "rgba(255,255,255,0.72)" : "#d3dae4"}
-        stroke={muted ? "rgba(15,23,42,0.55)" : "#8d99ab"}
+        fill={muted ? "rgba(255,255,255,0.72)" : fill}
+        stroke={muted ? "rgba(15,23,42,0.55)" : stroke}
         strokeWidth="2"
         strokeLinejoin="round"
       />
@@ -402,6 +418,7 @@ export function LegendPanel({
   hasReserved,
   hasSold,
   onClose,
+  palette = TIER_COLORS,
 }: {
   tiers: number[];
   hidden: ReadonlySet<number>;
@@ -410,7 +427,10 @@ export function LegendPanel({
   hasReserved: boolean;
   hasSold: boolean;
   onClose: () => void;
+  /** Палитра активного скина карты — легенда обязана совпадать с картой. */
+  palette?: readonly string[];
 }) {
+  const ink = (i: number) => palette[i % palette.length];
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -452,7 +472,7 @@ export function LegendPanel({
               <span
                 className={`h-3.5 w-3.5 shrink-0 rounded-full transition-opacity ${off ? "opacity-25" : ""}`}
                 style={{
-                  background: tierColor(i),
+                  background: ink(i),
                   boxShadow: "0 0 0 1px rgba(255,255,255,0.55)",
                 }}
               />
@@ -621,15 +641,22 @@ export function PlotCard({
   onClose,
   onBook,
   canBook,
+  palette = TIER_COLORS,
 }: {
   plot: Plot;
   kind: PlotKind;
   onClose: () => void;
   onBook: () => void;
   canBook: boolean;
+  /** Палитра активного скина карты — цвет в карточке равен цвету точки. */
+  palette?: readonly string[];
 }) {
   const accent =
-    kind === "free" ? tierColor(plot.priceTier) : kind === "reserved" ? RESERVED_COLOR : "#94a3b8";
+    kind === "free"
+      ? palette[plot.priceTier % palette.length]
+      : kind === "reserved"
+        ? RESERVED_COLOR
+        : "#94a3b8";
 
   return (
     <motion.div
