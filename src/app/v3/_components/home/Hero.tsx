@@ -58,7 +58,7 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
       {/* Нижний отступ маленький и одинаковый на всех ширинах: он и есть
           зазор до полосы доверия, а заказчик просил там не больше
           сантиметра. Сантиметр на экране — это примерно 38px, берём 32. */}
-      <div className="relative mx-auto max-w-[1400px] px-4 pb-8 pt-12 sm:px-6 sm:pt-20 lg:pt-24">
+      <div className="relative mx-auto max-w-[1400px] px-4 pb-8 pt-10 sm:px-6 sm:pt-14 lg:pt-16">
         <Reveal>
           <Eyebrow>Коттеджные посёлки Подмосковья</Eyebrow>
         </Reveal>
@@ -72,14 +72,14 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
         </Reveal>
 
         <Reveal delay={0.12}>
-          <p className="mt-5 max-w-[54ch] text-[15px] leading-relaxed text-white/60 sm:mt-6 sm:text-[18px]">
+          <p className="mt-4 max-w-[54ch] text-[15px] leading-relaxed text-white/60 sm:mt-5 sm:text-[18px]">
             Готовые коттеджные посёлки Подмосковья с газом, электричеством,
             асфальтом и охраной. Подбор участка за 15 минут.
           </p>
         </Reveal>
 
         <Reveal delay={0.18}>
-          <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center">
+          <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center">
             <CTA href="/v3/catalog" className="w-full sm:w-auto">
               <MapPin className="h-4 w-4" />
               Выбрать участок
@@ -94,7 +94,7 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
 
         <Reveal delay={0.24}>
           <div
-            className="mt-6 grid divide-y divide-white/[0.08] overflow-hidden rounded-[24px] sm:mt-8 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            className="mt-5 grid divide-y divide-white/[0.08] overflow-hidden rounded-[24px] sm:mt-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
             style={panel(lite)}
           >
             {stats.map((s) => (
