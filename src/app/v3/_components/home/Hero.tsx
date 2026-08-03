@@ -55,7 +55,10 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
     <section className="relative -mt-20 overflow-hidden pt-20">
       <LivePhoto />
 
-      <div className="relative mx-auto max-w-[1400px] px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
+      {/* Нижний отступ маленький и одинаковый на всех ширинах: он и есть
+          зазор до полосы доверия, а заказчик просил там не больше
+          сантиметра. Сантиметр на экране — это примерно 38px, берём 32. */}
+      <div className="relative mx-auto max-w-[1400px] px-4 pb-8 pt-12 sm:px-6 sm:pt-20 lg:pt-24">
         <Reveal>
           <Eyebrow>Коттеджные посёлки Подмосковья</Eyebrow>
         </Reveal>
@@ -91,7 +94,7 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
 
         <Reveal delay={0.24}>
           <div
-            className="mt-10 grid divide-y divide-white/[0.08] overflow-hidden rounded-[24px] sm:mt-14 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            className="mt-6 grid divide-y divide-white/[0.08] overflow-hidden rounded-[24px] sm:mt-8 sm:grid-cols-3 sm:divide-x sm:divide-y-0"
             style={panel(lite)}
           >
             {stats.map((s) => (

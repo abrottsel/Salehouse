@@ -39,11 +39,17 @@ export default function Nav() {
         className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 rounded-full px-3 transition-shadow sm:px-5"
         style={solid ? glassStyle : { background: "transparent" }}
       >
+        {/* Фирменный домик с плюсом — тот же знак, что на проде и в подвале.
+            Зелёный квадрат с буквой «З» брендом не является. */}
         <Link href="/v3" className="flex shrink-0 items-center gap-2 font-extrabold">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500 text-[13px] text-white">
-            З
+          <svg viewBox="0 0 44 40" className="h-[26px] w-7 shrink-0" fill="none" aria-hidden="true">
+            <path d="M22 2L2 18h6v20h28V18h6L22 2z" fill="#22c55e" />
+            <rect x="14" y="22" width="16" height="4" rx="2" fill="white" />
+            <rect x="20" y="16" width="4" height="16" rx="2" fill="white" />
+          </svg>
+          <span className="text-[15px] tracking-tight">
+            Зем<span className="text-emerald-400">+</span>Плюс
           </span>
-          <span className="text-[15px]">ЗемПлюс</span>
         </Link>
 
         <div className="ml-4 hidden items-center gap-1 lg:flex">

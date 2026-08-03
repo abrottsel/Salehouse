@@ -2,56 +2,45 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Copy, Mail, Phone } from "lucide-react";
+import { Phone, Mail, Check } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 
 /**
- * Подвал /v3.
+ * Подвал /v3 — перенос боевого src/components/Footer.tsx.
  *
- * Взято у боевого src/components/Footer.tsx (он плотнее и содержательнее):
- *   • карточка со скруглением + градиентная emerald→teal полоса сверху;
- *   • настоящие логотипы Telegram и MAX, а не «ещё одна ссылка текстом»;
- *   • клик по почте открывает почтовик И молча кладёт адрес в буфер —
- *     на телефонах без почтового клиента ссылка иначе просто мертва;
- *   • тонкая legal-строка внизу: реквизиты · документы · дисклеймер.
- *
- * Обязательные юридические блоки (реквизиты из @/lib/legal, /privacy,
- * /oferta, «не является публичной офертой») сохранены: /v3 готовится
- * в замену проду, терять их нельзя.
+ * Предыдущая версия была высокой трёхколоночной простынёй, заказчик
+ * сказал, что на проде лучше. Здесь та же компактная карточка: одна
+ * строка «логотип · навигация · контакты», под ней тонкая юридическая
+ * полоска и дисклеймер. Отличия от прода только два: ссылки ведут
+ * внутрь /v3, и взята сразу тёмная палитра (на /v3 светлой темы нет).
  *
  * Год — константа: new Date() в рендере разъезжается между сервером
  * и клиентом.
  */
 
 const YEAR = 2026;
+const LEGAL_LINE = `© ${YEAR} ${LEGAL.shortName} · ИНН ${LEGAL.inn} · ОГРНИП ${LEGAL.ogrn}`;
 
-const SECTIONS = [
-  { href: "/v3/catalog", label: "Каталог посёлков" },
-  { href: "/v3/mortgage", label: "Ипотека и рассрочка" },
+const NAV = [
+  { href: "/v3/catalog", label: "Посёлки" },
+  { href: "/v3/mortgage", label: "Ипотека" },
   { href: "/v3/how-to-buy", label: "Как купить" },
   { href: "/v3/reviews", label: "Отзывы" },
-  { href: "/v3/faq", label: "Вопросы и ответы" },
-  { href: "/v3/favorites", label: "Избранное" },
   { href: "/v3/contacts", label: "Контакты" },
 ];
 
-const REQUISITES = [
-  { label: "Продавец", value: LEGAL.fullName },
-  { label: "ИНН", value: LEGAL.inn },
-  { label: "ОГРНИП", value: LEGAL.ogrn },
-  { label: "Адрес", value: LEGAL.legalAddress },
-];
-
 export default function SiteFooter() {
-  const [copied, setCopied] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
 
-  /** Не preventDefault: mailto обязан отработать, копия — подстраховка. */
-  const copyEmail = async () => {
+  /** Тап по почте открывает почтовик И молча кладёт адрес в буфер: на
+   *  телефонах без почтового клиента ссылка иначе просто мертва.
+   *  preventDefault не делаем — mailto обязан отработать. */
+  const handleEmailClick = async () => {
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(LEGAL.email);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1600);
+        setEmailCopied(true);
+        window.setTimeout(() => setEmailCopied(false), 1500);
       }
     } catch {
       /* insecure context — остаётся обычное поведение mailto */
@@ -59,150 +48,108 @@ export default function SiteFooter() {
   };
 
   return (
-    <footer className="mt-24 px-3 pb-4 sm:px-4 lg:px-6">
-      <div className="mx-auto max-w-[1500px]">
-        <div className="overflow-hidden rounded-[28px] bg-[#0e131b] ring-1 ring-white/10">
-          <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-lime-300" />
+    <footer className="pb-4 pt-20">
+      <div className="mx-auto max-w-[1920px] px-3 sm:px-4 lg:px-6">
+        <div className="overflow-hidden rounded-3xl bg-[#121821] text-white ring-1 ring-white/10">
+          {/* Тонкая emerald→teal градиентная полоса сверху */}
+          <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400" />
 
-          <div className="grid gap-10 px-5 py-9 sm:px-7 sm:py-11 md:grid-cols-2 lg:grid-cols-[1.15fr_0.8fr_1.05fr] lg:gap-12">
-            {/* Бренд + быстрые контакты */}
-            <div>
-              <div className="flex items-center gap-2.5 text-[19px] font-extrabold tracking-tight">
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-[0_8px_24px_-10px_rgba(16,185,129,0.9)]">
-                  З
-                </span>
-                {LEGAL.brand}
-              </div>
-
-              <p className="mt-4 max-w-[44ch] text-[14px] leading-relaxed text-white/50">
-                Земельные участки в коттеджных посёлках Подмосковья: газ,
-                электричество, асфальтированные дороги и охрана. Показываем
-                живые остатки и помогаем с документами.
-              </p>
-
-              <a
-                href={`tel:${LEGAL.phoneRaw}`}
-                className="mt-6 inline-flex h-12 items-center gap-2.5 rounded-full bg-emerald-500 px-5 text-[15px] font-extrabold text-white shadow-[0_10px_30px_-8px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5 hover:bg-emerald-400 active:scale-[0.98]"
-              >
-                <Phone className="h-4 w-4" />
-                {LEGAL.phone}
-              </a>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <a
-                  href={`mailto:${LEGAL.email}`}
-                  onClick={copyEmail}
-                  title={copied ? "Скопировано в буфер" : `Написать · ${LEGAL.email}`}
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-[13px] font-bold text-white/80 ring-1 ring-white/12 transition-colors hover:bg-white/[0.12] hover:text-white"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 shrink-0 text-emerald-300" />
-                  ) : (
-                    <Mail className="h-4 w-4 shrink-0 text-emerald-300" />
-                  )}
-                  {LEGAL.email}
-                  {!copied && <Copy className="h-3.5 w-3.5 shrink-0 text-white/30" />}
-                </a>
-
-                <a
-                  href={LEGAL.telegram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Telegram"
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-[13px] font-bold text-white/80 ring-1 ring-white/12 transition-colors hover:bg-white/[0.12] hover:text-white"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/telegram-logo.png"
-                    alt=""
-                    className="h-5 w-5 shrink-0 rounded-md"
-                  />
-                  Telegram
-                </a>
-
-                <a
-                  href={LEGAL.max}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="MAX Messenger"
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-white/[0.06] px-4 text-[13px] font-bold text-white/80 ring-1 ring-white/12 transition-colors hover:bg-white/[0.12] hover:text-white"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/max-logo.png" alt="" className="h-5 w-5 shrink-0 rounded-md" />
-                  MAX
-                </a>
-              </div>
-
+          {/* Главная строка: логотип · навигация · контакты */}
+          <div className="flex flex-col items-start gap-4 px-5 py-5 sm:px-6 md:flex-row md:items-center md:gap-6">
+            <div className="flex shrink-0 items-center gap-2">
+              <svg viewBox="0 0 44 40" className="h-[26px] w-7" fill="none" aria-hidden="true">
+                <path d="M22 2L2 18h6v20h28V18h6L22 2z" fill="#22c55e" />
+                <rect x="14" y="22" width="16" height="4" rx="2" fill="white" />
+                <rect x="20" y="16" width="4" height="16" rx="2" fill="white" />
+              </svg>
+              <span className="text-lg font-extrabold tracking-tight text-white">
+                Зем<span className="text-emerald-400">+</span>Плюс
+              </span>
             </div>
 
-            {/* Разделы */}
-            <nav aria-label="Разделы сайта">
-              <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">
-                Разделы
-              </h2>
-              <ul className="space-y-0.5 text-[14px]">
-                {SECTIONS.map((l) => (
-                  <li key={l.href}>
-                    <Link
-                      href={l.href}
-                      className="-ml-2 inline-flex min-h-[40px] items-center rounded-lg px-2 text-white/60 transition-colors hover:text-white"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:flex-1 md:justify-center">
+              {NAV.map((l) => (
+                <Link key={l.href} href={l.href} className="transition-colors hover:text-white">
+                  {l.label}
+                </Link>
+              ))}
             </nav>
 
-            {/* Реквизиты + документы. На планшете сетка двухколоночная, и
-                реквизиты растягиваем на всю ширину — иначе в правой
-                колонке второго ряда остаётся дыра. */}
-            <div className="md:col-span-2 lg:col-span-1">
-              <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white/40">
-                Реквизиты
-              </h2>
-              <dl className="space-y-2.5">
-                {REQUISITES.map((r) => (
-                  <div
-                    key={r.label}
-                    className="flex flex-col gap-0.5 border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-                  >
-                    <dt className="shrink-0 text-[12px] text-white/35">{r.label}</dt>
-                    <dd className="text-[13px] font-semibold leading-snug text-white/75 sm:text-right">
-                      {r.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+            {/* Контакты — цели тапа не меньше 44px */}
+            <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-sm sm:gap-x-2">
+              <a
+                href={`tel:${LEGAL.phoneRaw}`}
+                className="-my-2 flex min-h-[44px] items-center gap-1.5 py-2 pr-1 font-semibold transition-colors hover:text-emerald-400"
+              >
+                <Phone className="h-4 w-4 shrink-0 text-emerald-400" />
+                <span className="hidden sm:inline">{LEGAL.phone}</span>
+              </a>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link
-                  href="/privacy"
-                  className="inline-flex min-h-[40px] items-center rounded-full bg-white/[0.05] px-3.5 text-[12px] font-semibold text-white/60 ring-1 ring-white/10 transition-colors hover:bg-white/[0.1] hover:text-white"
-                >
-                  Политика конфиденциальности
-                </Link>
-                <Link
-                  href="/oferta"
-                  className="inline-flex min-h-[40px] items-center rounded-full bg-white/[0.05] px-3.5 text-[12px] font-semibold text-white/60 ring-1 ring-white/10 transition-colors hover:bg-white/[0.1] hover:text-white"
-                >
-                  Публичная оферта
-                </Link>
-              </div>
+              <a
+                href={`mailto:${LEGAL.email}`}
+                onClick={handleEmailClick}
+                aria-label={
+                  emailCopied ? `Скопировано: ${LEGAL.email}` : `Написать на ${LEGAL.email}`
+                }
+                title={emailCopied ? "Скопировано в буфер" : `Написать · ${LEGAL.email}`}
+                className="inline-flex items-center justify-center p-1.5 text-red-400 transition-colors hover:text-red-300"
+              >
+                {emailCopied ? (
+                  <Check className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <Mail className="h-5 w-5" />
+                )}
+              </a>
+
+              <a
+                href={LEGAL.telegram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Telegram"
+                className="inline-flex items-center justify-center p-1.5 transition-opacity hover:opacity-80"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/telegram-logo.png"
+                  alt="Telegram"
+                  className="h-5 w-5 rounded-md bg-gradient-to-br from-[#2AABEE] to-[#229ED9]"
+                />
+              </a>
+
+              <a
+                href={LEGAL.max}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="MAX Messenger"
+                className="inline-flex items-center justify-center p-1.5 transition-opacity hover:opacity-80"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/max-logo.png" alt="MAX" className="h-5 w-5 rounded-md" />
+              </a>
             </div>
           </div>
 
-          {/* Legal-строка */}
-          <div className="border-t border-white/[0.07] px-5 py-5 sm:px-7">
-            <p className="text-[12px] leading-relaxed text-white/35">
-              Информация на сайте носит справочный характер и не является
-              публичной офертой (ст. 437 ГК РФ). Актуальные цены, площади и
-              статусы участков уточняйте у менеджера.
-            </p>
-            <p className="mt-2 text-[12px] text-white/30">
-              © {YEAR} {LEGAL.shortName} · ИНН {LEGAL.inn} · ОГРНИП {LEGAL.ogrn} ·{" "}
-              {LEGAL.domain}
-            </p>
+          {/* Тонкая legal-полоска: реквизиты · ссылки */}
+          <div className="-mt-1 flex flex-col justify-between gap-2 px-5 pb-4 text-[11px] text-gray-500 sm:flex-row sm:items-center sm:px-6">
+            <span>{LEGAL_LINE}</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <Link href="/privacy" className="transition-colors hover:text-gray-300">
+                Политика
+              </Link>
+              <span className="opacity-40">·</span>
+              <Link href="/oferta" className="transition-colors hover:text-gray-300">
+                Оферта
+              </Link>
+              <span className="opacity-40">·</span>
+              <Link href="/v3/contacts" className="transition-colors hover:text-gray-300">
+                Реквизиты
+              </Link>
+            </div>
+          </div>
+
+          <div className="px-5 pb-4 text-[10px] leading-relaxed text-gray-600 sm:px-6">
+            Сайт носит информационный характер и не является публичной офертой;
+            окончательные условия — в договоре.
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { fetchAllVillageStats } from "@/lib/village-stats";
 import AdvantagesSection from "./_components/home/AdvantagesSection";
 import CatalogPreview from "./_components/home/CatalogPreview";
 import Hero from "./_components/home/Hero";
+import MortgageSection from "./_components/home/MortgageSection";
 import QuizSection from "./_components/home/QuizSection";
 import ReviewsTeaser from "./_components/home/ReviewsTeaser";
 import StepsSection from "./_components/home/StepsSection";
@@ -12,7 +13,7 @@ import TrustBar from "./_components/home/TrustBar";
  * Главная /v3 — витрина нового дизайна («тёмный премиум»).
  *
  * Порядок секций: первый экран → доверие → каталог → преимущества →
- * шаги → строка доверия по отзывам → форма подбора.
+ * ипотека → преимущества → шаги → строка доверия по отзывам → подбор.
  *
  * Карточки отзывов с главной убраны — они живут в разделе /v3/reviews,
  * здесь только рейтинг и ссылка туда.
@@ -36,6 +37,7 @@ export default async function V3HomePage() {
       <Hero plotsAvailable={totalAvailable} />
       <TrustBar />
       <CatalogPreview liveAvailable={liveAvailable} />
+      <MortgageSection />
       <AdvantagesSection />
       <StepsSection />
       <ReviewsTeaser />
