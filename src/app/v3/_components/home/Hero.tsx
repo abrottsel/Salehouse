@@ -3,7 +3,7 @@
 import { ArrowRight, CalendarClock, MapPin } from "lucide-react";
 // Фон первого экрана. Варианты живут в _components/ui/backdrops и
 // сравниваются на /v3/hero-lab — заменить можно одной строкой.
-import AuroraPlus from "../ui/backdrops/AuroraPlus";
+import LivePhoto from "../ui/backdrops/LivePhoto";
 import { Accent, CTA, Eyebrow } from "../ui/primitives";
 import { Counter, Reveal } from "../ui/motion";
 import { useTier } from "../../_lib/perf";
@@ -53,7 +53,7 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
 
   return (
     <section className="relative -mt-20 overflow-hidden pt-20">
-      <AuroraPlus />
+      <LivePhoto />
 
       <div className="relative mx-auto max-w-[1400px] px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
         <Reveal>
