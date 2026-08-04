@@ -114,7 +114,7 @@ export default function ZemexxFrame({
         className="relative -mx-4 overflow-hidden sm:mx-0 sm:rounded-[24px] sm:ring-1 sm:ring-white/10"
       >
         <div className={inlineInteractive ? "" : "pointer-events-none"}>
-          {frame("h-[560px] sm:h-[750px] lg:h-[85vh]")}
+          {frame("h-[616px] sm:h-[750px] lg:h-[85vh]")}
         </div>
 
         {!inlineInteractive && (
@@ -150,16 +150,21 @@ export default function ZemexxFrame({
         )}
 
         {/* «Дорога к мечте» поверх фрейма. Слева у Земекса легенда цен,
-            поэтому бейдж справа. Отступ сверху не случайный: на широком
-            экране Земекс ставит «Спутник» в правый верхний угол (12px от
-            края, высота 34) — прижатый к верху бейдж его накрывал; на
-            телефоне «Спутник» уезжает вниз, но отступ оставляем общим.
-            Панель раскрытия уходит порталом в body, краем карточки её
-            больше не режет. data-frame-overlay нужен кнопке «Путь» —
-            она ищет его, чтобы встать слева. */}
+            поэтому бейдж справа.
+
+            На телефоне позиция один в один с боевым IframeMapOverlay:
+            top-3 right-3. Кнопка «Путь» позиционируется сама жёсткими
+            константами (right 12, top 48), поэтому бейдж наверху, а она
+            строкой ниже — как на проде. Ставить их в один ряд можно
+            только сдвигая бейдж влево, и тогда порядок получался
+            зеркальный боевому.
+
+            На широком экране отступ другой: там Земекс держит «Спутник»
+            в правом верхнем углу, а «Путь» встаёт слева от этого блока —
+            для этого ей и нужен data-frame-overlay. */}
         <div
           data-frame-overlay
-          className="pointer-events-none absolute right-[85px] top-12 z-30 flex justify-end sm:right-5 sm:top-14"
+          className="pointer-events-none absolute right-3 top-3 z-30 flex justify-end sm:right-5 sm:top-14"
         >
           <div className="pointer-events-auto">
             <RouteBadgeDark
