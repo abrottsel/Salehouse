@@ -65,7 +65,6 @@ export default function BuyTimeline() {
           originY: 0,
           scaleY: lite ? 1 : scrollYProgress,
           opacity: lite ? 0.5 : 1,
-          boxShadow: lite ? undefined : "0 0 12px rgba(52,211,153,0.55)",
         }}
       />
       {!lite && (
@@ -82,7 +81,9 @@ export default function BuyTimeline() {
             className="absolute left-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-200"
             style={{
               top: dotTop,
-              boxShadow: "0 0 0 6px rgba(163,230,53,0.14), 0 0 22px 4px rgba(163,230,53,0.6)",
+              // Без внешнего гало: размытое пятно вокруг капли ползло
+              // по плиткам шагов и читалось как грязный зацвет.
+              boxShadow: "0 0 0 4px rgba(163,230,53,0.12)",
             }}
           />
         </span>
@@ -104,7 +105,7 @@ export default function BuyTimeline() {
               transition={{ duration: lite ? 0.25 : 0.65, ease: EASE }}
             >
               {/* Плитка с иконкой сидит на линии */}
-              <div className="relative shrink-0">
+              <div className="relative z-10 shrink-0">
                 {/* без backdrop-filter: внутри анимируемого по opacity
                     родителя Chromium иногда рисует его подложку не по
                     радиусу — плитка на миг становится квадратом */}
@@ -129,7 +130,7 @@ export default function BuyTimeline() {
                     // пятном — на тёмном полотне цветной блюр читается
                     // именно так, а не как свечение.
                     boxShadow: isCurrent
-                      ? `inset 0 0 0 1px ${meta.hex}80, 0 0 0 5px ${meta.hex}1a`
+                      ? `inset 0 0 0 1px ${meta.hex}80`
                       : reached
                         ? `inset 0 0 0 1px ${meta.hex}59`
                         : "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",
@@ -146,7 +147,9 @@ export default function BuyTimeline() {
                   // Кружок вырезает плитку из линии таймлайна, поэтому залит
                   // цветом полотна — var(--v3-page), а не литеральным ночным.
                   style={{ background: "var(--v3-page, #0b0e13)" }}
-                  className={`absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full text-[10px] font-black tabular-nums ring-1 transition-colors duration-500 ${
+                  // z-20: у плитки z-10, и без своего слоя кружок уходил
+                  // под неё — оставалась одна дуга, номер пропадал.
+                  className={`absolute -right-1 -top-1 z-20 grid h-5 w-5 place-items-center rounded-full text-[10px] font-black tabular-nums ring-1 transition-colors duration-500 ${
                     reached ? `${meta.tone} ring-current` : "text-white/40 ring-white/15"
                   }`}
                 >
@@ -161,7 +164,7 @@ export default function BuyTimeline() {
                 {/* Крупный номер шага фоновой графикой */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -right-2 -top-7 select-none text-[104px] font-black leading-none tabular-nums text-transparent transition-opacity duration-500 sm:-top-9 sm:text-[132px]"
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 select-none text-[64px] font-black leading-none tabular-nums text-transparent transition-opacity duration-500 sm:right-6 sm:text-[92px]"
                   style={{
                     WebkitTextStroke: `1px ${meta.hex}`,
                     opacity: reached ? 0.16 : 0.07,
@@ -177,7 +180,7 @@ export default function BuyTimeline() {
                   className="pointer-events-none absolute inset-0 rounded-[22px] transition-opacity duration-500"
                   style={{
                     opacity: isCurrent ? 1 : 0,
-                    boxShadow: `inset 0 0 0 1px ${meta.hex}59, 0 22px 60px -30px ${meta.hex}`,
+                    boxShadow: `inset 0 0 0 1px ${meta.hex}59`,
                   }}
                 />
 

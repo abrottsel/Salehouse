@@ -27,14 +27,6 @@ export default function PageHero({
     // общим значением pt-6 sm:pt-10, одинаковым и на главной, — иначе
     // при переходе между страницами контент прыгает по вертикали.
     <header className="relative isolate">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-24 -z-10 h-[420px]"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 20% 0%, rgba(16,185,129,0.16) 0%, rgba(16,185,129,0) 70%)",
-        }}
-      />
       <Reveal>
         <Eyebrow>{eyebrow}</Eyebrow>
         <h1 className="mt-3 text-[30px] font-extrabold leading-[1.06] tracking-tight sm:text-[44px] sm:leading-[1.04]">
