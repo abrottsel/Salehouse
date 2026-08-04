@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import SectionLab from "../_components/SectionLab";
 
 export const metadata: Metadata = {
@@ -8,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function SectionLabPage() {
-  return <SectionLab />;
+  // Suspense обязателен: внутри useSearchParams (вариант приходит в
+  // ?bg=...), без границы сборка требует её явно и валится.
+  return (
+    <Suspense fallback={null}>
+      <SectionLab />
+    </Suspense>
+  );
 }

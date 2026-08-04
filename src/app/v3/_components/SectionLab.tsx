@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useCallback, useState, type ComponentType } from "react";
+import { useSearchParams } from "next/navigation";
 import AdvantagesSection from "./home/AdvantagesSection";
 import StepsSection from "./home/StepsSection";
 import Breath from "./ui/section-backdrops/Breath";
@@ -42,8 +43,21 @@ const VARIANTS: Array<{
 ];
 
 export default function SectionLab() {
-  const [active, setActive] = useState(0);
+  // Вариант берётся из адреса (?bg=pollen) — так каждый из восьми можно
+  // прислать отдельной ссылкой. Дальше состояние живёт своей жизнью, а
+  // адрес переписывается через replaceState: перерисовывать страницу
+  // роутером ради подписи в адресной строке незачем.
+  const params = useSearchParams();
+  const fromUrl = VARIANTS.findIndex((v) => v.key === params.get("bg"));
+  const [active, setActive] = useState(fromUrl > 0 ? fromUrl : 0);
   const { Backdrop } = VARIANTS[active];
+
+  const choose = useCallback((i: number) => {
+    setActive(i);
+    const url = new URL(window.location.href);
+    url.searchParams.set("bg", VARIANTS[i].key);
+    window.history.replaceState(null, "", url);
+  }, []);
 
   return (
     <main className="pb-4">
@@ -76,7 +90,7 @@ export default function SectionLab() {
               return (
                 <button
                   key={v.key}
-                  onClick={() => setActive(i)}
+                  onClick={() => choose(i)}
                   className={`min-h-[56px] rounded-2xl px-3 py-2 text-left transition-all ${
                     on
                       ? "bg-emerald-500 text-white"
