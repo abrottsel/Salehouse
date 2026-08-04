@@ -101,7 +101,7 @@ export default function FaqAccordion() {
               }}
             >
               <div className="overflow-hidden">
-                <p className="px-4 pb-5 pl-[52px] text-[14px] leading-relaxed text-white/60 sm:px-6 sm:pb-6 sm:pl-[70px] sm:text-[15px]">
+                <p className="max-w-[86ch] px-4 pb-5 pl-[52px] text-[14px] leading-relaxed text-white/60 sm:px-6 sm:pb-6 sm:pl-[70px] sm:text-[15px]">
                   {item.a}
                 </p>
               </div>

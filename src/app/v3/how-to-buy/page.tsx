@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function V3HowToBuyPage() {
   return (
-    <main className="mx-auto max-w-[1000px] px-4 pt-2 sm:px-6 sm:pt-4">
+    <main className="mx-auto max-w-[1400px] px-4 pt-2 sm:px-6 sm:pt-4">
       <PageHero
         eyebrow="Как купить участок"
         title="От звонка до ключей —"

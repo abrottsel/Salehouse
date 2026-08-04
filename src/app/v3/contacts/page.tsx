@@ -67,7 +67,7 @@ const REQUISITES = [
 
 export default function V3ContactsPage() {
   return (
-    <main className="mx-auto max-w-[1100px] px-4 pt-2 sm:px-6 sm:pt-4">
+    <main className="mx-auto max-w-[1400px] px-4 pt-2 sm:px-6 sm:pt-4">
       <PageHero
         eyebrow="Контакты"
         title="Как с нами"

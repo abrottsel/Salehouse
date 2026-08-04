@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function V3MortgagePage() {
   return (
-    <main className="mx-auto max-w-[1100px] px-4 pt-2 sm:px-6 sm:pt-4">
+    <main className="mx-auto max-w-[1400px] px-4 pt-2 sm:px-6 sm:pt-4">
       <PageHero
         eyebrow="Ипотека"
         title="Свой участок"
