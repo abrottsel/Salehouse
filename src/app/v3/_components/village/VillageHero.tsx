@@ -150,7 +150,7 @@ export default function VillageHero({
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0b0e13]/75 via-[#0b0e13]/25 to-[#0b0e13]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0b0e13] to-transparent" />
 
-      <div className="absolute inset-0 z-20 mx-auto flex max-w-[1500px] flex-col px-4 pb-24 pt-24 sm:px-6 sm:pb-28 sm:pt-28 lg:px-10">
+      <div className="absolute inset-0 z-20 mx-auto flex max-w-[1500px] flex-col px-4 pb-24 pt-[76px] sm:px-6 sm:pb-28 sm:pt-[84px] lg:px-10">
         {/* Верхний ряд: сколько ехать от МКАД и — рядом — «Дорога к мечте»,
             сколько ехать именно от дома посетителя. Здесь у панели есть
             место развернуться вниз, в нижнем ряду пилюль она легла бы
