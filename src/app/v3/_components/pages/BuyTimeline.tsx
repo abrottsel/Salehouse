@@ -99,9 +99,14 @@ export default function BuyTimeline() {
           <li key={step.number} className="relative">
             <motion.div
               className="flex gap-3 pb-3 sm:gap-5 sm:pb-4"
-              initial={{ opacity: 0, x: lite ? 0 : i % 2 === 0 ? -40 : 40, y: lite ? 0 : 14 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
-              viewport={{ once: true, amount: 0.35 }}
+              // Только вертикаль. Прежний въезд с боков (x: ±40) уводил
+              // плитку шага за левый край экрана: на телефоне ряд начинается
+              // в 16px от края, и на время анимации мини-блок оказывался
+              // срезанным. amount 0.15 вместо 0.35 — чтобы шаг доезжал до
+              // места раньше, чем читатель до него доскроллит.
+              initial={{ opacity: 0, y: lite ? 0 : 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: lite ? 0.25 : 0.65, ease: EASE }}
             >
               {/* Плитка с иконкой сидит на линии */}
@@ -123,7 +128,10 @@ export default function BuyTimeline() {
                     // растворялись на белом полотне (см. --v3-idle-* в v3.css).
                     background: reached
                       ? `linear-gradient(${meta.hex}1f, ${meta.hex}1f), var(--v3-page, #0b0e13)`
-                      : "var(--v3-idle-bg, rgba(255,255,255,0.04))",
+                      : // Непройденный шаг тоже на непрозрачной базе. Без неё
+                        // сквозь плитку просвечивала рельса и разрезала её
+                        // пополам — левая половина читалась как срезанная.
+                        `var(--v3-idle-bg, linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))), var(--v3-page, #0b0e13)`,
                     // У текущего шага только рамка и мягкое кольцо. Прежняя
                     // размытая тень тем же цветом (0 14px 34px -14px) при
                     // прокрутке расползалась вокруг плитки грязным тёмным
