@@ -101,24 +101,24 @@ export default function BuyTimeline() {
 
         return (
           <li key={step.number} className="relative z-10">
-            <motion.div
-              className="flex gap-3 pb-3 sm:gap-5 sm:pb-4"
-              // Только вертикаль. Прежний въезд с боков (x: ±40) уводил
-              // плитку шага за левый край экрана: на телефоне ряд начинается
-              // в 16px от края, и на время анимации мини-блок оказывался
-              // срезанным. amount 0.15 вместо 0.35 — чтобы шаг доезжал до
-              // места раньше, чем читатель до него доскроллит.
-              initial={{ opacity: 0, y: lite ? 0 : 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: lite ? 0.25 : 0.65, ease: EASE }}
-            >
+            {/* Ряд НЕ анимируется по opacity. Пока прозрачность меньше
+                единицы, непрозрачный фон плитки тоже полупрозрачен, и
+                сквозь мини-блок просвечивает рельса — она и читалась как
+                затемнённая левая половина. Ловится только на видео
+                прокрутки: в статике кадр уже чистый. */}
+            <div className="flex gap-3 pb-3 sm:gap-5 sm:pb-4">
               {/* Плитка с иконкой сидит на линии */}
               {/* transform-gpu обязателен: рельса анимируется трансформом и
                   живёт в композиционном слое, а в WebKit такой слой рисуется
                   поверх обычных элементов независимо от z-index. Свой слой у
                   плитки возвращает порядок — проверено в WebKit на проде. */}
-              <div className="relative z-10 shrink-0 transform-gpu">
+              <motion.div
+                className="relative z-10 shrink-0 transform-gpu"
+                initial={{ scale: lite ? 1 : 0.86 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: lite ? 0.2 : 0.5, ease: EASE }}
+              >
                 {/* без backdrop-filter: внутри анимируемого по opacity
                     родителя Chromium иногда рисует его подложку не по
                     радиусу — плитка на миг становится квадратом */}
@@ -171,11 +171,15 @@ export default function BuyTimeline() {
                 >
                   {step.number}
                 </span>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
                 className="relative min-w-0 flex-1 overflow-hidden rounded-[22px] px-4 py-4 ring-1 ring-white/[0.06] sm:px-6 sm:py-5"
                 style={lite ? { ...glassStyle, backdropFilter: "none" } : glassStyle}
+                initial={{ opacity: 0, y: lite ? 0 : 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: lite ? 0.25 : 0.6, ease: EASE }}
               >
                 {/* Крупный номер шага фоновой графикой */}
                 <span
@@ -227,8 +231,8 @@ export default function BuyTimeline() {
                 <p className="relative mt-2 max-w-[60ch] text-[13.5px] leading-relaxed text-white/55 sm:text-[15px]">
                   {step.description}
                 </p>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </li>
         );
       })}
