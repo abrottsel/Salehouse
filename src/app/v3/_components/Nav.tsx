@@ -8,12 +8,10 @@ import {
   Calculator,
   HelpCircle,
   ListChecks,
-  Menu,
   MessageSquare,
   Phone,
   PhoneCall,
   TreePine,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
@@ -22,18 +20,24 @@ import FavoritesButton from "./FavoritesButton";
 import SiteSearchV3 from "./SiteSearchV3";
 import ThemeToggle from "./ThemeToggle";
 
-const LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
-  { href: "/v3/catalog", label: "Посёлки", Icon: TreePine },
-  { href: "/v3/mortgage", label: "Ипотека", Icon: Calculator },
-  { href: "/v3/how-to-buy", label: "Как купить", Icon: ListChecks },
-  { href: "/v3/reviews", label: "Отзывы", Icon: MessageSquare },
-  { href: "/v3/faq", label: "Вопросы", Icon: HelpCircle },
-  { href: "/v3/contacts", label: "Контакты", Icon: PhoneCall },
+/** Тон плитки в мобильном меню. Приём взят у карточек преимуществ: там
+ *  каждая иконка своего цвета на своей плашке, и именно это отличает
+ *  живое меню от серой сетки одинаковых значков. Работает в обеих темах. */
+const LINKS: { href: string; label: string; Icon: LucideIcon; tone: string }[] = [
+  { href: "/v3/catalog", label: "Посёлки", Icon: TreePine, tone: "bg-emerald-500/15 text-emerald-300" },
+  { href: "/v3/mortgage", label: "Ипотека", Icon: Calculator, tone: "bg-sky-500/15 text-sky-300" },
+  { href: "/v3/how-to-buy", label: "Как купить", Icon: ListChecks, tone: "bg-violet-500/15 text-violet-300" },
+  { href: "/v3/reviews", label: "Отзывы", Icon: MessageSquare, tone: "bg-amber-500/15 text-amber-300" },
+  { href: "/v3/faq", label: "Вопросы", Icon: HelpCircle, tone: "bg-rose-500/15 text-rose-300" },
+  { href: "/v3/contacts", label: "Контакты", Icon: PhoneCall, tone: "bg-teal-500/15 text-teal-300" },
 ];
 
-/** Цель тапа 44px остаётся, но подложки у иконок нет: визуально они
- *  размером со знак логотипа, как в боевой шапке. */
-const ICON_BTN = "h-11 w-11";
+/** Знаки мельче прежних (18px против 22px), кнопка 38px и почти без
+ *  зазора — четыре иконки по 44px распирали шапку на телефоне. Подложка
+ *  появляется только под курсором, в покое её нет, как в боевой шапке.
+ *  Класс v3-ico-btn включает оживление иконки внутри (см. v3.css). */
+const ICON_BTN =
+  "v3-ico-btn h-[38px] w-[38px] rounded-full transition-colors hover:bg-white/[0.07]";
 
 export default function Nav() {
   const pathname = usePathname() || "";
@@ -91,7 +95,7 @@ export default function Nav() {
           })}
         </div>
 
-        <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+        <div className="ml-auto flex items-center gap-0 sm:gap-0.5">
           <SiteSearchV3 className={ICON_BTN} />
           <FavoritesButton className={ICON_BTN} />
           <ThemeToggle className={ICON_BTN} />
@@ -103,18 +107,23 @@ export default function Nav() {
             href={`tel:${LEGAL.phoneRaw}`}
             aria-label={`Позвонить ${LEGAL.phone}`}
             title={LEGAL.phone}
-            className={`grid ${ICON_BTN} place-items-center rounded-full text-emerald-500 transition-colors hover:text-emerald-400 dark:text-emerald-300`}
+            className={`grid ${ICON_BTN} place-items-center text-emerald-500 hover:text-emerald-400 dark:text-emerald-300`}
           >
-            <Phone className="h-[22px] w-[22px]" />
+            <Phone className="v3-ico v3-ico-phone h-[18px] w-[18px]" />
           </a>
 
           <button
             onClick={() => setOpenOn((v) => (v === pathname ? null : pathname))}
             aria-label={open ? "Закрыть меню" : "Открыть меню"}
             aria-expanded={open}
-            className={`grid ${ICON_BTN} place-items-center rounded-full text-white/70 transition-colors hover:text-white lg:hidden`}
+            className={`grid ${ICON_BTN} place-items-center text-white/70 hover:text-white lg:hidden`}
           >
-            {open ? <X className="h-[22px] w-[22px]" /> : <Menu className="h-[22px] w-[22px]" />}
+            {/* Три полоски складываются в крестик — см. .v3-burger в v3.css */}
+            <span className="v3-burger" data-open={open} aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
           </button>
         </div>
       </nav>
@@ -130,41 +139,42 @@ export default function Nav() {
             style={glassStyle}
           >
             {/* Плитки по три в ряд: подпись под иконкой читается с одного
-                взгляда, а список из шести строк — нет. Высота плитки 92px,
-                это с запасом больше минимальной цели тапа в 44px. */}
-            <div className="grid grid-cols-3 gap-2">
-              {LINKS.map((l) => {
+                взгляда, а список из шести строк — нет. Плитка 82px и знак
+                16px — мельче прежних, но цель тапа вдвое больше
+                минимальных 44px. Плитки въезжают гирляндой, по очереди. */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {LINKS.map((l, i) => {
                 const active = pathname === l.href;
                 return (
-                  <Link
+                  <motion.div
                     key={l.href}
-                    href={l.href}
-                    onClick={() => setOpenOn(null)}
-                    className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-[18px] px-1.5 py-3 text-center ring-1 transition-colors ${
-                      active
-                        ? "bg-emerald-400/12 ring-emerald-400/35"
-                        : "bg-white/[0.05] ring-white/10 active:bg-white/[0.10]"
-                    }`}
+                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.04 + i * 0.035, duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <span
-                      className={`grid h-10 w-10 place-items-center rounded-[14px] ${
-                        active ? "bg-emerald-400/20" : "bg-white/[0.07]"
+                    <Link
+                      href={l.href}
+                      onClick={() => setOpenOn(null)}
+                      className={`group flex min-h-[82px] flex-col items-center justify-center gap-1.5 rounded-[18px] px-1.5 py-3 text-center ring-1 transition-colors ${
+                        active
+                          ? "bg-emerald-400/12 ring-emerald-400/35"
+                          : "bg-white/[0.05] ring-white/10 active:bg-white/[0.10]"
                       }`}
                     >
-                      <l.Icon
-                        className={`h-[18px] w-[18px] ${
-                          active ? "text-emerald-300" : "text-white/70"
+                      <span
+                        className={`grid h-9 w-9 place-items-center rounded-[13px] ring-1 ring-white/10 transition-transform duration-300 group-hover:-translate-y-0.5 group-active:scale-90 ${l.tone}`}
+                      >
+                        <l.Icon className="h-4 w-4" strokeWidth={2.2} />
+                      </span>
+                      <span
+                        className={`text-[12px] font-semibold leading-tight ${
+                          active ? "text-emerald-300" : "text-white/80"
                         }`}
-                      />
-                    </span>
-                    <span
-                      className={`text-[12px] font-semibold leading-tight ${
-                        active ? "text-emerald-300" : "text-white/80"
-                      }`}
-                    >
-                      {l.label}
-                    </span>
-                  </Link>
+                      >
+                        {l.label}
+                      </span>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>

@@ -197,7 +197,7 @@ export default function SiteSearchV3({ className = "" }: { className?: string })
         title="Поиск по сайту (⌘K)"
         className={`grid shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:text-white ${className}`}
       >
-        <Search className="h-[22px] w-[22px]" />
+        <Search className="v3-ico v3-ico-search h-[18px] w-[18px]" />
       </button>
 
       {open &&

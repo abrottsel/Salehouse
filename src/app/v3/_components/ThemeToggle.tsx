@@ -28,8 +28,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
       title="День / ночь"
       className={`grid shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:text-white ${className}`}
     >
-      <Sun className="hidden h-[22px] w-[22px] text-amber-400 dark:block" />
-      <Moon className="block h-[22px] w-[22px] text-emerald-500 dark:hidden" />
+      <Sun className="v3-ico v3-ico-sun hidden h-[18px] w-[18px] text-amber-400 dark:block" />
+      <Moon className="v3-ico v3-ico-moon block h-[18px] w-[18px] text-emerald-500 dark:hidden" />
     </button>
   );
 }
