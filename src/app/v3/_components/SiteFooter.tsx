@@ -74,7 +74,9 @@ export default function SiteFooter() {
               </span>
             </div>
 
-            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:flex-1 md:justify-center">
+            {/* Прижата к логотипу, как в шапке. Раньше растягивалась на всю ширину
+                (md:flex-1 + justify-center) и висела посреди пустоты. */}
+            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-300 md:mr-auto">
               {NAV.map((l) => (
                 <Link key={l.href} href={l.href} className="transition-colors hover:text-white">
                   {l.label}
@@ -84,12 +86,16 @@ export default function SiteFooter() {
 
             {/* Контакты — цели тапа не меньше 44px */}
             <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-sm sm:gap-x-2">
+              {/* Только трубка, как в шапке: номер длинный и растягивал ряд.
+                  Сам номер остаётся на /v3/contacts и в мобильном меню,
+                  плюс подсказкой при наведении. */}
               <a
                 href={`tel:${LEGAL.phoneRaw}`}
-                className="-my-2 flex min-h-[44px] items-center gap-1.5 py-2 pr-1 font-semibold transition-colors hover:text-emerald-400"
+                aria-label={`Позвонить ${LEGAL.phone}`}
+                title={LEGAL.phone}
+                className="inline-flex items-center justify-center p-1.5 text-emerald-400 transition-colors hover:text-emerald-300"
               >
-                <Phone className="h-4 w-4 shrink-0 text-emerald-400" />
-                <span className="hidden sm:inline">{LEGAL.phone}</span>
+                <Phone className="h-5 w-5" />
               </a>
 
               <a

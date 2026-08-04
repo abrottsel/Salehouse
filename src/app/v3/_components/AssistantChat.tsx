@@ -224,7 +224,7 @@ export default function AssistantChat({ enabled = true }: { enabled?: boolean })
         aria-haspopup="dialog"
         aria-expanded={open}
         tabIndex={enabled ? 0 : -1}
-        className="grid h-11 w-11 place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
+        className="grid h-11 w-9 place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
       >
         <span className="v3-on-dark grid h-[22px] w-[22px] place-items-center rounded-[7px] bg-gradient-to-br from-emerald-400 to-emerald-600">
           <MessageCircle className="h-3.5 w-3.5 text-white" strokeWidth={2.6} />

@@ -12,9 +12,10 @@ import AssistantChat from "./AssistantChat";
  * ним приезжал AI-чат, отправляющий заявки на /api/leads. Ассистент здесь
  * свой (AssistantChat): сценарий боевого, но ни одного запроса наружу.
  *
- * Размер — половина боевого: логотип 22px против 44px. Чтобы это не
- * ломало палец, кликабельная зона осталась 44×44 — вокруг логотипа
- * прозрачные поля, сама плашка ровно 44px в высоту.
+ * Размер — половина боевого: логотип 22px против 44px. Кликабельная
+ * зона 36×44: по высоте держим полные 44px, по ширине ужали до 36 —
+ * при 44 между иконками зияло 22px пустоты и ряд читался разрозненно.
+ * Палец по-прежнему попадает: в ряду соседних кнопок критична высота.
  *
  * z-40: ниже шапки (z-50), ниже полноэкранной карты (z-90) и модалок
  * (z-100) — всплывать поверх них кнопки не должны.
@@ -126,7 +127,7 @@ export default function FloatingMessengers() {
             aria-label={c.label}
             title={c.label}
             tabIndex={clear ? 0 : -1}
-            className="grid h-11 w-11 place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
+            className="grid h-11 w-9 place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
