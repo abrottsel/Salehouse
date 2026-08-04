@@ -58,7 +58,7 @@ export default function Hero({ plotsAvailable }: { plotsAvailable?: number } = {
       {/* Нижний отступ маленький и одинаковый на всех ширинах: он и есть
           зазор до полосы доверия, а заказчик просил там не больше
           сантиметра. Сантиметр на экране — это примерно 38px, берём 32. */}
-      <div className="relative mx-auto max-w-[1400px] px-4 pb-8 pt-10 sm:px-6 sm:pt-14 lg:pt-16">
+      <div className="relative mx-auto max-w-[1400px] px-4 pb-8 pt-6 sm:px-6 sm:pt-10">
         <Reveal>
           <Eyebrow>Коттеджные посёлки Подмосковья</Eyebrow>
         </Reveal>

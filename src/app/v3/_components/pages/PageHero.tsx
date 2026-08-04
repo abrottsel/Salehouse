@@ -23,10 +23,10 @@ export default function PageHero({
   children?: ReactNode;
 }) {
   return (
-    // Шапка плотная: на ноутбуке прежние отступы и кегль съедали весь
-    // первый экран, и содержимое страницы (карточки, вопросы, отзывы,
-    // форма) начиналось уже за нижней кромкой.
-    <header className="relative isolate pt-4 sm:pt-6">
+    // Своего верхнего отступа у шапки нет: его задаёт страница одним
+    // общим значением pt-6 sm:pt-10, одинаковым и на главной, — иначе
+    // при переходе между страницами контент прыгает по вертикали.
+    <header className="relative isolate">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-24 -z-10 h-[420px]"

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
  */
 export default function V3ReviewsPage() {
   return (
-    <main className="mx-auto max-w-[1400px] px-4 pt-2 sm:px-6 sm:pt-4">
+    <main className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 sm:pt-10">
       <PageHero
         eyebrow="Отзывы клиентов"
         title="Нас выбирают и"
