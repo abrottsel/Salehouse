@@ -700,8 +700,15 @@ html:not(.dark) .v3-scope {
   }
 }
 .v3-sec-pollen {
-  background: var(--v3-sec-dot);
-  box-shadow: 0 0 6px var(--v3-sec-dot-halo);
+  /* Ядро и ореол — одним градиентом. Прежний box-shadow: 0 0 6px давал
+     то же самое, но заставлял браузер размывать каждую точку отдельно на
+     каждом кадре. */
+  background: radial-gradient(
+    circle,
+    var(--v3-sec-dot) 0 28%,
+    var(--v3-sec-dot-halo) 30% 52%,
+    transparent 72%
+  );
   animation: v3-sec-pollen 20s linear infinite;
   will-change: transform, opacity;
 }

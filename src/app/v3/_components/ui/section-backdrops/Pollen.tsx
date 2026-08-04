@@ -17,10 +17,10 @@ export default function Pollen() {
   // на сервере и клиенте, гидрация не ругается.
   const dots = useMemo(
     () =>
-      Array.from({ length: 26 }, (_, i) => ({
+      Array.from({ length: 18 }, (_, i) => ({
         left: `${((i * 0.618033988749895) % 1) * 100}%`,
         bottom: `${-10 + ((i * 0.7548776662466927) % 1) * 40}%`,
-        size: 2 + ((i * 5) % 3),
+        size: 7 + ((i * 5) % 3) * 2,
         delay: `${((i * 23) % 180) / 10}s`,
         dur: `${16 + ((i * 31) % 90) / 10}s`,
       })),
