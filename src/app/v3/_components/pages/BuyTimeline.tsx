@@ -114,14 +114,18 @@ export default function BuyTimeline() {
               transition={{ duration: lite ? 0.25 : 0.65, ease: EASE }}
             >
               {/* Плитка с иконкой сидит на линии */}
-              <div className="relative z-10 shrink-0">
+              {/* transform-gpu обязателен: рельса анимируется трансформом и
+                  живёт в композиционном слое, а в WebKit такой слой рисуется
+                  поверх обычных элементов независимо от z-index. Свой слой у
+                  плитки возвращает порядок — проверено в WebKit на проде. */}
+              <div className="relative z-10 shrink-0 transform-gpu">
                 {/* без backdrop-filter: внутри анимируемого по opacity
                     родителя Chromium иногда рисует его подложку не по
                     радиусу — плитка на миг становится квадратом */}
                 {/* подложка и рамка — инлайном: цвет шага динамический,
                     а инлайновый box-shadow всё равно перебил бы ring-* */}
                 <div
-                  className={`relative z-10 grid h-12 w-12 place-items-center rounded-2xl transition-all duration-500 sm:h-14 sm:w-14 ${
+                  className={`relative z-10 grid h-12 w-12 transform-gpu place-items-center rounded-2xl transition-all duration-500 sm:h-14 sm:w-14 ${
                     isCurrent ? "scale-105" : ""
                   }`}
                   style={{
