@@ -23,7 +23,10 @@ export default function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <header className="relative isolate pt-10 sm:pt-16">
+    // Шапка плотная: на ноутбуке прежние отступы и кегль съедали весь
+    // первый экран, и содержимое страницы (карточки, вопросы, отзывы,
+    // форма) начиналось уже за нижней кромкой.
+    <header className="relative isolate pt-4 sm:pt-6">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-24 -z-10 h-[420px]"
@@ -34,7 +37,7 @@ export default function PageHero({
       />
       <Reveal>
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-4 text-[34px] font-extrabold leading-[1.06] tracking-tight sm:text-[56px] sm:leading-[1.04]">
+        <h1 className="mt-3 text-[30px] font-extrabold leading-[1.06] tracking-tight sm:text-[44px] sm:leading-[1.04]">
           {title}
           {accent && (
             <>
@@ -44,7 +47,7 @@ export default function PageHero({
           )}
         </h1>
         {sub && (
-          <p className="mt-5 max-w-[60ch] text-[15px] leading-relaxed text-white/55 sm:text-[17px]">
+          <p className="mt-3 max-w-[60ch] text-[14px] leading-relaxed text-white/55 sm:text-[16px]">
             {sub}
           </p>
         )}

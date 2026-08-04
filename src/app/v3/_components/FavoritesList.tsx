@@ -38,10 +38,12 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
     <>
       <Reveal>
         <Eyebrow>Избранное</Eyebrow>
-        <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
+        {/* Кегль и отступы те же, что у PageHero на остальных страницах —
+            шапка плотная, чтобы карточки попадали в первый экран. */}
+        <h1 className="mt-3 text-[30px] font-extrabold leading-[1.06] tracking-tight sm:text-[44px]">
           Что вы отметили
         </h1>
-        <p className="mt-4 max-w-[58ch] text-[15px] leading-relaxed text-white/55">
+        <p className="mt-2 max-w-[58ch] text-[14px] leading-relaxed text-white/55">
           Список хранится в вашем браузере и никуда не отправляется.
         </p>
       </Reveal>
@@ -62,7 +64,7 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
           </Glass>
         </Reveal>
       ) : (
-        <StaggerList className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerList className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {chosen.map((v) => (
             <StaggerItem key={v.slug}>
               <Link

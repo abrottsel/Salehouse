@@ -44,23 +44,23 @@ export default async function V3CatalogPage() {
   const totalAvailable = Object.values(stats).reduce((sum, s) => sum + s.plotsAvailable, 0);
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 pt-10 sm:px-6 sm:pt-14">
-      <header className="mb-8 sm:mb-10">
-        <div className="mb-4">
+    <main className="mx-auto max-w-[1500px] px-4 pt-4 sm:px-6 sm:pt-6">
+      <header className="mb-6 sm:mb-7">
+        <div className="mb-3">
           <Eyebrow>Каталог посёлков</Eyebrow>
         </div>
-        <h1 className="text-4xl font-extrabold leading-[1.05] sm:text-6xl">
+        <h1 className="text-[30px] font-extrabold leading-[1.06] tracking-tight sm:text-[44px]">
           Найдите свой
           <br className="sm:hidden" />{" "}
           <Accent>идеальный участок</Accent>
         </h1>
-        <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-white/55 sm:text-[17px]">
+        <p className="mt-3 max-w-[62ch] text-[14px] leading-relaxed text-white/55 sm:text-[16px]">
           Все посёлки ЗемПлюс на одной странице. Отфильтруйте по направлению, цене за
           сотку, площади и готовности — и переходите в посёлок, чтобы посмотреть
           свободные участки на карте.
         </p>
 
-        <div className="mt-6">
+        <div className="mt-4">
           <CatalogStats plotsAvailable={totalAvailable} />
         </div>
       </header>

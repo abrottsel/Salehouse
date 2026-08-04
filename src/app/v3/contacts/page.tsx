@@ -75,7 +75,7 @@ export default function V3ContactsPage() {
         sub="Телефон, почта, Telegram и MAX — выберите удобный способ. Или оставьте заявку в форме, и мы свяжемся сами."
       />
 
-      <div className="mt-9 grid gap-4 lg:mt-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
+      <div className="mt-6 grid gap-4 lg:mt-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
         {/* Каналы связи + реквизиты */}
         <div className="space-y-4">
           <Reveal>

@@ -18,7 +18,7 @@ export default function V3MortgagePage() {
         sub="Шесть банков-партнёров, одобрение за два дня. Подвигайте ползунки — платёж и переплата пересчитаются сразу."
       />
 
-      <div className="mt-9 sm:mt-14">
+      <div className="mt-6 sm:mt-8">
         <MortgageCalc />
       </div>
     </main>

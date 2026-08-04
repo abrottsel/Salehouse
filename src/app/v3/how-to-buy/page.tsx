@@ -21,7 +21,7 @@ export default function V3HowToBuyPage() {
         sub="Шесть понятных шагов. Мы рядом на каждом — документы, юрист, сопровождение в Росреестре."
       />
 
-      <div className="mt-9 sm:mt-14">
+      <div className="mt-6 sm:mt-8">
         <BuyTimeline />
       </div>
 

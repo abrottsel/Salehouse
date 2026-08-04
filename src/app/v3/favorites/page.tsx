@@ -23,7 +23,10 @@ export default function FavoritesPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 pt-10 sm:px-6 sm:pt-14">
+    // Отступ сверху меньше, чем на остальных страницах: избранное
+    // открывают, чтобы сразу увидеть отмеченное, а не заголовок —
+    // карточки должны попадать в первый экран.
+    <main className="mx-auto max-w-[1400px] px-4 pt-4 sm:px-6 sm:pt-6">
       <FavoritesList catalog={catalog} />
     </main>
   );

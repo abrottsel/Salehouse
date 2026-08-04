@@ -56,7 +56,7 @@ export default function V3ReviewsPage() {
         </div>
       </PageHero>
 
-      <div className="mt-9 sm:mt-14">
+      <div className="mt-6 sm:mt-8">
         <ReviewsGrid />
       </div>
 

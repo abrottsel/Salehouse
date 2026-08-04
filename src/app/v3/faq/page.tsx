@@ -39,7 +39,7 @@ export default function V3FaqPage() {
         sub="Нет вашего вопроса — позвоните, ответим развёрнуто и без воды."
       />
 
-      <div className="mt-9 sm:mt-14">
+      <div className="mt-6 sm:mt-8">
         <FaqAccordion />
       </div>
 
