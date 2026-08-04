@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
 import { useFavorites } from "@/components/FavoritesProvider";
 import FavoriteHeartDark from "./FavoriteHeartDark";
+import RouteChipDark from "./RouteChipDark";
 import { Reveal, StaggerItem, StaggerList } from "./ui/motion";
 import { CTA, Eyebrow, Glass } from "./ui/primitives";
 
@@ -17,6 +18,7 @@ interface CatalogItem {
   plotsAvailable: number;
   readiness: number;
   photo: string;
+  coords: [number, number];
 }
 
 /**
@@ -82,7 +84,12 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
                   <div className="absolute right-3 top-3">
                     <FavoriteHeartDark slug={v.slug} />
                   </div>
-                  <div className="absolute inset-x-4 bottom-3">
+                  {/* Чип маршрута: сам не рендерится, пока адрес дома
+                      не сохранён — как на карточках каталога. */}
+                  <div className="absolute inset-x-3 bottom-3 flex items-end gap-2">
+                    <RouteChipDark villageCoords={v.coords} villageName={v.name} />
+                  </div>
+                  <div className="absolute inset-x-4 bottom-12">
                     <div className="text-[19px] font-extrabold">{v.name}</div>
                     <div className="flex items-center gap-1.5 text-[12px] text-white/65">
                       <MapPin className="h-3 w-3" />

@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crosshair, Loader2, Navigation, Search, X } from "lucide-react";
-import { glassStyle } from "./ui/primitives";
+import { Crosshair, Loader2, Route, Search, X } from "lucide-react";
 import { formatDuration, saveHomePlace, useHomeRoute, type UserPlace } from "../_lib/route-home";
 
 /**
@@ -226,24 +225,31 @@ export default function RouteBadgeDark({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={home ? "Изменить адрес" : "Указать ваш адрес"}
-        className="flex h-11 items-center gap-2 rounded-full px-4 text-[13px] font-bold transition-transform active:scale-95"
-        style={glassStyle}
+        // Размер и вид один в один с боевым HomeDistanceBadge: та же
+        // высота 28px, те же отступы, кегль и заливка. Наш прежний вариант
+        // был вдвое выше и тёмный — рядом с зелёной кнопкой «Путь» он
+        // выглядел чужеродным блоком, а не парной кнопкой.
+        className={`inline-flex h-7 items-center gap-1.5 rounded-full pl-2 pr-2.5 text-[11px] font-bold text-white shadow-lg ring-1 backdrop-blur-md transition ${
+          route
+            ? "bg-emerald-500/85 ring-emerald-300/50 hover:bg-emerald-500/95"
+            : "bg-black/40 ring-white/25 hover:bg-black/55"
+        }`}
       >
-        <Navigation className="h-4 w-4 shrink-0 text-emerald-300" />
+        <span
+          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+            route ? "bg-white/25" : "bg-emerald-500"
+          }`}
+        >
+          <Route className="h-2.5 w-2.5 text-white" />
+        </span>
         {route ? (
-          // Порядок и формат как на боевой странице: сначала время, потом
-          // расстояние, минуты переводятся в часы. Было «2879 км · 1915 мин» —
-          // полторы тысячи минут в уме никто не переводит.
-          <span className="flex items-center gap-1.5">
-            <span className="text-[10px] uppercase tracking-wider text-white/50">
-              от дома
-            </span>
-            <span className="tabular-nums">
-              {formatDuration(route.durationMin)} · {Math.round(route.distanceKm)} км
-            </span>
+          // Без приставки «от дома»: на проде её нет, а рядом с «Путь»
+          // она делала кнопку вдвое длиннее.
+          <span className="whitespace-nowrap leading-none tabular-nums">
+            {formatDuration(route.durationMin)} · {Math.round(route.distanceKm)} км
           </span>
         ) : (
-          "Дорога к мечте"
+          <span>Дорога к мечте</span>
         )}
       </button>
 

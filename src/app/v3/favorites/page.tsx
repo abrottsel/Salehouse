@@ -19,6 +19,7 @@ export default function FavoritesPage() {
     plotsAvailable: v.plotsAvailable,
     readiness: v.readiness,
     photo: v.photos[0] ?? "",
+    coords: v.coords,
   }));
 
   return (

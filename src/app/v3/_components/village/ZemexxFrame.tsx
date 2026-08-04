@@ -159,7 +159,7 @@ export default function ZemexxFrame({
             она ищет его, чтобы встать слева. */}
         <div
           data-frame-overlay
-          className="pointer-events-none absolute right-3 top-16 z-30 flex justify-end sm:right-5 sm:top-20"
+          className="pointer-events-none absolute right-3 top-[104px] z-30 flex justify-end sm:right-5 sm:top-20"
         >
           <div className="pointer-events-auto">
             <RouteBadgeDark
