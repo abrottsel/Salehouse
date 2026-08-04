@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, MapPin, Ruler } from "lucide-react";
 import { useTier } from "../../_lib/perf";
+import FavoriteHeartDark from "../FavoriteHeartDark";
 import RouteBadgeDark from "../RouteBadgeDark";
 
 /**
@@ -25,6 +26,7 @@ import RouteBadgeDark from "../RouteBadgeDark";
  */
 
 interface Props {
+  slug: string;
   name: string;
   direction: string;
   distance: number;
@@ -40,6 +42,7 @@ interface Props {
 }
 
 export default function VillageHero({
+  slug,
   name,
   direction,
   distance,
@@ -151,20 +154,24 @@ export default function VillageHero({
         {/* Верхний ряд: сколько ехать от МКАД и — рядом — «Дорога к мечте»,
             сколько ехать именно от дома посетителя. Здесь у панели есть
             место развернуться вниз, в нижнем ряду пилюль она легла бы
-            поверх кнопок.
+            поверх кнопок. Сердечко прижато к правому краю, как на боевой
+            странице посёлка.
 
             stopPropagation обязателен: секция ловит свайп для листания
             фото, и перетаскивание внутри панели пролистывало бы карусель. */}
         <div
-          className="flex flex-wrap items-center gap-2"
+          className="flex items-start justify-between gap-2"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
         >
-          <Pill lite={lite} tall>
-            <MapPin className="h-3.5 w-3.5 text-emerald-300" />
-            {direction} · {distance} км от МКАД
-          </Pill>
-          <RouteBadgeDark villageCoords={coords} villageName={name} />
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Pill lite={lite} tall>
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+              {direction} · {distance} км от МКАД
+            </Pill>
+            <RouteBadgeDark villageCoords={coords} villageName={name} />
+          </div>
+          <FavoriteHeartDark slug={slug} className="shrink-0" />
         </div>
 
         <div className="flex-1" />

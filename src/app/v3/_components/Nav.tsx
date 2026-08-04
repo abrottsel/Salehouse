@@ -31,7 +31,8 @@ const LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/v3/contacts", label: "Контакты", Icon: PhoneCall },
 ];
 
-/** Иконки в шапке: одна форма на все, цели тапа 44px. */
+/** Цель тапа 44px остаётся, но подложки у иконок нет: визуально они
+ *  размером со знак логотипа, как в боевой шапке. */
 const ICON_BTN = "h-11 w-11";
 
 export default function Nav() {
@@ -95,21 +96,25 @@ export default function Nav() {
           <FavoritesButton className={ICON_BTN} />
           <ThemeToggle className={ICON_BTN} />
 
+          {/* Только трубка, без номера — как на проде. Номер длинный, он
+              распирал шапку и спорил с иконками; сам номер остаётся
+              в подвале, на контактах и в мобильном меню. */}
           <a
             href={`tel:${LEGAL.phoneRaw}`}
-            className="hidden h-11 items-center gap-2 rounded-full bg-white/[0.07] px-4 text-[13px] font-bold ring-1 ring-white/12 transition-colors hover:bg-white/[0.13] lg:inline-flex"
+            aria-label={`Позвонить ${LEGAL.phone}`}
+            title={LEGAL.phone}
+            className={`grid ${ICON_BTN} place-items-center rounded-full text-emerald-500 transition-colors hover:text-emerald-400 dark:text-emerald-300`}
           >
-            <Phone className="h-3.5 w-3.5 text-emerald-300" />
-            {LEGAL.phone}
+            <Phone className="h-[22px] w-[22px]" />
           </a>
 
           <button
             onClick={() => setOpenOn((v) => (v === pathname ? null : pathname))}
             aria-label={open ? "Закрыть меню" : "Открыть меню"}
             aria-expanded={open}
-            className={`grid ${ICON_BTN} place-items-center rounded-full bg-white/[0.07] ring-1 ring-white/12 lg:hidden`}
+            className={`grid ${ICON_BTN} place-items-center rounded-full text-white/70 transition-colors hover:text-white lg:hidden`}
           >
-            {open ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
+            {open ? <X className="h-[22px] w-[22px]" /> : <Menu className="h-[22px] w-[22px]" />}
           </button>
         </div>
       </nav>

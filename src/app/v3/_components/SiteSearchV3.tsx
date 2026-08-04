@@ -195,9 +195,9 @@ export default function SiteSearchV3({ className = "" }: { className?: string })
         onClick={() => setOpen(true)}
         aria-label="Поиск по сайту"
         title="Поиск по сайту (⌘K)"
-        className={`grid shrink-0 place-items-center rounded-full bg-white/[0.07] ring-1 ring-white/12 transition-colors hover:bg-white/[0.13] ${className}`}
+        className={`grid shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:text-white ${className}`}
       >
-        <Search className="h-[18px] w-[18px] text-white/75" />
+        <Search className="h-[22px] w-[22px]" />
       </button>
 
       {open &&

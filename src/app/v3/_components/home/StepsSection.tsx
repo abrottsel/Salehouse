@@ -145,14 +145,16 @@ export default function StepsSection() {
                       }`}
                       style={{
                         ...panel(lite),
+                        // Непройденный шаг набран переменными: литеральные
+                        // белила в 6% днём растворялись на белом полотне.
                         background: reached
                           ? `linear-gradient(160deg, ${meta.hex}2e, ${meta.hex}12)`
-                          : "linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+                          : "var(--v3-idle-bg, linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)))",
                         boxShadow: isCurrent
                           ? `inset 0 0 0 1px ${meta.hex}80, 0 0 0 5px ${meta.hex}1a, 0 16px 36px -14px ${meta.hex}`
                           : reached
                             ? `inset 0 0 0 1px ${meta.hex}59`
-                            : "inset 0 0 0 1px rgba(255,255,255,0.10)",
+                            : "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",
                       }}
                     >
                       <Icon
@@ -165,8 +167,8 @@ export default function StepsSection() {
                     <span
                       className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full text-[10px] font-black tabular-nums ring-2 ring-[#0b0e13] transition-colors duration-500"
                       style={{
-                        background: reached ? meta.hex : "rgba(255,255,255,0.14)",
-                        color: reached ? "#07121a" : "rgba(255,255,255,0.6)",
+                        background: reached ? meta.hex : "var(--v3-idle-fill, rgba(255,255,255,0.14))",
+                        color: reached ? "#07121a" : "var(--v3-idle-ink, rgba(255,255,255,0.6))",
                       }}
                     >
                       {step.number}
@@ -200,9 +202,11 @@ export default function StepsSection() {
                               boxShadow: `inset 0 0 0 1px ${meta.hex}3d`,
                             }
                           : {
-                              color: "rgba(255,255,255,0.5)",
-                              background: "rgba(255,255,255,0.06)",
-                              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)",
+                              color: "var(--v3-idle-ink, rgba(255,255,255,0.6))",
+                              background:
+                                "var(--v3-idle-bg, rgba(255,255,255,0.06))",
+                              boxShadow:
+                                "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",
                             }
                       }
                     >

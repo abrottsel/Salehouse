@@ -3,6 +3,7 @@
 import { CheckCircle2, Compass, Map, Route } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Counter, StaggerItem, StaggerList } from "../ui/motion";
+import { ink, type ToneName } from "../tones";
 import { useTier } from "../../_lib/perf";
 import { DIRECTIONS, DISTANCE_MIN, PLOTS_TOTAL, READY_COUNT, panel, plural } from "./common";
 
@@ -10,12 +11,21 @@ import { DIRECTIONS, DISTANCE_MIN, PLOTS_TOTAL, READY_COUNT, panel, plural } fro
  * Полоса доверия. Цифры намеренно другие, чем в hero, — повторять те же
  * три числа второй раз подряд бессмысленно.
  */
-const items: { Icon: LucideIcon; value: number; label: string; suffix?: string }[] = [
-  { Icon: Compass, value: DIRECTIONS, label: "направления от МКАД" },
-  { Icon: Route, value: DISTANCE_MIN, label: "км до ближайшего посёлка" },
-  { Icon: Map, value: PLOTS_TOTAL, label: "участков на картах посёлков" },
+const items: {
+  Icon: LucideIcon;
+  value: number;
+  label: string;
+  suffix?: string;
+  /** Днём у каждой цифры свой цвет — четыре одинаково зелёные иконки
+   *  подряд читаются как одна плашка. Ночью все остаются зелёными. */
+  tone: ToneName;
+}[] = [
+  { Icon: Compass, value: DIRECTIONS, label: "направления от МКАД", tone: "sky" },
+  { Icon: Route, value: DISTANCE_MIN, label: "км до ближайшего посёлка", tone: "amber" },
+  { Icon: Map, value: PLOTS_TOTAL, label: "участков на картах посёлков", tone: "violet" },
   {
     Icon: CheckCircle2,
+    tone: "emerald",
     value: READY_COUNT,
     label: `${plural(READY_COUNT, "посёлок готов", "посёлка готовы", "посёлков готовы")} на 100%`,
   },
@@ -33,7 +43,7 @@ export default function TrustBar() {
               className="h-full rounded-[20px] px-4 py-5 transition-transform duration-300 hover:-translate-y-1 sm:px-5"
               style={panel(lite)}
             >
-              <it.Icon className="h-5 w-5 text-emerald-300" strokeWidth={2.2} />
+              <it.Icon className={`h-5 w-5 ${ink[it.tone]}`} strokeWidth={2.2} />
               <div className="mt-3 text-[24px] font-extrabold leading-none tracking-[-0.02em] sm:text-[30px]">
                 <Counter to={it.value} />
                 {it.suffix}

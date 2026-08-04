@@ -24,6 +24,7 @@ import { Accent, Eyebrow, glassStyle } from "../ui/primitives";
 import { Counter, Reveal, StaggerItem, StaggerList } from "../ui/motion";
 import { useTier } from "../../_lib/perf";
 import SpotlightCard from "../ui/SpotlightCard";
+import { plate, type ToneName } from "../tones";
 
 /**
  * Преимущества посёлка — тёмный премиум, бенто.
@@ -81,21 +82,32 @@ function featureIcon(feature: string, i: number): { Icon: LucideIcon; color: str
   return fb[i % fb.length];
 }
 
-const TILES: { Icon: LucideIcon; badge: string; title: string; desc: string }[] = [
+/** Днём у каждой плитки свой тон — три одинаково зелёные подряд читались
+ *  как одна. Ночью все остаются зелёными (см. _components/tones.ts). */
+const TILES: {
+  Icon: LucideIcon;
+  badge: string;
+  title: string;
+  desc: string;
+  tone: ToneName;
+}[] = [
   {
     Icon: Wallet,
+    tone: "emerald",
     badge: "Экономия",
     title: "Фиксированная цена в договоре",
     desc: "Никаких доплат после бронирования — цена за сотку прописана в договоре.",
   },
   {
     Icon: CheckCircle2,
+    tone: "sky",
     badge: "Простота",
     title: "Сделка 1 день",
     desc: "Электронная регистрация в Росреестре. Без нотариуса и очередей.",
   },
   {
     Icon: LayoutGrid,
+    tone: "violet",
     badge: "Рассрочка",
     title: "Ипотека от 6.5%",
     desc: "Работаем со Сбером, ВТБ, Альфой и ещё 6 банками. Одобрение за 3 дня.",
@@ -233,9 +245,11 @@ export default function VillageAdvantages({
                       lite ? "" : "transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:ring-emerald-400/30"
                     } ${i === 0 ? "sm:p-5" : ""}`}
                     // вложенное стекло не нужно: панель уже размыта, второй
-                    // backdrop-filter поверх неё — чистый расход кадров
+                    // backdrop-filter поверх неё — чистый расход кадров.
+                    // Подложка переменной: днём белила в 5% исчезали на
+                    // белой панели-родителе.
                     style={{
-                      background: "rgba(255,255,255,0.05)",
+                      background: "var(--v3-surface-sub, rgba(255,255,255,0.05))",
                       boxShadow: "none",
                       backdropFilter: "none",
                       WebkitBackdropFilter: "none",
@@ -249,11 +263,15 @@ export default function VillageAdvantages({
                       }`}
                     />
                     <div className="relative flex items-start gap-3.5">
-                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-emerald-400/10 ring-1 ring-emerald-400/25">
-                        <tile.Icon className="h-5 w-5 text-emerald-300" strokeWidth={2.2} />
+                      <div
+                        className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] ring-1 ${plate[tile.tone]}`}
+                      >
+                        <tile.Icon className="h-5 w-5" strokeWidth={2.2} />
                       </div>
                       <div className="min-w-0">
-                        <span className="inline-flex items-center rounded-full bg-emerald-400/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-emerald-400/25">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.14em] ring-1 ${plate[tile.tone]}`}
+                        >
                           {tile.badge}
                         </span>
                         <div className="mt-1.5 text-[15px] font-extrabold leading-tight text-white">

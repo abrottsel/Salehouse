@@ -26,10 +26,10 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
       onClick={theme.toggle}
       aria-label="Переключить тему: день или ночь"
       title="День / ночь"
-      className={`grid shrink-0 place-items-center rounded-full bg-white/[0.07] ring-1 ring-white/12 transition-colors hover:bg-white/[0.13] ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full text-white/70 transition-colors hover:text-white ${className}`}
     >
-      <Sun className="hidden h-[18px] w-[18px] text-amber-300 dark:block" />
-      <Moon className="block h-[18px] w-[18px] text-emerald-300 dark:hidden" />
+      <Sun className="hidden h-[22px] w-[22px] text-amber-400 dark:block" />
+      <Moon className="block h-[22px] w-[22px] text-emerald-500 dark:hidden" />
     </button>
   );
 }

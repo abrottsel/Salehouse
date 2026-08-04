@@ -6,6 +6,7 @@ import LocalLeadForm from "../_components/pages/LocalLeadForm";
 import PageHero from "../_components/pages/PageHero";
 import { Glass } from "../_components/ui/primitives";
 import { Reveal } from "../_components/ui/motion";
+import { plate, type ToneName } from "../_components/tones";
 
 export const metadata: Metadata = {
   title: "Контакты",
@@ -18,9 +19,24 @@ const CHANNELS: {
   value: string;
   href: string;
   external?: boolean;
+  /** Днём каждый канал своего цвета: четыре одинаковые зелёные плашки
+   *  подряд читались как одна сплошная. Ночью все остаются зелёными. */
+  tone: ToneName;
 }[] = [
-  { Icon: Phone, label: "Телефон", value: LEGAL.phone, href: `tel:${LEGAL.phoneRaw}` },
-  { Icon: Mail, label: "Почта", value: LEGAL.email, href: `mailto:${LEGAL.email}` },
+  {
+    Icon: Phone,
+    label: "Телефон",
+    value: LEGAL.phone,
+    href: `tel:${LEGAL.phoneRaw}`,
+    tone: "emerald",
+  },
+  {
+    Icon: Mail,
+    label: "Почта",
+    value: LEGAL.email,
+    href: `mailto:${LEGAL.email}`,
+    tone: "rose",
+  },
   // У обоих мессенджеров стояло «Написать в чат» — два одинаковых значения
   // рядом читались как ошибка вёрстки. Telegram показывает свой хэндл,
   // MAX — что за ссылкой чат-бот (там хэндла нет, только числовой id).
@@ -30,6 +46,7 @@ const CHANNELS: {
     value: `@${LEGAL.telegramHandle}`,
     href: LEGAL.telegram,
     external: true,
+    tone: "sky",
   },
   {
     Icon: MessageSquare,
@@ -37,6 +54,7 @@ const CHANNELS: {
     value: "Чат-бот ЗемПлюс",
     href: LEGAL.max,
     external: true,
+    tone: "violet",
   },
 ];
 
@@ -62,15 +80,17 @@ export default function V3ContactsPage() {
         <div className="space-y-4">
           <Reveal>
             <div className="grid gap-3 sm:grid-cols-2">
-              {CHANNELS.map(({ Icon, label, value, href, external }) => (
+              {CHANNELS.map(({ Icon, label, value, href, external, tone }) => (
                 <a
                   key={label}
                   href={href}
                   {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   className="group flex items-center gap-3.5 rounded-[22px] bg-white/[0.04] p-4 ring-1 ring-white/[0.08] transition-all hover:-translate-y-0.5 hover:bg-white/[0.07] hover:ring-emerald-400/30 sm:p-5"
                 >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-400/10 ring-1 ring-emerald-400/25 transition-colors group-hover:bg-emerald-400/20">
-                    <Icon className="h-5 w-5 text-emerald-300" strokeWidth={2.2} />
+                  <span
+                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ring-1 ${plate[tone]}`}
+                  >
+                    <Icon className="h-5 w-5" strokeWidth={2.2} />
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">

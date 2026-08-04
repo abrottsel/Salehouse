@@ -112,12 +112,14 @@ export default function BuyTimeline() {
                     isCurrent ? "scale-105" : ""
                   }`}
                   style={{
-                    background: reached ? `${meta.hex}1f` : "rgba(255,255,255,0.04)",
+                    // Непройденный шаг — переменными: белила в 4% днём
+                    // растворялись на белом полотне (см. --v3-idle-* в v3.css).
+                    background: reached ? `${meta.hex}1f` : "var(--v3-idle-bg, rgba(255,255,255,0.04))",
                     boxShadow: isCurrent
                       ? `inset 0 0 0 1px ${meta.hex}80, 0 0 0 5px ${meta.hex}1a, 0 14px 34px -14px ${meta.hex}`
                       : reached
                         ? `inset 0 0 0 1px ${meta.hex}59`
-                        : "inset 0 0 0 1px rgba(255,255,255,0.10)",
+                        : "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",
                   }}
                 >
                   <Icon
@@ -128,7 +130,10 @@ export default function BuyTimeline() {
                   />
                 </div>
                 <span
-                  className={`absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-[#0b0e13] text-[10px] font-black tabular-nums ring-1 transition-colors duration-500 ${
+                  // Кружок вырезает плитку из линии таймлайна, поэтому залит
+                  // цветом полотна — var(--v3-page), а не литеральным ночным.
+                  style={{ background: "var(--v3-page, #0b0e13)" }}
+                  className={`absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full text-[10px] font-black tabular-nums ring-1 transition-colors duration-500 ${
                     reached ? `${meta.tone} ring-current` : "text-white/40 ring-white/15"
                   }`}
                 >
@@ -177,9 +182,10 @@ export default function BuyTimeline() {
                             boxShadow: `inset 0 0 0 1px ${meta.hex}3d`,
                           }
                         : {
-                            color: "rgba(255,255,255,0.5)",
-                            background: "rgba(255,255,255,0.06)",
-                            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)",
+                            color: "var(--v3-idle-ink, rgba(255,255,255,0.6))",
+                            background: "var(--v3-idle-bg, rgba(255,255,255,0.06))",
+                            boxShadow:
+                              "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",
                           }
                     }
                   >

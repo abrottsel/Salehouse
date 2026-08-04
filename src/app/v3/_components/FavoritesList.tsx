@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
 import { Heart, MapPin } from "lucide-react";
-import { FAVORITES_STORAGE_KEY, type FavoritesState } from "@/lib/favorites";
+import { useFavorites } from "@/components/FavoritesProvider";
+import FavoriteHeartDark from "./FavoriteHeartDark";
 import { Reveal, StaggerItem, StaggerList } from "./ui/motion";
 import { CTA, Eyebrow, Glass } from "./ui/primitives";
 
@@ -19,43 +19,17 @@ interface CatalogItem {
   photo: string;
 }
 
-/** Избранное лежит в localStorage и общее для вкладок — читаем как
- *  внешний источник, снимок на сервере пустой. */
-const listeners = new Set<() => void>();
-let rawCache: string | null = null;
-let valueCache: FavoritesState = { villages: [], plots: [] };
-const EMPTY: FavoritesState = { villages: [], plots: [] };
-
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    listeners.delete(cb);
-    window.removeEventListener("storage", cb);
-  };
-}
-
-function snapshot(): FavoritesState {
-  let raw: string | null = null;
-  try {
-    raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-  } catch {
-    raw = null;
-  }
-  if (raw !== rawCache) {
-    rawCache = raw;
-    try {
-      valueCache = raw ? (JSON.parse(raw) as FavoritesState) : EMPTY;
-    } catch {
-      valueCache = EMPTY;
-    }
-  }
-  return valueCache;
-}
-
+/**
+ * Список отмеченного.
+ *
+ * Читаем через FavoritesProvider, а не напрямую из localStorage: снятие
+ * отметки прямо здесь меняет состояние в этой же вкладке, а событие
+ * `storage` в своей вкладке не срабатывает — список остался бы прежним
+ * до перезагрузки. Через провайдер он и шапка обновляются одновременно.
+ */
 export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
-  const favorites = useSyncExternalStore(subscribe, snapshot, () => EMPTY);
-  const slugs = new Set((favorites.villages ?? []).map((v) => v.slug));
+  const { villages, hydrated } = useFavorites();
+  const slugs = new Set(villages.map((v) => v.slug));
   const chosen = catalog.filter((c) => slugs.has(c.slug));
 
   return (
@@ -70,7 +44,9 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
         </p>
       </Reveal>
 
-      {chosen.length === 0 ? (
+      {/* До чтения localStorage список неизвестен: без этой паузы у человека
+          с отметками сначала мелькает «Пока пусто». */}
+      {!hydrated ? null : chosen.length === 0 ? (
         <Reveal delay={0.1}>
           <Glass className="mt-10 p-10 text-center">
             <Heart className="mx-auto h-8 w-8 text-white/25" />
@@ -91,7 +67,8 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
                 href={`/v3/village/${v.slug}`}
                 className="group block overflow-hidden rounded-[24px] ring-1 ring-white/10 transition-transform hover:-translate-y-1"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-white/5">
+                {/* v3-on-dark: всё поверх фото остаётся белым и в светлой теме. */}
+                <div className="v3-on-dark relative aspect-[4/3] overflow-hidden bg-white/5">
                   {v.photo && (
                     <Image
                       src={v.photo}
@@ -102,6 +79,9 @@ export default function FavoritesList({ catalog }: { catalog: CatalogItem[] }) {
                     />
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 to-transparent" />
+                  <div className="absolute right-3 top-3">
+                    <FavoriteHeartDark slug={v.slug} />
+                  </div>
                   <div className="absolute inset-x-4 bottom-3">
                     <div className="text-[19px] font-extrabold">{v.name}</div>
                     <div className="flex items-center gap-1.5 text-[12px] text-white/65">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Crosshair, Loader2, Navigation, Search, X } from "lucide-react";
 import { glassStyle } from "./ui/primitives";
@@ -17,12 +18,35 @@ import { formatDuration, saveHomePlace, useHomeRoute, type UserPlace } from "../
  * использует мини-чип карточки каталога.
  *
  * Боевой компонент src/components/HomeDistanceBadge.tsx не тронут.
+ *
+ * Панель раскрытия подчиняется правилам эталона (CLAUDE.md → «HomeDistanceBadge»):
+ * createPortal в body, фиксированные ширины 260/288, позиция считается от
+ * кнопки и прижимается к экрану. Абсолютное позиционирование внутри
+ * родителя не годится: над картой родитель — карточка с overflow-hidden,
+ * панель обрезалась её краем.
  */
 
 interface Suggestion {
   address: string;
   coords: [number, number];
 }
+
+/** Панель уходит порталом в body, то есть за пределы .v3-scope, где живут
+ *  переменные темы. Собственный непрозрачный фон вместо glassStyle нужен
+ *  сразу по двум причинам: подмена --v3-glass светлой темой её больше не
+ *  достаёт, а отсутствие backdrop-filter снимает известную беду WebKit —
+ *  над кроссдоменным iframe отфильтрованный фон не собирается, и панель
+ *  заливало цветом карты. */
+const PANEL_STYLE: CSSProperties = {
+  backgroundColor: "#0f141b",
+  backgroundImage:
+    "linear-gradient(160deg, rgba(28,35,45,0.94), rgba(12,16,22,0.98))",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -0.5px 0 rgba(255,255,255,0.05), 0 24px 60px -20px rgba(0,0,0,0.8)",
+};
+
+const EDGE = 8; // минимальный зазор до края экрана
+const GAP = 8; // зазор между кнопкой и панелью
 
 export default function RouteBadgeDark({
   villageCoords,
@@ -37,18 +61,64 @@ export default function RouteBadgeDark({
 }) {
   const { home, route } = useHomeRoute(villageCoords);
   const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [mounted, setMounted] = useState(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Портал доступен только на клиенте. Флаг ставим таймером: синхронный
+  // setState в теле эффекта запрещён правилом react-hooks/set-state-in-effect.
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  /** Координаты панели пишем прямо в DOM, а не через setState: положение
+   *  обязано быть верным в том же кадре, в котором панель появилась, иначе
+   *  она успевает мигнуть в старом месте. */
+  const place = useCallback(() => {
+    const btn = buttonRef.current;
+    const panel = panelRef.current;
+    if (!btn || !panel) return;
+    const r = btn.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    const w = panel.offsetWidth;
+    const h = panel.offsetHeight;
+
+    // Над картой панель уходит влево от правого края кнопки: слева у Земекса
+    // легенда цен, накрывать её нельзя. В hero — наоборот, от левого края.
+    const desiredLeft = align === "right" ? r.right - w + GAP : r.left;
+    panel.style.left = `${Math.max(EDGE, Math.min(desiredLeft, vw - w - EDGE))}px`;
+    panel.style.top = `${Math.max(EDGE, Math.min(r.bottom + GAP, vh - h - EDGE))}px`;
+  }, [align]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    place();
+    // Панель зафиксирована на экране, поэтому пересчёт при любом сдвиге
+    // страницы обязателен — capture ловит и прокрутку внутренних блоков.
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => {
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+    };
+  }, [open, place]);
 
   // Клик мимо панели и Escape закрывают её. Без этого на телефоне панель
   // висит поверх hero, пока не попадёшь точно в крестик.
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      // Панель живёт в портале, внутрь rootRef она не попадает — проверяем оба.
+      if (rootRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -152,6 +222,7 @@ export default function RouteBadgeDark({
     // v3-on-dark: плашка живёт поверх карты и фото, они тёмные в обеих темах.
     <div className="v3-on-dark relative" ref={rootRef}>
       <button
+        ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={home ? "Изменить адрес" : "Указать ваш адрес"}
@@ -176,88 +247,105 @@ export default function RouteBadgeDark({
         )}
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className={`absolute top-[52px] z-50 w-[288px] max-w-[calc(100vw-32px)] rounded-[24px] p-4 ${
-              align === "right" ? "right-0" : "left-0"
-            }`}
-            style={glassStyle}
-          >
-            <div className="mb-3 flex items-start justify-between">
-              <div>
-                <div className="text-[14px] font-extrabold">Дорога к мечте</div>
-                <div className="text-[11px] text-white/55">
-                  Сколько ехать до «{villageName}»
-                </div>
-              </div>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Закрыть"
-                className="-mr-1.5 -mt-1.5 grid h-9 w-9 place-items-center rounded-full text-white/60 hover:bg-white/10"
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                ref={panelRef}
+                initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                // Ширина строго фиксированная: 260 на телефоне, 288 дальше.
+                // Проценты от вьюпорта здесь уже пробовали — панель то распирало,
+                // то она не помещалась рядом с кнопкой.
+                className="fixed left-0 top-0 z-[95] w-[260px] rounded-[24px] p-4 text-white sm:w-[288px]"
+                style={PANEL_STYLE}
               >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+                <div className="mb-3 flex items-start justify-between">
+                  <div>
+                    <div className="text-[14px] font-extrabold">
+                      Дорога к мечте
+                    </div>
+                    <div className="text-[11px] text-white/55">
+                      Сколько ехать до «{villageName}»
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setOpen(false)}
+                    aria-label="Закрыть"
+                    className="-mr-1.5 -mt-1.5 grid h-9 w-9 place-items-center rounded-full text-white/60 hover:bg-white/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
 
-            <button
-              onClick={useMyLocation}
-              disabled={busy}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-emerald-500 text-[13px] font-bold transition-colors hover:bg-emerald-400 disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crosshair className="h-4 w-4" />}
-              Моё местоположение
-            </button>
-            <p className="mt-1.5 text-center text-[11px] text-white/40">
-              Координаты не покидают браузер
-            </p>
+                <button
+                  onClick={useMyLocation}
+                  disabled={busy}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-emerald-500 text-[13px] font-bold transition-colors hover:bg-emerald-400 disabled:opacity-60"
+                >
+                  {busy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Crosshair className="h-4 w-4" />
+                  )}
+                  Моё местоположение
+                </button>
+                <p className="mt-1.5 text-center text-[11px] text-white/40">
+                  Координаты не покидают браузер
+                </p>
 
-            <div className="my-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/35">
-              <span className="h-px flex-1 bg-white/12" />
-              или укажите адрес
-              <span className="h-px flex-1 bg-white/12" />
-            </div>
+                <div className="my-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/35">
+                  <span className="h-px flex-1 bg-white/12" />
+                  или укажите адрес
+                  <span className="h-px flex-1 bg-white/12" />
+                </div>
 
-            <div className="flex items-center gap-2 rounded-full bg-black/40 px-3 ring-1 ring-white/25">
-              <Search className="h-4 w-4 shrink-0 text-white/55" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Москва, Тверская, 1"
-                aria-label="Адрес вашего дома"
-                className="h-10 w-full bg-transparent text-[13px] outline-none placeholder:text-white/45"
-              />
-            </div>
+                <div className="flex items-center gap-2 rounded-full bg-black/40 px-3 ring-1 ring-white/25">
+                  <Search className="h-4 w-4 shrink-0 text-white/55" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Москва, Тверская, 1"
+                    aria-label="Адрес вашего дома"
+                    className="h-10 w-full bg-transparent text-[13px] outline-none placeholder:text-white/45"
+                  />
+                </div>
 
-            {suggestions.length > 0 && (
-              <ul className="v3-scroll mt-2 max-h-[168px] space-y-1 overflow-y-auto">
-                {suggestions.map((s) => (
-                  <li key={s.address}>
-                    <button
-                      onClick={() =>
-                        savePlace({ id: "home", label: "Дом", address: s.address, coords: s.coords })
-                      }
-                      className="w-full rounded-xl px-3 py-2 text-left text-[12px] leading-snug text-white/75 transition-colors hover:bg-white/[0.09] hover:text-white"
-                    >
-                      {s.address}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                {suggestions.length > 0 && (
+                  <ul className="v3-scroll mt-2 max-h-[168px] space-y-1 overflow-y-auto">
+                    {suggestions.map((s) => (
+                      <li key={s.address}>
+                        <button
+                          onClick={() =>
+                            savePlace({
+                              id: "home",
+                              label: "Дом",
+                              address: s.address,
+                              coords: s.coords,
+                            })
+                          }
+                          className="w-full rounded-xl px-3 py-2 text-left text-[12px] leading-snug text-white/75 transition-colors hover:bg-white/[0.09] hover:text-white"
+                        >
+                          {s.address}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {home && (
+                  <p className="mt-3 truncate border-t border-white/10 pt-2.5 text-[11px] text-white/40">
+                    Сейчас: {home.address}
+                  </p>
+                )}
+              </motion.div>
             )}
-
-            {home && (
-              <p className="mt-3 truncate border-t border-white/10 pt-2.5 text-[11px] text-white/40">
-                Сейчас: {home.address}
-              </p>
-            )}
-          </motion.div>
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }

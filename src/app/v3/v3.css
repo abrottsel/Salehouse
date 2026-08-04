@@ -28,6 +28,23 @@
     inset 0 -0.5px 0 rgba(255, 255, 255, 0.05), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
   --v3-scrollbar: rgba(255, 255, 255, 0.14);
 
+  /* Подложки. Ночью — те же полупрозрачные белила, что стоят в разметке;
+     днём (см. html:not(.dark) ниже) становятся белой карточкой с тенью. */
+  --v3-surface: rgba(255, 255, 255, 0.06);
+  --v3-surface-sub: rgba(255, 255, 255, 0.05);
+  --v3-surface-hover: rgba(255, 255, 255, 0.13);
+  --v3-surface-shadow: 0 0 #0000;
+  --v3-surface-shadow-lift: 0 28px 60px -24px rgba(0, 0, 0, 0.9);
+  --v3-hairline: rgba(255, 255, 255, 0.12);
+
+  /* «Ещё не пройдено» на таймлайне шагов: плитка, её кромка и подпись.
+     Заданы переменными, а не литералами в разметке, — эти три значения
+     единственное, что в шагах не выводится из цвета самого шага. */
+  --v3-idle-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  --v3-idle-ring: rgba(255, 255, 255, 0.1);
+  --v3-idle-fill: rgba(255, 255, 255, 0.14);
+  --v3-idle-ink: rgba(255, 255, 255, 0.6);
+
   /* Не чистый белый. На полотне #0b0e13 контраст #fff даёт 19.3:1 — глаз
      от такого «звенит», буквы начинает распирать ореолом. AAA для длинного
      текста требует всего 7:1. Мягкий #e6ecf3 оставляет 16.3:1 — с огромным
@@ -50,17 +67,25 @@
 }
 
 html:not(.dark) .v3-scope {
-  --v3-page: #eef2f0;
+  /* Полотно чисто белое, как на боевом сайте. Прежний #eef2f0 давал
+     серо-зелёный налёт: карточки на нём тонули, а страница читалась
+     мутной и дешёвой. */
+  --v3-page: #ffffff;
   /* Днём вуаль светлая и заметно жиже ночной: текст на фото стал чернильным,
      ему хватает подложки слева, а само фото должно остаться фотографией. */
-  --v3-veil-strong: rgba(238, 242, 240, 0.88);
-  --v3-veil-mid: rgba(238, 242, 240, 0.5);
-  --v3-veil-soft: rgba(238, 242, 240, 0.12);
-  --v3-veil-top: rgba(238, 242, 240, 0.5);
-  --v3-veil-solid: #eef2f0;
-  --v3-glass: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 248, 0.96));
-  --v3-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -0.5px 0 rgba(12, 23, 18, 0.06), 0 24px 60px -28px rgba(12, 23, 18, 0.22);
+  --v3-veil-strong: rgba(255, 255, 255, 0.9);
+  --v3-veil-mid: rgba(255, 255, 255, 0.52);
+  --v3-veil-soft: rgba(255, 255, 255, 0.1);
+  --v3-veil-top: rgba(255, 255, 255, 0.5);
+  --v3-veil-solid: #ffffff;
+
+  /* Стекло днём — не полупрозрачная плёнка, а белая карточка с кольцом и
+     мягкой тенью (боевой приём: bg-white + ring-gray-200 + shadow-sm).
+     Кольцо кладём первой тенью: у панелей нет ring-утилиты, а край обязан
+     читаться на белом полотне. */
+  --v3-glass: linear-gradient(160deg, #ffffff, #ffffff);
+  --v3-glass-shadow: 0 0 0 1px rgba(12, 23, 18, 0.07), 0 1px 2px rgba(12, 23, 18, 0.05),
+    0 18px 40px -24px rgba(12, 23, 18, 0.35);
   --v3-scrollbar: rgba(12, 23, 18, 0.18);
 
   color-scheme: light;
@@ -68,11 +93,46 @@ html:not(.dark) .v3-scope {
   /* Чернила вместо белил — разворачивает всю палитру ветки разом. */
   --color-white: #0c1712;
 
-  /* Акцентные -200/-300/-400 на светлом фоне не читаются: уводим в -600/-700. */
-  --color-emerald-200: var(--color-emerald-700);
+  /* Подложка карточек и мелких плашек. Отдельная переменная, а не прямое
+     значение: внутри тёмных островов она возвращается к полупрозрачному
+     белому и наследуется вглубь — переопределять каждый потомок не нужно
+     (см. .v3-on-dark ниже). */
+  --v3-surface: #ffffff;
+  /* Вложенная подложка: ячейки внутри уже белой панели. Чисто белым по
+     белому такой блок читается как проволочный каркас из одних колец. */
+  --v3-surface-sub: #f7f8f8;
+  --v3-surface-hover: #eef1f0;
+  --v3-surface-shadow: 0 1px 2px rgba(12, 23, 18, 0.05), 0 10px 24px -16px rgba(12, 23, 18, 0.3);
+  --v3-surface-shadow-lift: 0 2px 6px rgba(12, 23, 18, 0.06),
+    0 24px 48px -22px rgba(12, 23, 18, 0.45);
+  /* Волосок: разделители, дорожки прогресса, ручка шторки. */
+  --v3-hairline: rgba(12, 23, 18, 0.12);
+
+  --v3-idle-bg: linear-gradient(160deg, #f7f9f8, #f2f5f4);
+  --v3-idle-ring: rgba(12, 23, 18, 0.1);
+  --v3-idle-fill: rgba(12, 23, 18, 0.14);
+  --v3-idle-ink: rgba(12, 23, 18, 0.55);
+
+  /* Чернила по «весу». Прямая подстановка альфы из разметки даёт днём
+     слишком бледный текст: white/40 превращается в чернила в 40%, а это
+     около 3:1 к белому — подписи и цифры пропадают. Держим четыре
+     ступени и поднимаем каждую до читаемой. */
+  --v3-ink-4: rgba(12, 23, 18, 0.5);
+  --v3-ink-3: rgba(12, 23, 18, 0.58);
+  --v3-ink-2: rgba(12, 23, 18, 0.7);
+  --v3-ink-1: rgba(12, 23, 18, 0.88);
+
+  /* Акцентные -200/-300/-400 на светлом фоне не читаются: уводим в -600/-700.
+     Ступени внутри одного тона не схлопываем в одно значение — иначе
+     градиенты вроде from-emerald-300 via-emerald-200 становятся плоской
+     заливкой. */
+  --color-emerald-200: var(--color-emerald-600);
   --color-emerald-300: var(--color-emerald-700);
   --color-emerald-400: var(--color-emerald-600);
-  --color-lime-300: oklch(53.2% 0.129 126.665);
+  /* Не lime-600: он оливковый, и заголовочный градиент
+     from-emerald-300 → to-lime-300 днём заканчивался болотным пятном.
+     Берём чистую зелень той же светлоты. */
+  --color-lime-300: oklch(60% 0.16 148);
   --color-teal-300: var(--color-teal-600);
   --color-sky-300: var(--color-sky-600);
   --color-blue-300: var(--color-blue-600);
@@ -80,9 +140,12 @@ html:not(.dark) .v3-scope {
   --color-rose-300: var(--color-rose-600);
   --color-red-300: var(--color-red-600);
   --color-red-400: var(--color-red-600);
-  --color-amber-300: var(--color-amber-600);
+  --color-amber-300: var(--color-amber-700);
   --color-amber-400: var(--color-amber-600);
-  --color-yellow-300: var(--color-yellow-600);
+  --color-yellow-300: var(--color-yellow-700);
+  --color-cyan-300: var(--color-cyan-600);
+  --color-indigo-300: var(--color-indigo-600);
+  --color-stone-300: var(--color-stone-600);
   --color-slate-200: var(--color-slate-600);
   --color-slate-300: var(--color-slate-600);
   --color-zinc-300: var(--color-zinc-600);
@@ -90,8 +153,22 @@ html:not(.dark) .v3-scope {
 
 /* Острова, которые остаются тёмными при любой теме. Значения — дефолты
    Tailwind v4, восстановленные буквально: вычислить их из уже подменённых
-   переменных на том же элементе нельзя. */
+   переменных на том же элементе нельзя.
+
+   bg-black/* сюда добавлен намеренно: это плашки поверх фотографий
+   («Готовность 99%» на карточке посёлка, стрелки карусели, счётчик кадров).
+   Без него подпись на чёрной плашке днём становилась чернильной по чёрному
+   и пропадала. Карточка каталога правится только отсюда — её разметку
+   сейчас держит другая задача.
+
+   inset-0 из этого набора исключён: под тем же bg-black/* живут подложки
+   модалок, а внутри них — обычная светлая панель (заявка на ипотеку). Если
+   считать подложку тёмным островом, её содержимое получит белый текст на
+   белом. Тёмные модалки опознаются не по подложке, а по собственной
+   заливке bg-[#0b0e13] — она в списке ниже. */
 html:not(.dark) .v3-scope .v3-on-dark,
+html:not(.dark) .v3-scope [class*="bg-black/"]:not([class*="inset-0"]),
+html:not(.dark) .v3-scope [class~="bg-[#0b0e13]"],
 html:not(.dark) .v3-scope [class~="bg-emerald-500"],
 html:not(.dark) .v3-scope [class~="bg-emerald-500/85"],
 html:not(.dark) .v3-scope [class~="bg-emerald-600"],
@@ -100,6 +177,18 @@ html:not(.dark) .v3-scope [class~="from-emerald-600"] {
   --v3-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
     inset 0 -0.5px 0 rgba(255, 255, 255, 0.05), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
   --v3-scrollbar: rgba(255, 255, 255, 0.14);
+
+  --v3-surface: rgba(255, 255, 255, 0.06);
+  --v3-surface-sub: rgba(255, 255, 255, 0.05);
+  --v3-surface-hover: rgba(255, 255, 255, 0.13);
+  --v3-surface-shadow: 0 0 #0000;
+  --v3-surface-shadow-lift: 0 28px 60px -24px rgba(0, 0, 0, 0.9);
+  --v3-hairline: rgba(255, 255, 255, 0.12);
+
+  --v3-ink-4: rgba(230, 236, 243, 0.3);
+  --v3-ink-3: rgba(230, 236, 243, 0.42);
+  --v3-ink-2: rgba(230, 236, 243, 0.55);
+  --v3-ink-1: rgba(230, 236, 243, 0.8);
 
   /* Тот же мягкий белый, что в ночной теме: эти острова (подвал, фото-герой,
      карта) тоже стоят на тёмном, и чистый #fff режет на них ровно так же. */
@@ -118,6 +207,9 @@ html:not(.dark) .v3-scope [class~="from-emerald-600"] {
   --color-amber-300: oklch(87.9% 0.169 91.605);
   --color-amber-400: oklch(82.8% 0.189 84.429);
   --color-yellow-300: oklch(90.5% 0.182 98.111);
+  --color-cyan-300: oklch(86.5% 0.127 207.078);
+  --color-indigo-300: oklch(78.5% 0.115 274.713);
+  --color-stone-300: oklch(86.9% 0.005 56.366);
   --color-slate-200: oklch(92.9% 0.013 255.508);
   --color-slate-300: oklch(86.9% 0.022 252.894);
   --color-zinc-300: oklch(87.1% 0.006 286.286);
@@ -128,6 +220,92 @@ html:not(.dark) .v3-scope [class~="from-emerald-600"] {
    он задаётся напрямую. Потомки со своим text-* этим не задеты. */
 html:not(.dark) .v3-scope .v3-on-dark {
   color: #fff;
+}
+
+/* ── Поверхности днём ─────────────────────────────────────────────────
+   Ветка свёрстана bg-white/[0.05] — «белила в 5%». Днём подстановка
+   чернил даёт светло-серую плашку, которая на белом полотне выглядит
+   грязным пятном без края. Боевой сайт делает наоборот: карточка белая,
+   а отделяет её кольцо и мягкая тень.
+
+   Перечисляем именно те доли, что стоят в разметке базовым фоном.
+   Подстрочный поиск ловит и `hover:bg-white/[0.06]`, поэтому [0.06]
+   идёт с оговоркой: элементов, где эта доля стоит и базой, и наведением
+   одновременно, в ветке нет. */
+html:not(.dark) .v3-scope :is([class*="bg-white/[0.03"], [class*="bg-white/[0.04]"],
+    [class*="bg-white/[0.05]"]) {
+  background-color: var(--v3-surface-sub);
+}
+html:not(.dark) .v3-scope [class*="bg-white/[0.07]"],
+html:not(.dark) .v3-scope [class*="bg-white/[0.06]"]:not([class*="hover:bg-white/[0.06]"]) {
+  background-color: var(--v3-surface);
+}
+
+/* Наведение и фокус — на тон плотнее, а не светлее: на белом «ярче» уже некуда. */
+html:not(.dark) .v3-scope [class*="hover:bg-white/[0."]:hover,
+html:not(.dark) .v3-scope [class*="focus:bg-white/[0."]:focus,
+html:not(.dark) .v3-scope [class*="active:bg-white/[0."]:active,
+html:not(.dark) .v3-scope .group:hover [class*="group-hover:bg-white/[0."] {
+  background-color: var(--v3-surface-hover);
+}
+
+/* Тень для всего, у чего есть кольцо. В Tailwind v4 ring-1 объявляет
+   box-shadow из слотов-переменных, и незанятый слот --tw-shadow — законное
+   место для дневной тени: разметку трогать не нужно, кольцо остаётся.
+
+   Элементов, где ring-1 стоял бы вместе с собственной базовой shadow-*,
+   в ветке нет (проверено обходом DOM всех девяти страниц), поэтому слот
+   свободен. Тени, заданные только на hover, перебивают эту по правилам
+   каскада сами. */
+html:not(.dark) .v3-scope [class~="ring-1"] {
+  --tw-shadow: var(--v3-surface-shadow);
+}
+/* Лифт карточки под курсором. Ночная тень набрана почти чёрным
+   (rgba(0,0,0,0.9)) — на белом полотне это грязное пятно, поэтому днём
+   у наведения своя. */
+html:not(.dark) .v3-scope [class*="hover:shadow-["]:hover {
+  --tw-shadow: var(--v3-surface-shadow-lift);
+}
+/* --tw-shadow объявлен как inherits: false, поэтому островам он гасится
+   отдельным правилом, а не через наследование переменной. */
+html:not(.dark) .v3-scope .v3-on-dark [class~="ring-1"],
+html:not(.dark) .v3-scope .v3-on-dark[class~="ring-1"],
+html:not(.dark) .v3-scope [class~="bg-[#0b0e13]"] [class~="ring-1"],
+html:not(.dark) .v3-scope [class~="bg-[#0b0e13]"][class~="ring-1"] {
+  --tw-shadow: 0 0 #0000;
+}
+
+/* Приглушённый текст. Прямая подстановка альфы днём слишком бледная —
+   держим четыре ступени (см. --v3-ink-* выше). Доли в скобках
+   (text-white/[0.05]) не трогаем: это призрачные водяные знаки, им
+   бледность и нужна. */
+html:not(.dark) .v3-scope :is([class*="text-white/1"], [class*="text-white/2"],
+    [class*="text-white/3"]) {
+  color: var(--v3-ink-4);
+}
+html:not(.dark) .v3-scope [class*="text-white/4"] {
+  color: var(--v3-ink-3);
+}
+html:not(.dark) .v3-scope :is([class*="text-white/5"], [class*="text-white/6"]) {
+  color: var(--v3-ink-2);
+}
+html:not(.dark) .v3-scope :is([class*="text-white/7"], [class*="text-white/8"],
+    [class*="text-white/9"]) {
+  color: var(--v3-ink-1);
+}
+
+/* Разделители, ручка шторки и дорожки прогресса набраны тем же bg-white/1x.
+   Под правило поверхностей они не попадают, а чернила в 10–20% на белом
+   почти не видны — держим одну переменную-волосок на обе темы. */
+html:not(.dark) .v3-scope :is([class~="bg-white/10"], [class~="bg-white/12"],
+    [class~="bg-white/15"], [class~="bg-white/20"]) {
+  background-color: var(--v3-hairline);
+}
+
+/* Кружок-номер шага обведён кольцом цвета ночного полотна, чтобы
+   разрывать линию таймлайна. Днём линия идёт по белому. */
+html:not(.dark) .v3-scope [class*="ring-[#0b0e13]"] {
+  --tw-ring-color: #ffffff;
 }
 
 /* Шапка прозрачна до прокрутки и живёт поверх геро. Ночью белые надписи

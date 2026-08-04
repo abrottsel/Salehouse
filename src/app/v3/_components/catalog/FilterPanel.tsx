@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gauge, MapPin, RotateCcw, Ruler, SlidersHorizontal, Wallet, X } from "lucide-react";
 import { glassStyle } from "../ui/primitives";
+import { plate, type ToneName } from "../tones";
 import {
   AREA_PRESETS,
   DIRECTIONS,
@@ -51,9 +52,11 @@ function Chip({
   );
 }
 
-function GroupIcon({ children }: { children: ReactNode }) {
+/** У каждой группы фильтров свой тон — по нему панель читается с одного
+ *  взгляда, а не сливается в зелёную полосу (приём боевого каталога). */
+function GroupIcon({ children, tone }: { children: ReactNode; tone: ToneName }) {
   return (
-    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-400/20">
+    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ring-1 ${plate[tone]}`}>
       {children}
     </span>
   );
@@ -154,14 +157,14 @@ export default function FilterPanel({ filters, onChange, onReset, found, lite }:
         <div className="rounded-[22px] p-3" style={panelStyle(lite)}>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex items-center gap-2">
-              <GroupIcon>
+              <GroupIcon tone="emerald">
                 <MapPin className="h-4 w-4" strokeWidth={2.4} />
               </GroupIcon>
               <div className="flex flex-wrap items-center gap-1.5">{directionChips}</div>
             </div>
 
             <div className="flex items-center gap-2">
-              <GroupIcon>
+              <GroupIcon tone="violet">
                 <Gauge className="h-4 w-4" strokeWidth={2.4} />
               </GroupIcon>
               <div className="flex flex-wrap items-center gap-1.5">{readinessChips}</div>
@@ -182,14 +185,14 @@ export default function FilterPanel({ filters, onChange, onReset, found, lite }:
               повисают в конце ряда «висячей палкой». Группы разделяют иконки. */}
           <div className="mt-2.5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/10 pt-2.5">
             <div className="flex items-center gap-2">
-              <GroupIcon>
+              <GroupIcon tone="amber">
                 <Wallet className="h-4 w-4" strokeWidth={2.4} />
               </GroupIcon>
               <div className="flex flex-wrap items-center gap-1.5">{priceChips}</div>
             </div>
 
             <div className="flex items-center gap-2">
-              <GroupIcon>
+              <GroupIcon tone="sky">
                 <Ruler className="h-4 w-4" strokeWidth={2.4} />
               </GroupIcon>
               <div className="flex flex-wrap items-center gap-1.5">{areaChips}</div>
@@ -263,16 +266,16 @@ export default function FilterPanel({ filters, onChange, onReset, found, lite }:
               </button>
             </div>
 
-            <SheetGroup icon={<MapPin className="h-4 w-4" strokeWidth={2.4} />} title="Направление">
+            <SheetGroup tone="emerald" icon={<MapPin className="h-4 w-4" strokeWidth={2.4} />} title="Направление">
               {directionChips}
             </SheetGroup>
-            <SheetGroup icon={<Wallet className="h-4 w-4" strokeWidth={2.4} />} title="Цена за сотку">
+            <SheetGroup tone="amber" icon={<Wallet className="h-4 w-4" strokeWidth={2.4} />} title="Цена за сотку">
               {priceChips}
             </SheetGroup>
-            <SheetGroup icon={<Ruler className="h-4 w-4" strokeWidth={2.4} />} title="Площадь участка">
+            <SheetGroup tone="sky" icon={<Ruler className="h-4 w-4" strokeWidth={2.4} />} title="Площадь участка">
               {areaChips}
             </SheetGroup>
-            <SheetGroup icon={<Gauge className="h-4 w-4" strokeWidth={2.4} />} title="Готовность посёлка">
+            <SheetGroup tone="violet" icon={<Gauge className="h-4 w-4" strokeWidth={2.4} />} title="Готовность посёлка">
               {readinessChips}
             </SheetGroup>
 
@@ -296,16 +299,18 @@ export default function FilterPanel({ filters, onChange, onReset, found, lite }:
 function SheetGroup({
   icon,
   title,
+  tone,
   children,
 }: {
   icon: ReactNode;
   title: string;
+  tone: ToneName;
   children: ReactNode;
 }) {
   return (
     <section className="mb-5">
       <div className="mb-2.5 flex items-center gap-2">
-        <GroupIcon>{icon}</GroupIcon>
+        <GroupIcon tone={tone}>{icon}</GroupIcon>
         <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/45">{title}</h3>
       </div>
       <div className="grid grid-cols-2 gap-2">{children}</div>

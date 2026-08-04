@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ImageOff, MapPin, Ruler } from "lucide-react";
 import type { Village } from "@/lib/data";
+import FavoriteHeartDark from "../FavoriteHeartDark";
+import RouteChipDark from "../RouteChipDark";
 import { areaLabel, money, plotsWord } from "./data";
 
 /** Ширина картинки по брейкпоинтам сетки: 1 / 2 / 3 / 4 колонки. */
@@ -62,10 +64,20 @@ export default function VillageCard({
           {ready ? "Готовый" : `Готовность ${village.readiness}%`}
         </span>
 
-        <span className="absolute bottom-3 right-3 inline-flex items-baseline gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-extrabold text-[#06120c]">
-          {available}
-          <span className="text-[10px] font-bold opacity-70">свободно</span>
-        </span>
+        <div className="absolute right-3 top-3">
+          <FavoriteHeartDark slug={village.slug} />
+        </div>
+
+        {/* Нижний ряд одной строкой: «Дорога к мечте» слева, остаток справа.
+            Чип маршрута исчезает, когда адрес дома не задан, поэтому «свободно»
+            прижат ml-auto, а не justify-between — иначе он уезжал бы влево. */}
+        <div className="absolute inset-x-3 bottom-3 flex items-center gap-2">
+          <RouteChipDark villageCoords={village.coords} villageName={village.name} />
+          <span className="ml-auto inline-flex h-7 shrink-0 items-baseline gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-extrabold leading-5 text-[#06120c]">
+            {available}
+            <span className="text-[10px] font-bold opacity-70">свободно</span>
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">

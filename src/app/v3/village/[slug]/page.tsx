@@ -66,6 +66,7 @@ export default async function V3VillagePage({ params }: Props) {
   return (
     <main>
       <VillageHero
+        slug={village.slug}
         name={village.name}
         direction={village.direction}
         distance={village.distance}

@@ -108,7 +108,10 @@ export default function ZemexxFrame({
         // Кнопка «Забронировать» живёт внутри фрейма Земекс, снаружи её
         // не измерить — уступаем всей карте целиком.
         data-float-guard
-        className="relative overflow-hidden rounded-[24px] ring-1 ring-white/10"
+        // На телефоне карта идёт от края до края: -mx-4 гасит px-4 колонки
+        // страницы. Скругления и кольцо там же убираются — на полную ширину
+        // они смотрятся обрезком карточки. С sm карта снова живёт в колонке.
+        className="relative -mx-4 overflow-hidden sm:mx-0 sm:rounded-[24px] sm:ring-1 sm:ring-white/10"
       >
         <div className={inlineInteractive ? "" : "pointer-events-none"}>
           {frame("h-[560px] sm:h-[750px] lg:h-[85vh]")}
@@ -121,7 +124,11 @@ export default function ZemexxFrame({
             aria-label={
               isMobile ? "Открыть карту участков на весь экран" : "Включить карту участков"
             }
-            className="group absolute inset-0 flex cursor-pointer items-end justify-center bg-transparent pb-6 sm:items-center sm:pb-0"
+            // pb-16, а не pb-6: у Земекса вдоль нижней кромки свои контролы —
+            // слева копирайт Яндекса (32px), справа переключатель «Спутник»
+            // (31px, 16px от низа). Плашка на 24px от низа их накрывала.
+            // На десктопе она по центру кадра и появляется только по наведению.
+            className="group absolute inset-0 flex cursor-pointer items-end justify-center bg-transparent pb-16 sm:items-center sm:pb-0"
           >
             <span
               style={glassStyle}
@@ -142,11 +149,14 @@ export default function ZemexxFrame({
           </button>
         )}
 
-        {/* «Дорога к мечте» поверх фрейма. Отступ сверху не случайный:
-            у самого фрейма Земекс в правом верхнем углу свои контролы,
-            в том числе «Спутник», и прижатый к верху бейдж их накрывал.
-            data-frame-overlay нужен кнопке «Путь» — она ищет его, чтобы
-            встать слева. */}
+        {/* «Дорога к мечте» поверх фрейма. Слева у Земекса легенда цен,
+            поэтому бейдж справа. Отступ сверху не случайный: на широком
+            экране Земекс ставит «Спутник» в правый верхний угол (12px от
+            края, высота 34) — прижатый к верху бейдж его накрывал; на
+            телефоне «Спутник» уезжает вниз, но отступ оставляем общим.
+            Панель раскрытия уходит порталом в body, краем карточки её
+            больше не режет. data-frame-overlay нужен кнопке «Путь» —
+            она ищет его, чтобы встать слева. */}
         <div
           data-frame-overlay
           className="pointer-events-none absolute right-3 top-16 z-30 flex justify-end sm:right-5 sm:top-20"

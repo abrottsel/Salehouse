@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { LEGAL } from "@/lib/legal";
+import AssistantChat from "./AssistantChat";
 
 /**
- * Плавающие мессенджеры /v3 — Telegram и MAX.
+ * Плавающие мессенджеры /v3 — Telegram, MAX и чат-ассистент.
  *
  * Боевой SocialFloating на /v3 погашен (LegacyChrome), потому что вместе с
- * ним приезжал AI-чат, отправляющий заявки. Здесь только две ссылки, без
- * чата: витрина ничего никуда не шлёт.
+ * ним приезжал AI-чат, отправляющий заявки на /api/leads. Ассистент здесь
+ * свой (AssistantChat): сценарий боевого, но ни одного запроса наружу.
  *
  * Размер — половина боевого: логотип 22px против 44px. Чтобы это не
  * ломало палец, кликабельная зона осталась 44×44 — вокруг логотипа
@@ -84,8 +85,15 @@ export default function FloatingMessengers() {
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
+
+    // Cookie-баннер монтируется позже нас — на первом замере его ещё нет,
+    // и без наблюдателя пилюля оставалась под ним до первого скролла.
+    // Тот же наблюдатель ловит и его исчезновение после согласия.
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.body, { childList: true, subtree: true });
     return () => {
       if (frame) cancelAnimationFrame(frame);
+      mo.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
@@ -130,6 +138,8 @@ export default function FloatingMessengers() {
             />
           </a>
         ))}
+
+        <AssistantChat enabled={clear} />
       </div>
     </div>
   );
