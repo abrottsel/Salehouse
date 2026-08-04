@@ -71,9 +71,12 @@ export default function BuyTimeline() {
       {!lite && (
         // Обёртка нужна, чтобы проценты в `top` считались от длины рельсы,
         // а не от всего списка — иначе капля уезжает ниже конца линии.
+        // z-0, а не z-10: рельса идёт ровно по центру плиток, и капля
+        // при прокрутке наезжала на иконку шага — на телефоне плитка
+        // пропадала под ней целиком. Теперь капля проезжает позади.
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-8 left-6 top-8 z-10 w-0 sm:left-7"
+          className="pointer-events-none absolute bottom-8 left-6 top-8 z-0 w-0 sm:left-7"
         >
           <motion.span
             className="absolute left-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-200"
@@ -108,15 +111,25 @@ export default function BuyTimeline() {
                 {/* подложка и рамка — инлайном: цвет шага динамический,
                     а инлайновый box-shadow всё равно перебил бы ring-* */}
                 <div
-                  className={`relative grid h-12 w-12 place-items-center rounded-2xl transition-all duration-500 sm:h-14 sm:w-14 ${
+                  className={`relative z-10 grid h-12 w-12 place-items-center rounded-2xl transition-all duration-500 sm:h-14 sm:w-14 ${
                     isCurrent ? "scale-105" : ""
                   }`}
                   style={{
+                    // Заливка непрозрачная: цвет шага лежит на полотне
+                    // страницы. Полупрозрачная пропускала сквозь себя
+                    // рельсу и каплю — иконка читалась через них.
                     // Непройденный шаг — переменными: белила в 4% днём
                     // растворялись на белом полотне (см. --v3-idle-* в v3.css).
-                    background: reached ? `${meta.hex}1f` : "var(--v3-idle-bg, rgba(255,255,255,0.04))",
+                    background: reached
+                      ? `linear-gradient(${meta.hex}1f, ${meta.hex}1f), var(--v3-page, #0b0e13)`
+                      : "var(--v3-idle-bg, rgba(255,255,255,0.04))",
+                    // У текущего шага только рамка и мягкое кольцо. Прежняя
+                    // размытая тень тем же цветом (0 14px 34px -14px) при
+                    // прокрутке расползалась вокруг плитки грязным тёмным
+                    // пятном — на тёмном полотне цветной блюр читается
+                    // именно так, а не как свечение.
                     boxShadow: isCurrent
-                      ? `inset 0 0 0 1px ${meta.hex}80, 0 0 0 5px ${meta.hex}1a, 0 14px 34px -14px ${meta.hex}`
+                      ? `inset 0 0 0 1px ${meta.hex}80, 0 0 0 5px ${meta.hex}1a`
                       : reached
                         ? `inset 0 0 0 1px ${meta.hex}59`
                         : "inset 0 0 0 1px var(--v3-idle-ring, rgba(255,255,255,0.10))",

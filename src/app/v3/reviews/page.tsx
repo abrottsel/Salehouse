@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Phone, Star } from "lucide-react";
+import { Phone, Star, TreePine } from "lucide-react";
 import { LEGAL } from "@/lib/legal";
 import PageHero from "../_components/pages/PageHero";
 import ReviewsGrid from "../_components/pages/ReviewsGrid";
@@ -79,13 +79,13 @@ export default function V3ReviewsPage() {
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 text-[14px] font-bold text-white shadow-[0_10px_30px_-8px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5 hover:bg-emerald-400 active:scale-[0.98]"
               >
                 <Phone className="h-4 w-4" />
-                {LEGAL.phone}
+                Позвонить
               </a>
               <Link
                 href="/v3/catalog"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white/[0.07] px-6 text-[14px] font-bold text-white ring-1 ring-white/15 transition-colors hover:bg-white/[0.13]"
               >
-                <MessageCircle className="h-4 w-4 text-emerald-300" />
+                <TreePine className="h-4 w-4 text-emerald-300" />
                 Выбрать посёлок
               </Link>
             </div>

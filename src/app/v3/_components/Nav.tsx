@@ -18,7 +18,6 @@ import { LEGAL } from "@/lib/legal";
 import { glassStyle } from "./ui/primitives";
 import FavoritesButton from "./FavoritesButton";
 import SiteSearchV3 from "./SiteSearchV3";
-import ThemeToggle from "./ThemeToggle";
 
 /** Тон плитки в мобильном меню. Приём взят у карточек преимуществ: там
  *  каждая иконка своего цвета на своей плашке, и именно это отличает
@@ -98,7 +97,6 @@ export default function Nav() {
         <div className="ml-auto flex items-center gap-0 sm:gap-0.5">
           <SiteSearchV3 className={ICON_BTN} />
           <FavoritesButton className={ICON_BTN} />
-          <ThemeToggle className={ICON_BTN} />
 
           {/* Только трубка, без номера — как на проде. Номер длинный, он
               распирал шапку и спорил с иконками; сам номер остаётся

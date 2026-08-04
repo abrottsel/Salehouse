@@ -62,7 +62,7 @@ export default function V3FaqPage() {
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 text-[14px] font-bold text-white shadow-[0_10px_30px_-8px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5 hover:bg-emerald-400 active:scale-[0.98]"
               >
                 <Phone className="h-4 w-4" />
-                {LEGAL.phone}
+                Позвонить
               </a>
               <Link
                 href="/v3/contacts"

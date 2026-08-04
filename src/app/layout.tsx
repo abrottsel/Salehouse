@@ -74,21 +74,22 @@ export default function RootLayout({
     <html lang="ru" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
         {/* Замораживаем высоту viewport один раз при загрузке — защита от прыжков в TG/iOS WebView.
-            Тема: ручной выбор (v2-theme = dark|light) имеет приоритет и держится,
-            пока пользователь сам не переключит. Если выбора не было:
-            — на витрине /v3 всегда ночь (автосмена по часам там отключена);
-            — на остальном сайте авто по времени: день 07:00–19:00 светлая,
-              вечер и ночь тёмная (по локальному времени устройства). */}
+            Тема: на витрине /v3 всегда ночь — переключатель оттуда убран до
+            переделки светлой темы, и сохранённый ранее выбор «день» иначе
+            запер бы человека в ней без кнопки. На остальном сайте прежнее
+            поведение: ручной выбор (v2-theme = dark|light) главнее, а без
+            него авто по времени — день 07:00–19:00 светлая, вечер и ночь
+            тёмная (по локальному времени устройства). */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){
   var h = window.innerHeight;
   document.documentElement.style.setProperty('--app-height', h + 'px');
   var pref = null;
   try { pref = localStorage.getItem('v2-theme'); } catch(e){}
   var dark;
-  if (pref === 'dark' || pref === 'light') {
-    dark = pref === 'dark';
-  } else if (location.pathname === '/v3' || location.pathname.indexOf('/v3/') === 0) {
+  if (location.pathname === '/v3' || location.pathname.indexOf('/v3/') === 0) {
     dark = true;
+  } else if (pref === 'dark' || pref === 'light') {
+    dark = pref === 'dark';
   } else {
     var hr = new Date().getHours();
     dark = hr < 7 || hr >= 19;
