@@ -52,15 +52,19 @@ export default function BuyTimeline() {
     // overflow-x-clip: карточки выезжают на ±40px по горизонтали, без
     // подрезки на мобиле появлялась бы горизонтальная прокрутка.
     // Именно clip, а не hidden — вертикальный overflow остаётся видимым.
-    <ol ref={listRef} className="relative overflow-x-clip">
+    // isolate + явные слои: в WebKit анимируемая рельса (у неё transform)
+    // поднималась в свой композиционный слой и рисовалась ПОВЕРХ плиток —
+    // линия разрезала мини-блок пополам. В Chromium порядок был обратный,
+    // поэтому баг ловился только на маке и айфоне.
+    <ol ref={listRef} className="relative isolate overflow-x-clip">
       {/* Рельса: тусклый жёлоб + заполняемая полоса поверх */}
       <span
         aria-hidden
-        className="pointer-events-none absolute bottom-8 left-6 top-8 w-px -translate-x-1/2 bg-white/[0.07] sm:left-7"
+        className="pointer-events-none absolute bottom-8 left-6 top-8 z-0 w-px -translate-x-1/2 bg-white/[0.07] sm:left-7"
       />
       <motion.span
         aria-hidden
-        className="pointer-events-none absolute bottom-8 left-6 top-8 w-[2px] -translate-x-1/2 rounded-full bg-gradient-to-b from-emerald-300 via-emerald-400 to-lime-300 sm:left-7"
+        className="pointer-events-none absolute bottom-8 left-6 top-8 z-0 w-[2px] -translate-x-1/2 rounded-full bg-gradient-to-b from-emerald-300 via-emerald-400 to-lime-300 sm:left-7"
         style={{
           originY: 0,
           scaleY: lite ? 1 : scrollYProgress,
@@ -96,7 +100,7 @@ export default function BuyTimeline() {
         const isCurrent = !lite && i === active;
 
         return (
-          <li key={step.number} className="relative">
+          <li key={step.number} className="relative z-10">
             <motion.div
               className="flex gap-3 pb-3 sm:gap-5 sm:pb-4"
               // Только вертикаль. Прежний въезд с боков (x: ±40) уводил
